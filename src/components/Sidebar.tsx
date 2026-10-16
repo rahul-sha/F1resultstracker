@@ -2,21 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "./ThemeToggle";
 
 const NAV_SECTIONS: { label: string; href: string }[] = [
   { label: "Results", href: "/results" },
-  { label: "Positions", href: "/positions" },
-  { label: "F.L.A.T.", href: "/flat" },
-  { label: "Quali", href: "/quali" },
-  { label: "Grid vs Race", href: "/grid-vs-race" },
-  { label: "Teams", href: "/teams" },
-  { label: "Drivers", href: "/drivers" },
-  { label: "Per Race", href: "/per-race" },
-  { label: "Points", href: "/points" },
   { label: "Standing", href: "/standings" },
-  { label: "Indicators", href: "/indicators" },
-  { label: "Head to Head", href: "/head-to-head" },
-  { label: "Calendar", href: "/calendar" },
 ];
 
 export default function Sidebar() {
@@ -28,7 +18,7 @@ export default function Sidebar() {
       style={{ borderColor: "var(--gridline)", background: "var(--surface-1)" }}
     >
       <div>
-        <Link href="/points" className="block leading-tight">
+        <Link href="/results" className="block leading-tight">
           <span className="block text-3xl font-bold" style={{ color: "var(--text-primary)" }}>
             F1
           </span>
@@ -60,8 +50,11 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto text-xs" style={{ color: "var(--text-muted)" }}>
-        Data via Jolpica F1 API
+      <div className="mt-auto flex flex-col gap-3">
+        <ThemeToggle />
+        <div className="text-xs" style={{ color: "var(--text-muted)" }}>
+          Data via Jolpica F1 API
+        </div>
       </div>
     </aside>
   );

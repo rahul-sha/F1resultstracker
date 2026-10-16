@@ -40,7 +40,12 @@ export function sequentialBlue(t: number, mode: "light" | "dark" = "light"): str
   return ramp[index];
 }
 
-// Cell text needs to flip to white once the fill gets dark enough to fail contrast.
-export function textOnSequential(t: number): string {
-  return t > 0.55 ? "#ffffff" : "#0b0b0b";
+// Cell text needs to flip once the fill gets too dark/light to hold contrast.
+// Light mode darkens toward max (t=1); dark mode's ramp runs the other way
+// (near-zero recedes into the dark surface, max pops bright), so the flip
+// threshold mirrors accordingly.
+export function textOnSequential(t: number, mode: "light" | "dark" = "light"): string {
+  const dark = t > 0.55;
+  const useWhiteText = mode === "light" ? dark : !dark;
+  return useWhiteText ? "#ffffff" : "#0b0b0b";
 }

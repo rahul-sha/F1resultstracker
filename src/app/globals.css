@@ -48,3 +48,29 @@ body {
   color: var(--text-primary);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
+
+/* Sequential heatmap cells carry their own light/dark fill (set as inline
+   custom properties per-cell, since the value depends on the data point),
+   and this class picks the right one for the active theme. */
+.heat-cell {
+  background: var(--cell-bg-light);
+  color: var(--cell-fg-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .heat-cell {
+    background: var(--cell-bg-dark);
+    color: var(--cell-fg-dark);
+  }
+}
+
+:root[data-theme="dark"] .heat-cell {
+  background: var(--cell-bg-dark);
+  color: var(--cell-fg-dark);
+}
+
+/* Meter bar: a colored fill over a lighter track, so state reads across the
+   whole bar rather than just wherever the fill happens to end. */
+.meter-track {
+  background: var(--gridline);
+}

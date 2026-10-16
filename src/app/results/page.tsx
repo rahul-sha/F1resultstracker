@@ -4,7 +4,7 @@ import { currentSeason } from "@/lib/seasons";
 import PointsHeatmap from "@/components/PointsHeatmap";
 import SeasonSelector from "@/components/SeasonSelector";
 
-export const metadata = { title: "Points | F1 Results Tracker" };
+export const metadata = { title: "Results | F1 Results Tracker" };
 
 async function PointsGridSection({ season }: { season: number }) {
   const grid = await buildPointsGrid(season);
@@ -20,7 +20,7 @@ async function PointsGridSection({ season }: { season: number }) {
   return <PointsHeatmap grid={grid} />;
 }
 
-export default async function PointsPage({
+export default async function ResultsPage({
   searchParams,
 }: {
   searchParams: Promise<{ season?: string }>;
@@ -32,7 +32,7 @@ export default async function PointsPage({
     <div className="p-6">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Points</h1>
+          <h1 className="text-2xl font-bold">Results</h1>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             Points scored by each driver per Grand Prix. Hover a race header for details;
             underlined races include a sprint.
