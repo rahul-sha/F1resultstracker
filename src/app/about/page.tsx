@@ -79,6 +79,21 @@ export default function AboutPage() {
                 <b>Live-data resilience</b>
                 <span>The current season now falls back to its last saved snapshot if the live F1 data API has downtime.</span>
               </li>
+              <li>
+                <b>Positions &amp; Finish Positions pages</b>
+                <span>
+                  Where each driver finished every race, sprint results shown inline, a per-position
+                  finish-frequency grid with a DNF breakdown, and a podium count for drivers and teams.
+                </span>
+              </li>
+              <li>
+                <b>Constructors section &amp; page cleanup</b>
+                <span>
+                  Clearer colour contrast on the Positions heatmap, Finish Positions restyled to match
+                  the rest of the site, a Constructors section added to Results, and the separate
+                  Standings page retired now that Results covers both.
+                </span>
+              </li>
             </ul>
           </div>
 
