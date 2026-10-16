@@ -138,7 +138,10 @@ function PointsCellContent({
   // per accent palette in globals.css) rather than a fixed hardcoded ramp,
   // so the heatmap re-colors itself when the palette changes.
   const t = max > 0 ? cell.points / max : 0;
-  const bucket = Math.round(t * 6);
+  // Reserve bucket 0 for an actual zero score — scoring even 1 point next to
+  // a 33-point win rounds to bucket 0 otherwise, making it indistinguishable
+  // from scoring nothing at all.
+  const bucket = cell.points > 0 ? Math.max(1, Math.round(t * 6)) : 0;
   const style = {
     background: `var(--heat-${bucket})`,
     color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",

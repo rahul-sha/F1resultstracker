@@ -22,7 +22,8 @@ function Cell({
   }
 
   const t = max > 0 ? cell.points / max : 0;
-  const bucket = Math.round(t * 6);
+  // Reserve bucket 0 for an actual zero score — see PointsHeatmap.tsx.
+  const bucket = cell.points > 0 ? Math.max(1, Math.round(t * 6)) : 0;
   const style = {
     background: `var(--heat-${bucket})`,
     color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
