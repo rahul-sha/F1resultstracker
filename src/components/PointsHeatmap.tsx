@@ -242,9 +242,14 @@ function PositionCellContent({
 
   // Lower finishing position is a stronger result, so the ramp runs in
   // reverse from the points heatmap: 1st place gets the deepest shade.
+  // A straight linear spread across the whole field (1..maxPosition)
+  // crowds 1st/2nd/3rd into the same top bucket once there are 20+ cars,
+  // since there are only 7 shades to go around — so the top finishers each
+  // get their own shade and everything from 8th back shares the lightest
+  // one, rather than every position getting an equal, and mostly invisible,
+  // slice of the ramp.
   const classified = cell.classifiedPosition ?? maxPosition;
-  const t = maxPosition > 1 ? 1 - (classified - 1) / (maxPosition - 1) : 1;
-  const bucket = Math.round(t * 6);
+  const bucket = Math.max(0, Math.min(6, 7 - classified));
   const style = {
     background: `var(--heat-${bucket})`,
     color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
@@ -387,9 +392,7 @@ export default function PointsHeatmap({
                 onLeave={hide}
               />
             ))}
-            <th className="sticky right-0 z-10 min-w-[64px] sm:min-w-[160px] px-2 sm:px-3 py-2 text-center text-xs font-semibold">
-              {mode === "position" ? <span className="hidden sm:inline">Median finish</span> : null}
-            </th>
+            <th className="sticky right-0 z-10 min-w-[64px] sm:min-w-[160px] px-2 sm:px-3 py-2 text-center text-xs font-semibold" />
           </tr>
         </thead>
         <tbody>
@@ -460,7 +463,7 @@ export default function PointsHeatmap({
                         className="text-xs font-semibold tabular-nums"
                         style={{ color: "var(--text-primary)" }}
                       >
-                        {medianFinish !== null ? medianFinish.toFixed(1) : "—"}
+                        {medianFinish !== null ? Math.round(medianFinish) : "—"}
                       </span>
                     </div>
                   ) : (

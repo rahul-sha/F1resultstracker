@@ -451,31 +451,18 @@ body {
   min-width: 0;
 }
 
-/* Finish Positions page: one small cell per finishing position, a pinned
-   DNF-cause pair of columns, and the podium bars underneath. */
+/* Finish Positions page: one count per finishing position, sitting
+   border-to-border as the same heatmap mosaic as Results/Positions
+   (.heat-cell) rather than a boxed, gapped chip — plus a pinned DNF-cause
+   column and the podium bars underneath. */
 .count-cell {
-  width: 26px;
-  height: 26px;
-  margin: auto;
-  border-radius: 7px;
+  cursor: help;
   font-weight: 600;
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .count-mode {
-  box-shadow: 0 0 0 2px var(--accent);
-  font-weight: 700;
-}
-.sep-col {
-  width: 1px;
-  background: var(--border-hairline) !important;
-  padding: 0 !important;
-}
-.group-head {
-  letter-spacing: 0.04em;
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 .dnf-cell {
   font-size: 11.5px;
@@ -593,6 +580,13 @@ body {
 }
 .table-card tbody tr:nth-child(odd) td {
   background: var(--surface-1);
+}
+/* A sticky header cell needs its own opaque background too, or the column
+   numbers scrolled underneath it show through — invisible at a width where
+   everything fits, but visible as soon as there's more columns than room
+   (e.g. a 22-driver season) and the table hasn't been scrolled yet. */
+.table-card thead th.sticky {
+  background: var(--surface-2);
 }
 .table-card tbody tr:first-child td:first-child {
   border-top-left-radius: 14px;

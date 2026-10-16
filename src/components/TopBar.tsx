@@ -9,7 +9,6 @@ const NAV_SECTIONS: { label: string; href: string }[] = [
   { label: "Results", href: "/results" },
   { label: "Positions", href: "/positions" },
   { label: "Finish Positions", href: "/finish-positions" },
-  { label: "Standing", href: "/standings" },
   { label: "About", href: "/about" },
 ];
 

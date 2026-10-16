@@ -39,8 +39,8 @@ export default function AboutPage() {
           </p>
           <ul>
             <li>
-              Designed and built the Results and Standings pages, including the heatmap, hover
-              details, and the Material 3 visual style
+              Designed and built the Results, Positions, and Finish Positions pages, including the
+              heatmap, hover details, and the Material 3 visual style
             </li>
             <li>Built the season/colour theme system (Monokai, Coffee, Ember)</li>
             <li>

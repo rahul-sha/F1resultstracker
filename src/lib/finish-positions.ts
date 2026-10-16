@@ -147,6 +147,17 @@ export async function buildFinishPositionSummary(season: number): Promise<Finish
     };
   });
 
+  // The grid should always span one column per car that actually took the
+  // start, even if no driver has been classified in the last couple of
+  // positions yet (the tail of the field keeps retiring before the flag) —
+  // so each round's own entry list (its real grid size) is a floor on top
+  // of whatever position was actually observed. Driver-standings length
+  // isn't reliable for this: a mid-season driver swap adds a second
+  // standings row for the same seat, one more than there were ever cars
+  // on track in a single race.
+  const fieldSize = Math.max(0, ...allResults.map((results) => results.length));
+  maxPosition = Math.max(maxPosition, fieldSize);
+
   const podiumTotal = (p: PodiumCounts) => p[1] + p[2] + p[3];
   const driverPodiums = drivers
     .filter((d) => podiumTotal(d.podiums) > 0)
