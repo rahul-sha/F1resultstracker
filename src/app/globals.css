@@ -306,21 +306,6 @@ body {
 .heat-cell {
   cursor: help;
 }
-/* Retirements/DSQ/withdrawals on the Positions page: a neutral surface
-   tone rather than a fixed colour, so it never collides with a palette
-   whose heat ramp is itself red (Ember). */
-.heat-cell .pos-dnf {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 22px;
-  margin: auto;
-  border-radius: 6px;
-  background: var(--surface-3);
-  color: var(--text-muted);
-  font-style: italic;
-}
 .heat-cell sup {
   font-size: 9px;
   font-weight: 700;

@@ -31,7 +31,7 @@ type TooltipState = { x: number; y: number; content: React.ReactNode } | null;
 // table), so it never gets clipped by the table's horizontal scroll area —
 // a pure-CSS hover tooltip anchored to the cell does, right at the table's
 // own left/right edges.
-function useTooltip() {
+export function useTooltip() {
   const [tooltip, setTooltip] = useState<TooltipState>(null);
 
   function show(e: React.MouseEvent<HTMLElement>, content: React.ReactNode) {
@@ -45,7 +45,7 @@ function useTooltip() {
   return { tooltip, show, hide };
 }
 
-function Tooltip({ tooltip }: { tooltip: TooltipState }) {
+export function Tooltip({ tooltip }: { tooltip: TooltipState }) {
   if (!tooltip) return null;
   const clampedX = Math.min(Math.max(tooltip.x, 110), window.innerWidth - 110);
   return (
@@ -59,7 +59,7 @@ function Tooltip({ tooltip }: { tooltip: TooltipState }) {
   );
 }
 
-function RoundHeader({
+export function RoundHeader({
   round,
   abbreviation,
   raceName,
@@ -226,16 +226,18 @@ function PositionCellContent({
   );
 
   if (isDnf) {
+    // Same cell styling as a classified result — just a neutral shade
+    // rather than a separate pill treatment, so it reads as "no result"
+    // without looking like a different kind of thing on the grid.
     return (
       <td
         className="heat-cell w-11 h-9 text-center text-xs font-medium tabular-nums"
+        style={{ background: "var(--surface-3)", color: "var(--text-muted)" }}
         onMouseEnter={(e) => onEnter(e, content)}
         onMouseLeave={onLeave}
       >
-        <span className="pos-dnf">
-          {cell.position}
-          {cell.sprintPosition ? <sup>{cell.sprintPosition}</sup> : null}
-        </span>
+        {cell.position}
+        {cell.sprintPosition ? <sup>{cell.sprintPosition}</sup> : null}
       </td>
     );
   }

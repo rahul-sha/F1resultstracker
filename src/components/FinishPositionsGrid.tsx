@@ -27,7 +27,7 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
           <tr>
             <th className="sticky left-0 z-10 min-w-[84px] sm:min-w-[180px] px-2 sm:px-3 py-2 text-left text-xs font-semibold" />
             {positions.map((p) => (
-              <th key={p} className="w-7 px-0.5 py-2 text-center text-[11px] font-semibold" style={{ color: "var(--text-secondary)" }}>
+              <th key={p} className="w-11 px-0.5 py-2 text-center text-[11px] font-semibold" style={{ color: "var(--text-secondary)" }}>
                 {p}
               </th>
             ))}
@@ -57,13 +57,13 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
                 </td>
                 {positions.map((p) => {
                   const count = row.countsByPosition[p];
-                  if (!count) return <td key={p} className="w-7 h-9" />;
+                  if (!count) return <td key={p} className="w-11 h-9" />;
                   const bucket = Math.max(1, Math.round((count / rowMax) * 6));
                   const isMode = count === rowMax;
                   return (
                     <td
                       key={p}
-                      className={"count-cell w-7 h-9 text-center" + (isMode ? " count-mode" : "")}
+                      className={"count-cell w-11 h-9 text-center" + (isMode ? " count-mode" : "")}
                       style={{
                         background: `var(--heat-${bucket})`,
                         color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
