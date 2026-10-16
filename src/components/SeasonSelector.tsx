@@ -2,15 +2,32 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { availableSeasons } from "@/lib/seasons";
+import { availableSeasons, SEASON_COOKIE } from "@/lib/season-constants";
 
-export default function SeasonSelector({ season }: { season: number }) {
+// Persisted for a year so it survives across page navigations and future
+// visits; path=/ so it applies to every route, not just the one it was
+// picked on. Defined outside the component since assigning document.cookie
+// directly inside a component body trips the react-hooks immutability
+// lint rule.
+function persistSeason(year: number) {
+  document.cookie = `${SEASON_COOKIE}=${year}; path=/; max-age=31536000; samesite=lax`;
+}
+
+// Lives in the global nav bar, so it has no page-supplied season of its
+// own: the current page's ?season= wins when present (so Results/Positions
+// still reflect what's in the URL), otherwise it falls back to
+// initialSeason, which the layout resolved server-side from the persisted
+// cookie — keeping the picked season in sync across page navigations.
+export default function SeasonSelector({ initialSeason }: { initialSeason: number }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const seasons = availableSeasons();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const urlSeason = Number(searchParams.get("season"));
+  const season = seasons.includes(urlSeason) ? urlSeason : initialSeason;
 
   useEffect(() => {
     if (!open) return;
@@ -24,6 +41,7 @@ export default function SeasonSelector({ season }: { season: number }) {
   }, [open]);
 
   function handleSelect(nextSeason: number) {
+    persistSeason(nextSeason);
     const params = new URLSearchParams(searchParams.toString());
     params.set("season", String(nextSeason));
     router.push(`${pathname}?${params.toString()}`);

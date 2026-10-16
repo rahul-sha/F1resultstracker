@@ -2,17 +2,20 @@ import type { Metadata } from "next";
 import "./globals.css";
 import TopBar from "@/components/TopBar";
 import PageTransition from "@/components/PageTransition";
+import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
 
 export const metadata: Metadata = {
   title: "F1 Results Tracker",
   description: "Formula 1 race results, points and standings tracker",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialSeason = (await resolvePersistedSeason()) ?? currentSeason();
+
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -26,7 +29,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full">
         <div className="flex min-h-screen flex-col gap-6 p-4">
-          <TopBar />
+          <TopBar initialSeason={initialSeason} />
           <main className="min-w-0 flex-1">
             <PageTransition>{children}</PageTransition>
           </main>

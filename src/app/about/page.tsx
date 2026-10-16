@@ -137,6 +137,15 @@ export default function AboutPage() {
                   hover tooltip from the Constructors heatmap on Results.
                 </span>
               </li>
+              <li>
+                <b>Centred layout, global season selector</b>
+                <span>
+                  Results and Positions no longer hug the left edge with empty space on the
+                  right on wide screens. The season selector moved out of each page and into
+                  the top nav bar, and the season you pick now stays selected as you move
+                  between pages instead of resetting.
+                </span>
+              </li>
             </ul>
           </div>
 
