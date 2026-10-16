@@ -98,8 +98,46 @@ export function raceAbbreviation(race: Race): string {
   return letters.slice(0, 3).toUpperCase() || "GP";
 }
 
+// Fallback keyed on the API's own Circuit.Location.country string, which is
+// far more stable than race name text ("Spanish Grand Prix" vs. "Spain").
+// Used whenever the abbreviation lookup above doesn't have a flag, so a
+// race name we haven't seen yet still gets a flag instead of none.
+const ISO_BY_COUNTRY: Record<string, string> = {
+  Bahrain: "bh",
+  "Saudi Arabia": "sa",
+  Australia: "au",
+  Japan: "jp",
+  China: "cn",
+  USA: "us",
+  Italy: "it",
+  Monaco: "mc",
+  Canada: "ca",
+  Spain: "es",
+  Austria: "at",
+  UK: "gb",
+  Hungary: "hu",
+  Belgium: "be",
+  Netherlands: "nl",
+  Azerbaijan: "az",
+  Singapore: "sg",
+  Mexico: "mx",
+  Brazil: "br",
+  Qatar: "qa",
+  UAE: "ae",
+  Russia: "ru",
+  Turkey: "tr",
+  Portugal: "pt",
+  France: "fr",
+  Germany: "de",
+  "South Korea": "kr",
+  India: "in",
+  Malaysia: "my",
+};
+
 // Returns the ISO 3166-1 alpha-2 code for the `flag-icons` `fi-<code>` CSS
-// class, or null when the circuit's country isn't mapped.
+// class, or null when the circuit's country isn't mapped by either path.
 export function raceFlagIso(race: Race): string | null {
-  return FLAG_ISO_BY_ABBREVIATION[raceAbbreviation(race)] ?? null;
+  const byAbbreviation = FLAG_ISO_BY_ABBREVIATION[raceAbbreviation(race)];
+  if (byAbbreviation) return byAbbreviation;
+  return ISO_BY_COUNTRY[race.Circuit.Location.country] ?? null;
 }
