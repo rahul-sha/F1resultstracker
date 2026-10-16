@@ -8,6 +8,7 @@ import AccentToggle from "./AccentToggle";
 const NAV_SECTIONS: { label: string; href: string }[] = [
   { label: "Results", href: "/results" },
   { label: "Standing", href: "/standings" },
+  { label: "About", href: "/about" },
 ];
 
 export default function TopBar() {
