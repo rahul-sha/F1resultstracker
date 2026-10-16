@@ -8,6 +8,7 @@ import {
 import { raceAbbreviation, raceFlagIso } from "./circuits";
 import { teamColor } from "./team-colors";
 import { teamDisplayName } from "./team-names";
+import { overrideConstructorId } from "./driver-team-overrides";
 
 export interface PointsGridColumn {
   round: number;
@@ -104,16 +105,19 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
     });
 
     const constructor = standing.Constructors[standing.Constructors.length - 1];
+    const constructorId = overrideConstructorId(
+      season,
+      standing.Driver.driverId,
+      constructor?.constructorId ?? "unknown"
+    );
 
     return {
       driverId: standing.Driver.driverId,
       code: standing.Driver.code ?? standing.Driver.familyName.slice(0, 3).toUpperCase(),
       name: `${standing.Driver.givenName} ${standing.Driver.familyName}`,
-      constructorId: constructor?.constructorId ?? "unknown",
-      constructorName: constructor
-        ? teamDisplayName(constructor.constructorId, constructor.name)
-        : "Unknown",
-      color: teamColor(constructor?.constructorId ?? "unknown"),
+      constructorId,
+      constructorName: constructor ? teamDisplayName(constructorId, constructor.name) : "Unknown",
+      color: teamColor(constructorId),
       seasonPoints: Number(standing.points),
       seasonWins: Number(standing.wins),
       pointsByRound,

@@ -210,7 +210,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
               />
             ))}
             <th
-              className="min-w-[160px] px-3 py-2 text-center text-xs font-semibold"
+              className="sticky right-0 z-10 min-w-[160px] px-3 py-2 text-center text-xs font-semibold"
               style={{ color: "var(--text-secondary)" }}
             >
               Points
@@ -249,7 +249,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                     onLeave={hide}
                   />
                 ))}
-                <td className="px-3 py-1.5">
+                <td className="sticky right-0 z-10 px-3 py-1.5">
                   <div className="flex items-center justify-center gap-2">
                     <div className="meter-track relative h-3 w-24 shrink-0 overflow-hidden">
                       <div
