@@ -105,6 +105,17 @@ export default function AboutPage() {
                   scroll-direction chevrons for a themed scrollbar sitting under the race headers.
                 </span>
               </li>
+              <li>
+                <b>Further fixes to the heatmaps</b>
+                <span>
+                  Removed a boxy border that was meant to highlight a driver&apos;s most frequent
+                  finish on Finish Positions &mdash; the brightest shade already does that job.
+                  Fixed the Teams podium bar so its length is proportional to the podium count
+                  rather than two different totals both hitting the same width cap. Results now
+                  shows a score of 1 or 2 points with a faint tint distinct from scoring nothing,
+                  rather than both looking identical.
+                </span>
+              </li>
             </ul>
           </div>
 

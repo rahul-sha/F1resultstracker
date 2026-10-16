@@ -462,12 +462,6 @@ body {
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
 }
-/* Ring colour is set per-cell inline (it must match that cell's own
-   foreground colour, not a fixed accent — see FinishPositionsGrid.tsx);
-   this just gives the legend's static swatch the same treatment. */
-.count-mode {
-  box-shadow: inset 0 0 0 2px var(--heat-fg-hi);
-}
 .dnf-cell {
   font-size: 11.5px;
   font-weight: 600;

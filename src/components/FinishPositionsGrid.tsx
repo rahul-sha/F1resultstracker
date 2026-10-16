@@ -41,23 +41,19 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
                 {positions.map((p) => {
                   const count = row.countsByPosition[p];
                   if (!count) return <td key={p} className="w-11 h-9" />;
+                  // The most-frequent cell is always bucket 6 (count/rowMax
+                  // rounds to the top of the ramp) so the shading alone
+                  // already marks it — no separate ring needed, which only
+                  // added a boxy border that clashed with the rest of the
+                  // site's flat, borderless cells.
                   const bucket = Math.max(1, Math.round((count / rowMax) * 6));
-                  const isMode = count === rowMax;
-                  const fg = bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)";
                   return (
                     <td
                       key={p}
-                      className={"count-cell w-11 h-9 text-center" + (isMode ? " count-mode" : "")}
+                      className="count-cell w-11 h-9 text-center"
                       style={{
                         background: `var(--heat-${bucket})`,
-                        color: fg,
-                        // The "most frequent" ring reuses the cell's own
-                        // foreground colour rather than a fixed accent — the
-                        // accent happens to equal heat-6 in Monokai (ring
-                        // invisible) but not in Coffee/Ember, where a fixed
-                        // accent ring reads as a mismatched second colour
-                        // layered on the cell.
-                        boxShadow: isMode ? `inset 0 0 0 2px ${fg}` : undefined,
+                        color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
                       }}
                     >
                       {count}
@@ -78,11 +74,7 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
       <div className="legend">
         <span className="legend-chip">
           <span className="legend-swatch" style={{ background: "var(--heat-4)" }} />
-          Finishes at that position (darker = more often)
-        </span>
-        <span className="legend-chip">
-          <span className="legend-swatch count-mode" style={{ background: "var(--heat-4)" }} />
-          Driver&apos;s most frequent finish
+          Finishes at that position — darkest is the driver&apos;s most frequent finish
         </span>
         <span className="legend-chip">DNFs: retirements, disqualifications and withdrawals</span>
       </div>
