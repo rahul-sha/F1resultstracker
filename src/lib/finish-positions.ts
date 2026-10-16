@@ -3,36 +3,6 @@ import { teamColor } from "./team-colors";
 import { teamDisplayName } from "./team-names";
 import { overrideConstructorId } from "./driver-team-overrides";
 
-// A rough split of retirement causes into "mechanical" (the car failed)
-// versus everything else (accidents, disqualifications, withdrawals) —
-// good enough for a DNF-cause breakdown without a hand-maintained per-status
-// lookup table.
-const MECHANICAL_KEYWORDS = [
-  "engine",
-  "gearbox",
-  "transmission",
-  "hydraulics",
-  "electrical",
-  "suspension",
-  "brakes",
-  "clutch",
-  "power unit",
-  "turbo",
-  "mechanical",
-  "exhaust",
-  "fuel",
-  "oil leak",
-  "water leak",
-  "wheel",
-  "steering",
-  "differential",
-];
-
-function isMechanicalFailure(status: string): boolean {
-  const lower = status.toLowerCase();
-  return MECHANICAL_KEYWORDS.some((k) => lower.includes(k));
-}
-
 export interface PodiumCounts {
   1: number;
   2: number;
@@ -48,8 +18,7 @@ export interface FinishPositionRow {
   constructorName: string;
   color: string;
   countsByPosition: Record<number, number>;
-  mechanicalDnfs: number;
-  otherDnfs: number;
+  dnfs: number;
   podiums: PodiumCounts;
 }
 
@@ -102,8 +71,7 @@ export async function buildFinishPositionSummary(season: number): Promise<Finish
     const color = teamColor(constructorId);
 
     const countsByPosition: Record<number, number> = {};
-    let mechanicalDnfs = 0;
-    let otherDnfs = 0;
+    let dnfs = 0;
     const podiums: PodiumCounts = { 1: 0, 2: 0, 3: 0 };
 
     for (const results of allResults) {
@@ -125,10 +93,8 @@ export async function buildFinishPositionSummary(season: number): Promise<Finish
           teamRow.podiums[pos as 1 | 2 | 3]++;
           teamPodiumMap.set(constructorId, teamRow);
         }
-      } else if (isMechanicalFailure(result.status)) {
-        mechanicalDnfs++;
       } else {
-        otherDnfs++;
+        dnfs++;
       }
     }
 
@@ -141,8 +107,7 @@ export async function buildFinishPositionSummary(season: number): Promise<Finish
       constructorName,
       color,
       countsByPosition,
-      mechanicalDnfs,
-      otherDnfs,
+      dnfs,
       podiums,
     };
   });

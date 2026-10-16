@@ -83,7 +83,7 @@ export default function AboutPage() {
                 <b>Positions &amp; Finish Positions pages</b>
                 <span>
                   Where each driver finished every race, sprint results shown inline, a per-position
-                  finish-frequency grid with a DNF breakdown, and a podium count for drivers and teams.
+                  finish-frequency grid with a DNF count, and a podium count for drivers and teams.
                 </span>
               </li>
               <li>
@@ -92,6 +92,17 @@ export default function AboutPage() {
                   Clearer colour contrast on the Positions heatmap, Finish Positions restyled to match
                   the rest of the site, a Constructors section added to Results, and the separate
                   Standings page retired now that Results covers both.
+                </span>
+              </li>
+              <li>
+                <b>Polish pass across all three heatmap pages</b>
+                <span>
+                  Fixed constructor names wrapping onto two lines, DNF-cell contrast in dark themes,
+                  the median-finish figure (now shown to two decimal places, with its bar scaled
+                  against the real grid size), and the season selector&apos;s width changing with
+                  the page it&apos;s on. Simplified the DNF count after checking that the data source
+                  no longer reports a retirement&apos;s cause from the 2023 season onward. Swapped the
+                  scroll-direction chevrons for a themed scrollbar sitting under the race headers.
                 </span>
               </li>
             </ul>

@@ -58,12 +58,12 @@ export default async function FinishPositionsPage({
 
   return (
     <div className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold">Finish Positions</h1>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             How often each driver has finished in each position this season, plus a DNF
-            breakdown and the podium count for drivers and teams.
+            count and the podium count for drivers and teams.
           </p>
         </div>
         <SeasonSelector season={season} />

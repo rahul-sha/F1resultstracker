@@ -47,6 +47,7 @@
   --heat-6: #4c6619;
   --heat-fg-lo: #272822;
   --heat-fg-hi: #faf9f0;
+  --dnf-bg: var(--surface-3);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -74,6 +75,10 @@
     --heat-6: #a6e22e;
     --heat-fg-lo: #f8f8f2;
     --heat-fg-hi: #1b1c17;
+    /* In dark themes --surface-3 sits almost on top of --heat-0, so a DNF
+       cell would be indistinguishable from the weakest heat shade; fall
+       back to --surface-1 instead, which reads clearly against it. */
+    --dnf-bg: var(--surface-1);
   }
 }
 
@@ -101,6 +106,7 @@
   --heat-6: #a6e22e;
   --heat-fg-lo: #f8f8f2;
   --heat-fg-hi: #1b1c17;
+  --dnf-bg: var(--surface-1);
 }
 
 /* Coffee — warm roast tones, light (cream/latte) and dark (espresso). */
@@ -128,6 +134,7 @@
   --heat-6: #5c3c18;
   --heat-fg-lo: #3a2a1c;
   --heat-fg-hi: #f6efe6;
+  --dnf-bg: var(--surface-3);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -155,6 +162,7 @@
     --heat-6: #f0c27e;
     --heat-fg-lo: #f2e3d2;
     --heat-fg-hi: #1b130d;
+    --dnf-bg: var(--surface-1);
   }
 }
 
@@ -182,6 +190,7 @@
   --heat-6: #f0c27e;
   --heat-fg-lo: #f2e3d2;
   --heat-fg-hi: #1b130d;
+  --dnf-bg: var(--surface-1);
 }
 
 /* Ember — red-tinted theme. */
@@ -209,6 +218,7 @@
   --heat-6: #8a2a1c;
   --heat-fg-lo: #2b1210;
   --heat-fg-hi: #fdf3f1;
+  --dnf-bg: var(--surface-3);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -236,6 +246,7 @@
     --heat-6: #e5484d;
     --heat-fg-lo: #f7e9e4;
     --heat-fg-hi: #180f0e;
+    --dnf-bg: var(--surface-1);
   }
 }
 
@@ -263,6 +274,7 @@
   --heat-6: #e5484d;
   --heat-fg-lo: #f7e9e4;
   --heat-fg-hi: #180f0e;
+  --dnf-bg: var(--surface-1);
 }
 
 @theme inline {
@@ -391,33 +403,26 @@ body {
   padding: 10px;
 }
 
-/* Scroll hints: small round chevrons marking that there's more to scroll to,
-   shown only while that direction actually has more content (toggled via
-   PointsHeatmap's scroll state, not CSS alone — the sticky columns make a
-   pure-CSS edge fade invisible, since it'd sit under their opaque background).
-   Pinned level with the flag row, not centered on the whole card, so they
-   read as pointing at the round headers rather than floating mid-table. */
-.scroll-hint {
-  position: absolute;
-  top: 34px;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-3);
-  color: var(--text-secondary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--border-hairline);
-  z-index: 25;
-  pointer-events: none;
-  opacity: 0.9;
+/* Top scrollbar: a themed horizontal scrollbar sitting right under the
+   round-header row, synced to the table's own horizontal scroll — sitting
+   up here, where you're already looking to read the race columns, rather
+   than at the bottom of a tall driver list. Replaces the round chevrons
+   that used to mark "more to scroll to" instead. The table's own scrollbar
+   is hidden since this bar drives the same scroll position. */
+.top-scrollbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 12px;
+  margin-bottom: 2px;
 }
-.scroll-hint-left {
-  left: 4px;
+.top-scrollbar > div {
+  height: 1px;
 }
-.scroll-hint-right {
-  right: 4px;
+.table-card .overflow-x-auto {
+  scrollbar-width: none;
+}
+.table-card .overflow-x-auto::-webkit-scrollbar {
+  display: none;
 }
 /* Driver cell: position, team colour swatch, code and team name laid out as
    fixed-width columns (grid, not flex) so every row's team name lines up
@@ -436,9 +441,20 @@ body {
   min-width: 0;
 }
 
+/* Constructor cell: same idea as .driver-cell, but there's no separate
+   "code" column (just a team name), so it gets its own 3-column grid —
+   reusing .driver-cell's 4-column template left the name in the 34px
+   code slot and forced it to wrap. */
+.constructor-cell {
+  display: grid;
+  grid-template-columns: 16px auto 1fr;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Finish Positions page: one count per finishing position, sitting
    border-to-border as the same heatmap mosaic as Results/Positions
-   (.heat-cell) rather than a boxed, gapped chip — plus a pinned DNF-cause
+   (.heat-cell) rather than a boxed, gapped chip — plus a pinned DNF count
    column and the podium bars underneath. */
 .count-cell {
   cursor: help;
@@ -446,21 +462,16 @@ body {
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
 }
+/* Ring colour is set per-cell inline (it must match that cell's own
+   foreground colour, not a fixed accent — see FinishPositionsGrid.tsx);
+   this just gives the legend's static swatch the same treatment. */
 .count-mode {
-  box-shadow: inset 0 0 0 2px var(--accent);
+  box-shadow: inset 0 0 0 2px var(--heat-fg-hi);
 }
 .dnf-cell {
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--text-secondary);
   white-space: nowrap;
-}
-.dnf-icon {
-  width: 14px;
-  height: 14px;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 2px;
 }
 .legend {
   display: flex;
@@ -677,10 +688,12 @@ body {
 .switcher {
   position: relative;
   display: inline-block;
+  flex-shrink: 0;
 }
 .switcher-trigger {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   border: none;
   cursor: pointer;
@@ -690,6 +703,8 @@ body {
   font-weight: 600;
   padding: 9px 16px;
   border-radius: 999px;
+  white-space: nowrap;
+  min-width: 112px;
 }
 .switcher-trigger:hover {
   background: var(--surface-3);

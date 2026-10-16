@@ -16,9 +16,8 @@ language.
   (not points), with a median-finish summary. Sprint weekends show the
   sprint result as a small superscript next to the main race result.
 - **Finish Positions** (`/finish-positions`) — how often each driver
-  finished in each position across the season, a DNF breakdown
-  (mechanical vs. other), and a podium-finishes count for drivers and
-  teams.
+  finished in each position across the season, a DNF count, and a
+  podium-finishes count for drivers and teams.
 - **About** (`/about`) — who built this and how, credits, and a progress
   timeline.
 

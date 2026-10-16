@@ -232,7 +232,7 @@ function PositionCellContent({
     return (
       <td
         className="heat-cell w-11 h-9 text-center text-xs font-medium tabular-nums"
-        style={{ background: "var(--surface-3)", color: "var(--text-muted)" }}
+        style={{ background: "var(--dnf-bg)", color: "var(--text-muted)" }}
         onMouseEnter={(e) => onEnter(e, content)}
         onMouseLeave={onLeave}
       >
@@ -336,14 +336,24 @@ export default function PointsHeatmap({
 }) {
   const { tooltip, show, hide } = useTooltip();
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  const topScrollRef = useRef<HTMLDivElement>(null);
+  const [scrollWidth, setScrollWidth] = useState(0);
 
-  function updateScrollHints() {
+  function updateScrollWidth() {
     const el = scrollerRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+    if (el) setScrollWidth(el.scrollWidth);
+  }
+
+  function syncFromMain() {
+    if (scrollerRef.current && topScrollRef.current) {
+      topScrollRef.current.scrollLeft = scrollerRef.current.scrollLeft;
+    }
+  }
+
+  function syncFromTop() {
+    if (scrollerRef.current && topScrollRef.current) {
+      scrollerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+    }
   }
 
   useEffect(() => {
@@ -353,30 +363,29 @@ export default function PointsHeatmap({
     // on a narrow screen that's scrolled furthest from view, and it's the
     // one people care about most. A no-op when everything already fits.
     el.scrollLeft = el.scrollWidth - el.clientWidth;
-    updateScrollHints();
+    updateScrollWidth();
 
-    const onResize = () => updateScrollHints();
+    const onResize = () => updateScrollWidth();
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [grid]);
 
+  // The top scrollbar's spacer only grows to its full width once the
+  // scrollWidth state above has applied and re-rendered — syncing its
+  // scrollLeft any earlier (e.g. in the same effect that measures it)
+  // clamps to 0, since the spacer isn't wide enough to scroll yet.
+  useEffect(() => {
+    if (scrollerRef.current && topScrollRef.current) {
+      topScrollRef.current.scrollLeft = scrollerRef.current.scrollLeft;
+    }
+  }, [scrollWidth]);
+
   return (
     <div className="table-card">
-      {canScrollLeft ? (
-        <div className="scroll-hint scroll-hint-left" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      ) : null}
-      {canScrollRight ? (
-        <div className="scroll-hint scroll-hint-right" aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      ) : null}
-      <div className="overflow-x-auto" ref={scrollerRef} onScroll={updateScrollHints}>
+      <div className="top-scrollbar" ref={topScrollRef} onScroll={syncFromTop} aria-hidden="true">
+        <div style={{ width: scrollWidth }} />
+      </div>
+      <div className="overflow-x-auto" ref={scrollerRef} onScroll={syncFromMain}>
       <table className="border-collapse">
         <thead>
           <tr>
@@ -408,9 +417,12 @@ export default function PointsHeatmap({
                       .map((c) => c.classifiedPosition as number)
                   )
                 : null;
+            // A worse (higher-number) median finish should fill the bar
+            // more, scaled against how many cars are actually on the grid —
+            // so 11th of 22 is half full, 17th of 22 is nearly full.
             const medianBarPct =
               medianFinish !== null
-                ? Math.max(2, ((grid.maxClassifiedPosition - medianFinish + 1) / grid.maxClassifiedPosition) * 100)
+                ? Math.min(100, Math.max(2, (medianFinish / grid.maxClassifiedPosition) * 100))
                 : 0;
 
             return (
@@ -465,7 +477,7 @@ export default function PointsHeatmap({
                         className="text-xs font-semibold tabular-nums"
                         style={{ color: "var(--text-primary)" }}
                       >
-                        {medianFinish !== null ? Math.round(medianFinish) : "—"}
+                        {medianFinish !== null ? medianFinish.toFixed(2) : "—"}
                       </span>
                     </div>
                   ) : (

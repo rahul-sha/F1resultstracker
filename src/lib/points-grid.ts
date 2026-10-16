@@ -136,7 +136,12 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
     ...rows.flatMap((r) => r.pointsByRound.filter((p): p is PointsCell => p !== null).map((p) => p.points))
   );
   const maxSeasonPoints = Math.max(1, ...rows.map((r) => r.seasonPoints));
-  const maxClassifiedPosition = Math.max(
+  // Floor this on each round's actual entry list (its real grid size), not
+  // just the highest classified position seen so far — the same fix as
+  // finish-positions.ts's maxPosition, for the same reason: the back of the
+  // field can still be mid-season without ever having finished in its own
+  // worst position yet.
+  const observedMaxPosition = Math.max(
     1,
     ...rows.flatMap((r) =>
       r.pointsByRound
@@ -144,6 +149,8 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
         .map((p) => p.classifiedPosition as number)
     )
   );
+  const fieldSize = Math.max(0, ...perRound.map(({ results }) => results.length));
+  const maxClassifiedPosition = Math.max(observedMaxPosition, fieldSize);
 
   return { season, columns, rows, maxRoundPoints, maxSeasonPoints, maxClassifiedPosition };
 }
