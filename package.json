@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "snapshot:season": "node scripts/snapshot-season.mjs"
   },
   "dependencies": {
     "flag-icons": "^7.6.0",
