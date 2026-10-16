@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
+import TopBar from "@/components/TopBar";
 
 export const metadata: Metadata = {
   title: "F1 Results Tracker",
@@ -24,9 +24,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <main className="flex-1 min-w-0">{children}</main>
+        <div className="flex min-h-screen flex-col gap-6 p-4">
+          <TopBar />
+          <main className="min-w-0 flex-1">{children}</main>
         </div>
       </body>
     </html>

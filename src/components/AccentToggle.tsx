@@ -47,8 +47,8 @@ export default function AccentToggle() {
     <button
       type="button"
       onClick={cycle}
-      className="flex items-center justify-between rounded border px-2 py-1.5 text-xs font-medium"
-      style={{ borderColor: "var(--baseline)", color: "var(--text-secondary)" }}
+      className="flex items-center justify-between gap-2 rounded-full px-3 py-1.5 text-xs font-medium"
+      style={{ background: "var(--surface-3)", color: "var(--text-secondary)" }}
       aria-label="Cycle color palette"
     >
       <span>Palette</span>

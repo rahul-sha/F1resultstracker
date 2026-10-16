@@ -190,14 +190,12 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className="overflow-x-auto" ref={scrollerRef}>
+    <div className="table-card">
+      <div className="overflow-x-auto" ref={scrollerRef}>
       <table className="border-collapse">
         <thead>
           <tr>
-            <th
-              className="sticky left-0 z-10 min-w-[160px] px-3 py-2 text-left text-xs font-semibold"
-              style={{ background: "var(--surface-1)" }}
-            />
+            <th className="sticky left-0 z-10 min-w-[160px] px-3 py-2 text-left text-xs font-semibold" />
             {grid.columns.map((col) => (
               <RoundHeader
                 key={col.round}
@@ -215,7 +213,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
               className="min-w-[160px] px-3 py-2 text-center text-xs font-semibold"
               style={{ color: "var(--text-secondary)" }}
             >
-              Season points
+              Points
             </th>
           </tr>
         </thead>
@@ -225,10 +223,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
 
             return (
               <tr key={row.driverId}>
-                <td
-                  className="sticky left-0 z-10 px-3 py-1.5 text-xs"
-                  style={{ background: "var(--surface-1)" }}
-                >
+                <td className="sticky left-0 z-10 px-3 py-1.5 text-xs">
                   <div className="flex items-center gap-2">
                     <span
                       className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm"
@@ -256,9 +251,9 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                 ))}
                 <td className="px-3 py-1.5">
                   <div className="flex items-center justify-center gap-2">
-                    <div className="meter-track relative h-3 w-24 shrink-0 overflow-hidden rounded-sm">
+                    <div className="meter-track relative h-3 w-24 shrink-0 overflow-hidden">
                       <div
-                        className="absolute inset-y-0 left-0 rounded-r-sm"
+                        className="absolute inset-y-0 left-0"
                         style={{ width: `${barPct}%`, background: row.color }}
                       />
                     </div>
@@ -275,6 +270,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
           })}
         </tbody>
       </table>
+      </div>
       <Tooltip tooltip={tooltip} />
     </div>
   );
