@@ -306,6 +306,28 @@ body {
 .heat-cell {
   cursor: help;
 }
+/* Retirements/DSQ/withdrawals on the Positions page: a neutral surface
+   tone rather than a fixed colour, so it never collides with a palette
+   whose heat ramp is itself red (Ember). */
+.heat-cell .pos-dnf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 22px;
+  margin: auto;
+  border-radius: 6px;
+  background: var(--surface-3);
+  color: var(--text-muted);
+  font-style: italic;
+}
+.heat-cell sup {
+  font-size: 9px;
+  font-weight: 700;
+  vertical-align: super;
+  margin-left: 1px;
+  opacity: 0.8;
+}
 
 /* Top bar: a floating pill surface with its own shadow, clear of the page
    content below it, in place of a sidebar sharing an edge with the page. */
@@ -338,6 +360,7 @@ body {
 }
 .navlist {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 .navitem {
@@ -345,6 +368,7 @@ body {
   border-radius: 999px;
   font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
   color: var(--text-secondary);
 }
 .navitem.active {
@@ -426,6 +450,144 @@ body {
 .driver-cell-team {
   min-width: 0;
 }
+
+/* Finish Positions page: one small cell per finishing position, a pinned
+   DNF-cause pair of columns, and the podium bars underneath. */
+.count-cell {
+  width: 26px;
+  height: 26px;
+  margin: auto;
+  border-radius: 7px;
+  font-weight: 600;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.count-mode {
+  box-shadow: 0 0 0 2px var(--accent);
+  font-weight: 700;
+}
+.sep-col {
+  width: 1px;
+  background: var(--border-hairline) !important;
+  padding: 0 !important;
+}
+.group-head {
+  letter-spacing: 0.04em;
+}
+.dnf-cell {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.dnf-icon {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 0 10px 4px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.podium-card {
+  padding: 18px 10px;
+}
+.podium-legend {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 0 10px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+.podium-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.podium-subhead {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px 10px;
+}
+.podium-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+}
+.podium-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 150px;
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.podium-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.podium-bar {
+  display: flex;
+  height: 22px;
+  min-width: 24px;
+  max-width: 420px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.podium-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 0;
+}
+.podium-total {
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-left: 8px;
+  min-width: 20px;
+  color: var(--text-primary);
+}
+.podium-divider {
+  height: 1px;
+  background: var(--border-hairline);
+  margin: 16px 0;
+}
+
 .table-card tbody td {
   background: var(--surface-2);
 }

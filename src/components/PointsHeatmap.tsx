@@ -113,7 +113,11 @@ function RoundHeader({
   );
 }
 
-function Cell({
+type HeatmapMode = "points" | "position";
+
+const DNF_CODES = new Set(["R", "W", "D", "E", "N"]);
+
+function PointsCellContent({
   cell,
   max,
   driverName,
@@ -122,7 +126,7 @@ function Cell({
   onEnter,
   onLeave,
 }: {
-  cell: PointsCell | null;
+  cell: PointsCell;
   max: number;
   driverName: string;
   constructorName: string;
@@ -130,9 +134,6 @@ function Cell({
   onEnter: (e: React.MouseEvent<HTMLElement>, content: React.ReactNode) => void;
   onLeave: () => void;
 }) {
-  if (cell === null) {
-    return <td className="w-11 h-9" />;
-  }
   // Bucket into the active theme's 7-stop --heat-0..--heat-6 ramp (defined
   // per accent palette in globals.css) rather than a fixed hardcoded ramp,
   // so the heatmap re-colors itself when the palette changes.
@@ -185,7 +186,147 @@ function Cell({
   );
 }
 
-export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
+function PositionCellContent({
+  cell,
+  maxPosition,
+  driverName,
+  constructorName,
+  hasSprint,
+  onEnter,
+  onLeave,
+}: {
+  cell: PointsCell;
+  maxPosition: number;
+  driverName: string;
+  constructorName: string;
+  hasSprint: boolean;
+  onEnter: (e: React.MouseEvent<HTMLElement>, content: React.ReactNode) => void;
+  onLeave: () => void;
+}) {
+  const isDnf = cell.position !== null && DNF_CODES.has(cell.position);
+
+  const content = (
+    <>
+      <div className="heatmap-tooltip-title">
+        {driverName} ({constructorName})
+      </div>
+      {cell.status ? (
+        <div className="heatmap-tooltip-row">
+          <span>Status</span>
+          <b>{cell.status}</b>
+        </div>
+      ) : null}
+      {hasSprint ? (
+        <div className="heatmap-tooltip-row">
+          <span>Sprint</span>
+          <b>{cell.sprintPosition ?? "—"}</b>
+        </div>
+      ) : null}
+    </>
+  );
+
+  if (isDnf) {
+    return (
+      <td
+        className="heat-cell w-11 h-9 text-center text-xs font-medium tabular-nums"
+        onMouseEnter={(e) => onEnter(e, content)}
+        onMouseLeave={onLeave}
+      >
+        <span className="pos-dnf">
+          {cell.position}
+          {cell.sprintPosition ? <sup>{cell.sprintPosition}</sup> : null}
+        </span>
+      </td>
+    );
+  }
+
+  // Lower finishing position is a stronger result, so the ramp runs in
+  // reverse from the points heatmap: 1st place gets the deepest shade.
+  const classified = cell.classifiedPosition ?? maxPosition;
+  const t = maxPosition > 1 ? 1 - (classified - 1) / (maxPosition - 1) : 1;
+  const bucket = Math.round(t * 6);
+  const style = {
+    background: `var(--heat-${bucket})`,
+    color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
+  } as React.CSSProperties;
+
+  return (
+    <td
+      className="heat-cell w-11 h-9 text-center text-xs font-medium tabular-nums"
+      style={style}
+      onMouseEnter={(e) => onEnter(e, content)}
+      onMouseLeave={onLeave}
+    >
+      {cell.position}
+      {cell.sprintPosition ? <sup>{cell.sprintPosition}</sup> : null}
+    </td>
+  );
+}
+
+function Cell({
+  cell,
+  mode,
+  max,
+  maxPosition,
+  driverName,
+  constructorName,
+  hasSprint,
+  onEnter,
+  onLeave,
+}: {
+  cell: PointsCell | null;
+  mode: HeatmapMode;
+  max: number;
+  maxPosition: number;
+  driverName: string;
+  constructorName: string;
+  hasSprint: boolean;
+  onEnter: (e: React.MouseEvent<HTMLElement>, content: React.ReactNode) => void;
+  onLeave: () => void;
+}) {
+  if (cell === null) {
+    return <td className="w-11 h-9" />;
+  }
+  if (mode === "position") {
+    return (
+      <PositionCellContent
+        cell={cell}
+        maxPosition={maxPosition}
+        driverName={driverName}
+        constructorName={constructorName}
+        hasSprint={hasSprint}
+        onEnter={onEnter}
+        onLeave={onLeave}
+      />
+    );
+  }
+  return (
+    <PointsCellContent
+      cell={cell}
+      max={max}
+      driverName={driverName}
+      constructorName={constructorName}
+      hasSprint={hasSprint}
+      onEnter={onEnter}
+      onLeave={onLeave}
+    />
+  );
+}
+
+function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+}
+
+export default function PointsHeatmap({
+  grid,
+  mode = "points",
+}: {
+  grid: PointsGrid;
+  mode?: HeatmapMode;
+}) {
   const { tooltip, show, hide } = useTooltip();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -246,12 +387,26 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                 onLeave={hide}
               />
             ))}
-            <th className="sticky right-0 z-10 min-w-[64px] sm:min-w-[160px] px-2 sm:px-3 py-2 text-center text-xs font-semibold" />
+            <th className="sticky right-0 z-10 min-w-[64px] sm:min-w-[160px] px-2 sm:px-3 py-2 text-center text-xs font-semibold">
+              {mode === "position" ? <span className="hidden sm:inline">Median finish</span> : null}
+            </th>
           </tr>
         </thead>
         <tbody>
           {grid.rows.map((row) => {
             const barPct = Math.max(2, (row.seasonPoints / grid.maxSeasonPoints) * 100);
+            const medianFinish =
+              mode === "position"
+                ? median(
+                    row.pointsByRound
+                      .filter((c): c is PointsCell => c !== null && c.classifiedPosition !== null)
+                      .map((c) => c.classifiedPosition as number)
+                  )
+                : null;
+            const medianBarPct =
+              medianFinish !== null
+                ? Math.max(2, ((grid.maxClassifiedPosition - medianFinish + 1) / grid.maxClassifiedPosition) * 100)
+                : 0;
 
             return (
               <tr key={row.driverId}>
@@ -282,7 +437,9 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                   <Cell
                     key={grid.columns[idx].round}
                     cell={cell}
+                    mode={mode}
                     max={grid.maxRoundPoints}
+                    maxPosition={grid.maxClassifiedPosition}
                     driverName={row.name}
                     constructorName={row.constructorName}
                     hasSprint={grid.columns[idx].hasSprint}
@@ -291,20 +448,37 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                   />
                 ))}
                 <td className="sticky right-0 z-10 px-2 sm:px-3 py-1.5">
-                  <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                    <div className="meter-track relative hidden h-3 w-24 shrink-0 overflow-hidden sm:block">
-                      <div
-                        className="absolute inset-y-0 left-0"
-                        style={{ width: `${barPct}%`, background: row.color }}
-                      />
+                  {mode === "position" ? (
+                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                      <div className="meter-track relative hidden h-3 w-16 shrink-0 overflow-hidden sm:block">
+                        <div
+                          className="absolute inset-y-0 left-0"
+                          style={{ width: `${medianBarPct}%`, background: row.color }}
+                        />
+                      </div>
+                      <span
+                        className="text-xs font-semibold tabular-nums"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {medianFinish !== null ? medianFinish.toFixed(1) : "—"}
+                      </span>
                     </div>
-                    <span
-                      className="text-xs font-semibold tabular-nums"
-                      style={{ color: "var(--text-primary)" }}
-                    >
-                      {row.seasonPoints}
-                    </span>
-                  </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                      <div className="meter-track relative hidden h-3 w-24 shrink-0 overflow-hidden sm:block">
+                        <div
+                          className="absolute inset-y-0 left-0"
+                          style={{ width: `${barPct}%`, background: row.color }}
+                        />
+                      </div>
+                      <span
+                        className="text-xs font-semibold tabular-nums"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {row.seasonPoints}
+                      </span>
+                    </div>
+                  )}
                 </td>
               </tr>
             );
