@@ -45,44 +45,49 @@ const ABBREVIATION_BY_RACE_NAME: Record<string, string> = {
   "malaysian grand prix": "MAL",
 };
 
-const FLAG_BY_ABBREVIATION: Record<string, string> = {
-  BHR: "\u{1F1E7}\u{1F1ED}",
-  SAU: "\u{1F1F8}\u{1F1E6}",
-  AUS: "\u{1F1E6}\u{1F1FA}",
-  JPN: "\u{1F1EF}\u{1F1F5}",
-  CHN: "\u{1F1E8}\u{1F1F3}",
-  MIA: "\u{1F1FA}\u{1F1F8}",
-  EMI: "\u{1F1EE}\u{1F1F9}",
-  MON: "\u{1F1F2}\u{1F1E8}",
-  CAN: "\u{1F1E8}\u{1F1E6}",
-  ESP: "\u{1F1EA}\u{1F1F8}",
-  AUT: "\u{1F1E6}\u{1F1F9}",
-  GBR: "\u{1F1EC}\u{1F1E7}",
-  HUN: "\u{1F1ED}\u{1F1FA}",
-  BEL: "\u{1F1E7}\u{1F1EA}",
-  NED: "\u{1F1F3}\u{1F1F1}",
-  ITA: "\u{1F1EE}\u{1F1F9}",
-  AZE: "\u{1F1E6}\u{1F1FF}",
-  SIN: "\u{1F1F8}\u{1F1EC}",
-  USA: "\u{1F1FA}\u{1F1F8}",
-  MXC: "\u{1F1F2}\u{1F1FD}",
-  SAP: "\u{1F1E7}\u{1F1F7}",
-  LVG: "\u{1F1FA}\u{1F1F8}",
-  QAT: "\u{1F1F6}\u{1F1E6}",
-  ABU: "\u{1F1E6}\u{1F1EA}",
-  SKH: "\u{1F1E7}\u{1F1ED}",
-  STY: "\u{1F1E6}\u{1F1F9}",
-  EIF: "\u{1F1E9}\u{1F1EA}",
-  TUS: "\u{1F1EE}\u{1F1F9}",
-  RUS: "\u{1F1F7}\u{1F1FA}",
-  TUR: "\u{1F1F9}\u{1F1F7}",
-  POR: "\u{1F1F5}\u{1F1F9}",
-  FRA: "\u{1F1EB}\u{1F1F7}",
-  GER: "\u{1F1E9}\u{1F1EA}",
-  KOR: "\u{1F1F0}\u{1F1F7}",
-  IND: "\u{1F1EE}\u{1F1F3}",
-  MAL: "\u{1F1F2}\u{1F1FE}",
-  "70A": "\u{1F1EC}\u{1F1E7}",
+// ISO 3166-1 alpha-2 codes, used as `flag-icons` CSS classes (fi-<code>).
+// Unicode flag emoji used to live here, but most OS/browser combinations
+// (notably Windows Chrome) don't have emoji-flag glyphs installed and fall
+// back to rendering the two-letter country code in a generic box, so every
+// column looked identical. Real flag icons render consistently everywhere.
+const FLAG_ISO_BY_ABBREVIATION: Record<string, string> = {
+  BHR: "bh",
+  SAU: "sa",
+  AUS: "au",
+  JPN: "jp",
+  CHN: "cn",
+  MIA: "us",
+  EMI: "it",
+  MON: "mc",
+  CAN: "ca",
+  ESP: "es",
+  AUT: "at",
+  GBR: "gb",
+  HUN: "hu",
+  BEL: "be",
+  NED: "nl",
+  ITA: "it",
+  AZE: "az",
+  SIN: "sg",
+  USA: "us",
+  MXC: "mx",
+  SAP: "br",
+  LVG: "us",
+  QAT: "qa",
+  ABU: "ae",
+  SKH: "bh",
+  STY: "at",
+  EIF: "de",
+  TUS: "it",
+  RUS: "ru",
+  TUR: "tr",
+  POR: "pt",
+  FRA: "fr",
+  GER: "de",
+  KOR: "kr",
+  IND: "in",
+  MAL: "my",
+  "70A": "gb",
 };
 
 export function raceAbbreviation(race: Race): string {
@@ -93,6 +98,8 @@ export function raceAbbreviation(race: Race): string {
   return letters.slice(0, 3).toUpperCase() || "GP";
 }
 
-export function raceFlag(race: Race): string {
-  return FLAG_BY_ABBREVIATION[raceAbbreviation(race)] ?? "\u{1F3C1}";
+// Returns the ISO 3166-1 alpha-2 code for the `flag-icons` `fi-<code>` CSS
+// class, or null when the circuit's country isn't mapped.
+export function raceFlagIso(race: Race): string | null {
+  return FLAG_ISO_BY_ABBREVIATION[raceAbbreviation(race)] ?? null;
 }

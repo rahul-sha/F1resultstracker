@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
+import AccentToggle from "./AccentToggle";
 
 const NAV_SECTIONS: { label: string; href: string }[] = [
   { label: "Results", href: "/results" },
@@ -51,6 +52,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="mt-auto flex flex-col gap-3">
+        <AccentToggle />
         <ThemeToggle />
         <div className="text-xs" style={{ color: "var(--text-muted)" }}>
           Data via Jolpica F1 API

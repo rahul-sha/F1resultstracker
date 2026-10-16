@@ -1,41 +1,220 @@
 @import "tailwindcss";
+@import "flag-icons/css/flag-icons.min.css";
 
+/* Monokai is the default accent theme (data-accent unset or "monokai"). */
 :root {
   color-scheme: light;
-  --page-plane: #f9f9f7;
-  --surface-1: #fcfcfb;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
-  --gridline: #e1e0d9;
-  --baseline: #c3c2b7;
-  --border-hairline: rgba(11, 11, 11, 0.1);
+  --page-plane: #faf9f0;
+  --surface-1: #f3f2e6;
+  --surface-2: #ebe9d8;
+  --text-primary: #272822;
+  --text-secondary: #5c5d4c;
+  --text-muted: #878868;
+  --gridline: #ddddc4;
+  --baseline: #cfcfb0;
+  --border-hairline: rgba(39, 40, 34, 0.12);
+  --accent: #5c7a1e;
+  --heat-0: #e4e8cf;
+  --heat-1: #cbd89f;
+  --heat-2: #b0c871;
+  --heat-3: #95b848;
+  --heat-4: #7a9e32;
+  --heat-5: #628225;
+  --heat-6: #4c6619;
+  --heat-fg-lo: #272822;
+  --heat-fg-hi: #faf9f0;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) {
+  :root:where(:not([data-theme="light"])):where(:not([data-accent="catppuccin"])):where(:not([data-accent="red"])) {
     color-scheme: dark;
-    --page-plane: #0d0d0d;
-    --surface-1: #1a1a19;
-    --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
-    --gridline: #2c2c2a;
-    --baseline: #383835;
-    --border-hairline: rgba(255, 255, 255, 0.1);
+    --page-plane: #1b1c17;
+    --surface-1: #272822;
+    --surface-2: #2f3027;
+    --text-primary: #f8f8f2;
+    --text-secondary: #c6c6b8;
+    --text-muted: #8b8c7c;
+    --gridline: #3c3d33;
+    --baseline: #4a4b3e;
+    --border-hairline: rgba(248, 248, 242, 0.12);
+    --accent: #a6e22e;
+    --heat-0: #3b3c2f;
+    --heat-1: #4d5a2c;
+    --heat-2: #5e7a29;
+    --heat-3: #709926;
+    --heat-4: #86bb28;
+    --heat-5: #9bd42b;
+    --heat-6: #a6e22e;
+    --heat-fg-lo: #f8f8f2;
+    --heat-fg-hi: #1b1c17;
   }
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"]:where(:not([data-accent="catppuccin"])):where(:not([data-accent="red"])) {
   color-scheme: dark;
-  --page-plane: #0d0d0d;
-  --surface-1: #1a1a19;
-  --text-primary: #ffffff;
-  --text-secondary: #c3c2b7;
-  --text-muted: #898781;
-  --gridline: #2c2c2a;
-  --baseline: #383835;
-  --border-hairline: rgba(255, 255, 255, 0.1);
+  --page-plane: #1b1c17;
+  --surface-1: #272822;
+  --surface-2: #2f3027;
+  --text-primary: #f8f8f2;
+  --text-secondary: #c6c6b8;
+  --text-muted: #8b8c7c;
+  --gridline: #3c3d33;
+  --baseline: #4a4b3e;
+  --border-hairline: rgba(248, 248, 242, 0.12);
+  --accent: #a6e22e;
+  --heat-0: #3b3c2f;
+  --heat-1: #4d5a2c;
+  --heat-2: #5e7a29;
+  --heat-3: #709926;
+  --heat-4: #86bb28;
+  --heat-5: #9bd42b;
+  --heat-6: #a6e22e;
+  --heat-fg-lo: #f8f8f2;
+  --heat-fg-hi: #1b1c17;
+}
+
+/* Catppuccin (Latte light / Mocha dark). */
+:root[data-accent="catppuccin"] {
+  color-scheme: light;
+  --page-plane: #eff1f5;
+  --surface-1: #e6e9ef;
+  --surface-2: #dce0e8;
+  --text-primary: #4c4f69;
+  --text-secondary: #6c6f85;
+  --text-muted: #8c8fa1;
+  --gridline: #ccd0da;
+  --baseline: #bcc0cc;
+  --border-hairline: rgba(76, 79, 105, 0.14);
+  --accent: #1e66f5;
+  --heat-0: #d6e0fa;
+  --heat-1: #b3c9f6;
+  --heat-2: #8fb0f1;
+  --heat-3: #6a96ec;
+  --heat-4: #477de6;
+  --heat-5: #2c66e0;
+  --heat-6: #1e66f5;
+  --heat-fg-lo: #1e1e2e;
+  --heat-fg-hi: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-accent="catppuccin"]:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page-plane: #11111b;
+    --surface-1: #1e1e2e;
+    --surface-2: #262637;
+    --text-primary: #cdd6f4;
+    --text-secondary: #a6adc8;
+    --text-muted: #7f849c;
+    --gridline: #313244;
+    --baseline: #3c3f55;
+    --border-hairline: rgba(205, 214, 244, 0.12);
+    --accent: #89b4fa;
+    --heat-0: #2a2f45;
+    --heat-1: #33405f;
+    --heat-2: #3a5280;
+    --heat-3: #4064a0;
+    --heat-4: #5884c4;
+    --heat-5: #74a0e0;
+    --heat-6: #89b4fa;
+    --heat-fg-lo: #11111b;
+    --heat-fg-hi: #ffffff;
+  }
+}
+
+:root[data-accent="catppuccin"][data-theme="dark"] {
+  color-scheme: dark;
+  --page-plane: #11111b;
+  --surface-1: #1e1e2e;
+  --surface-2: #262637;
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --text-muted: #7f849c;
+  --gridline: #313244;
+  --baseline: #3c3f55;
+  --border-hairline: rgba(205, 214, 244, 0.12);
+  --accent: #89b4fa;
+  --heat-0: #2a2f45;
+  --heat-1: #33405f;
+  --heat-2: #3a5280;
+  --heat-3: #4064a0;
+  --heat-4: #5884c4;
+  --heat-5: #74a0e0;
+  --heat-6: #89b4fa;
+  --heat-fg-lo: #11111b;
+  --heat-fg-hi: #ffffff;
+}
+
+/* Ember — red-tinted theme. */
+:root[data-accent="red"] {
+  color-scheme: light;
+  --page-plane: #fdf3f1;
+  --surface-1: #fbe8e4;
+  --surface-2: #f6d9d3;
+  --text-primary: #2b1210;
+  --text-secondary: #6b413a;
+  --text-muted: #96665d;
+  --gridline: #f0d0c8;
+  --baseline: #e4b8ac;
+  --border-hairline: rgba(43, 18, 16, 0.12);
+  --accent: #c22a2a;
+  --heat-0: #fbe2dc;
+  --heat-1: #f3c0b4;
+  --heat-2: #e89b8a;
+  --heat-3: #d97760;
+  --heat-4: #c6553e;
+  --heat-5: #a93a28;
+  --heat-6: #8a2a1c;
+  --heat-fg-lo: #2b1210;
+  --heat-fg-hi: #fdf3f1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-accent="red"]:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page-plane: #180f0e;
+    --surface-1: #231514;
+    --surface-2: #2c1a18;
+    --text-primary: #f7e9e4;
+    --text-secondary: #d8b9ae;
+    --text-muted: #a9867c;
+    --gridline: #3c2420;
+    --baseline: #4c2d27;
+    --border-hairline: rgba(247, 233, 228, 0.12);
+    --accent: #e5484d;
+    --heat-0: #3a1f1c;
+    --heat-1: #5a2824;
+    --heat-2: #7d2f28;
+    --heat-3: #a3362c;
+    --heat-4: #c73d2f;
+    --heat-5: #e24536;
+    --heat-6: #e5484d;
+    --heat-fg-lo: #f7e9e4;
+    --heat-fg-hi: #180f0e;
+  }
+}
+
+:root[data-accent="red"][data-theme="dark"] {
+  color-scheme: dark;
+  --page-plane: #180f0e;
+  --surface-1: #231514;
+  --surface-2: #2c1a18;
+  --text-primary: #f7e9e4;
+  --text-secondary: #d8b9ae;
+  --text-muted: #a9867c;
+  --gridline: #3c2420;
+  --baseline: #4c2d27;
+  --border-hairline: rgba(247, 233, 228, 0.12);
+  --accent: #e5484d;
+  --heat-0: #3a1f1c;
+  --heat-1: #5a2824;
+  --heat-2: #7d2f28;
+  --heat-3: #a3362c;
+  --heat-4: #c73d2f;
+  --heat-5: #e24536;
+  --heat-6: #e5484d;
+  --heat-fg-lo: #f7e9e4;
+  --heat-fg-hi: #180f0e;
 }
 
 @theme inline {
@@ -49,28 +228,115 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
-/* Sequential heatmap cells carry their own light/dark fill (set as inline
-   custom properties per-cell, since the value depends on the data point),
-   and this class picks the right one for the active theme. */
-.heat-cell {
-  background: var(--cell-bg-light);
-  color: var(--cell-fg-light);
-}
+/* Heatmap cells are colored inline from the active theme's --heat-0..6
+   ramp (see PointsHeatmap.tsx), so they need no theme-conditional CSS here. */
 
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) .heat-cell {
-    background: var(--cell-bg-dark);
-    color: var(--cell-fg-dark);
-  }
-}
-
-:root[data-theme="dark"] .heat-cell {
-  background: var(--cell-bg-dark);
-  color: var(--cell-fg-dark);
-}
-
-/* Meter bar: a colored fill over a lighter track, so state reads across the
-   whole bar rather than just wherever the fill happens to end. */
+/* Meter bar (Standing page): a colored fill over a lighter track, so state
+   reads across the whole bar rather than just wherever the fill ends. */
 .meter-track {
   background: var(--gridline);
+}
+
+/* Season-points bar (Results page): the shell is the full-width track, the
+   inner track's width scales to this driver's share of the leader's
+   points, and its segments (one per scoring round) split up only that
+   shortened bar — so a lower-scoring driver's bar is shorter, not just
+   differently segmented. */
+.season-meter-shell {
+  background: var(--gridline);
+}
+.season-meter-track {
+  display: flex;
+  align-items: stretch;
+  gap: 1px;
+  overflow: hidden;
+  height: 100%;
+}
+.season-meter-seg {
+  flex: 0 0 auto;
+}
+
+/* Round header: a floating chip with its own shadow instead of a bordered
+   spreadsheet cell, with a hover card for round/date detail. */
+.round-header {
+  border: none;
+  padding: 10px 3px 14px;
+  background: transparent;
+  position: relative;
+}
+.round-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: help;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 7px 8px 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--border-hairline);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+}
+.round-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14), 0 0 0 1px var(--border-hairline);
+}
+.round-chip-sprint {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 0 0 1.5px var(--accent);
+}
+.round-flag {
+  width: 22px;
+  height: 15px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px var(--border-hairline);
+}
+
+.round-tooltip,
+.cell-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s ease, transform 0.1s ease;
+  background: var(--surface-1);
+  border: 1px solid var(--gridline);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-primary);
+  white-space: nowrap;
+  text-align: left;
+}
+.round-chip:hover .round-tooltip,
+.cell-inner:hover .cell-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-10px);
+}
+.round-tooltip-title {
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.round-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text-secondary);
+}
+.round-tooltip-row + .round-tooltip-row {
+  margin-top: 2px;
+}
+.round-tooltip-row b {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.cell-inner {
+  position: relative;
+  cursor: help;
 }
