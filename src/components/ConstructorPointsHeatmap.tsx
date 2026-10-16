@@ -4,19 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ConstructorPointsGrid, ConstructorPointsCell } from "@/lib/constructor-points-grid";
 import { RoundHeader, Tooltip, useTooltip } from "./PointsHeatmap";
 
-function Cell({
-  cell,
-  max,
-  constructorName,
-  onEnter,
-  onLeave,
-}: {
-  cell: ConstructorPointsCell | null;
-  max: number;
-  constructorName: string;
-  onEnter: (e: React.MouseEvent<HTMLElement>, content: React.ReactNode) => void;
-  onLeave: () => void;
-}) {
+function Cell({ cell, max }: { cell: ConstructorPointsCell | null; max: number }) {
   if (cell === null) {
     return <td className="w-11 h-9" />;
   }
@@ -29,23 +17,8 @@ function Cell({
     color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
   } as React.CSSProperties;
 
-  const content = (
-    <>
-      <div className="heatmap-tooltip-title">{constructorName}</div>
-      <div className="heatmap-tooltip-row">
-        <span>Team points</span>
-        <b>{cell.points}</b>
-      </div>
-    </>
-  );
-
   return (
-    <td
-      className="heat-cell w-11 h-9 text-center text-xs font-medium tabular-nums"
-      style={style}
-      onMouseEnter={(e) => onEnter(e, content)}
-      onMouseLeave={onLeave}
-    >
+    <td className="heat-cell w-11 h-9 text-center text-xs font-medium tabular-nums" style={style}>
       {cell.points}
     </td>
   );
@@ -147,14 +120,7 @@ export default function ConstructorPointsHeatmap({ grid }: { grid: ConstructorPo
                     </div>
                   </td>
                   {row.pointsByRound.map((cell, idx) => (
-                    <Cell
-                      key={grid.columns[idx].round}
-                      cell={cell}
-                      max={grid.maxRoundPoints}
-                      constructorName={row.name}
-                      onEnter={show}
-                      onLeave={hide}
-                    />
+                    <Cell key={grid.columns[idx].round} cell={cell} max={grid.maxRoundPoints} />
                   ))}
                   <td className="sticky right-0 z-10 px-2 sm:px-3 py-1.5">
                     <div className="flex items-center justify-center gap-1.5 sm:gap-2">

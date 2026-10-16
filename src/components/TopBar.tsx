@@ -8,7 +8,6 @@ import AccentToggle from "./AccentToggle";
 const NAV_SECTIONS: { label: string; href: string }[] = [
   { label: "Results", href: "/results" },
   { label: "Positions", href: "/positions" },
-  { label: "Finish Positions", href: "/finish-positions" },
   { label: "About", href: "/about" },
 ];
 

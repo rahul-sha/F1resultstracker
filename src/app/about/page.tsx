@@ -127,6 +127,16 @@ export default function AboutPage() {
                   security headers while at it.
                 </span>
               </li>
+              <li>
+                <b>Positions merged with Finish Positions</b>
+                <span>
+                  The separate Finish Positions page is gone &mdash; its finish-frequency grid
+                  and podium counts now sit underneath the per-race grid on Positions. Results
+                  also marks pole position and fastest lap with a small superscript next to the
+                  points value, the same treatment as the sprint-result superscript. Removed the
+                  hover tooltip from the Constructors heatmap on Results.
+                </span>
+              </li>
             </ul>
           </div>
 
