@@ -3,6 +3,7 @@ import { buildPointsGrid } from "@/lib/points-grid";
 import { currentSeason } from "@/lib/seasons";
 import PointsHeatmap from "@/components/PointsHeatmap";
 import SeasonSelector from "@/components/SeasonSelector";
+import ConstructorStandingsTable from "@/components/ConstructorStandingsTable";
 
 export const metadata = { title: "Results | F1 Results Tracker" };
 
@@ -50,6 +51,15 @@ export default async function ResultsPage({
       >
         <PointsGridSection season={season} />
       </Suspense>
+
+      <section className="mt-8">
+        <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+          Constructors
+        </h2>
+        <Suspense fallback={<p className="text-sm">Loading…</p>}>
+          <ConstructorStandingsTable season={season} />
+        </Suspense>
+      </section>
     </div>
   );
 }
