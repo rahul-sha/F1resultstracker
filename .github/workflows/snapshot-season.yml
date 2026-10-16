@@ -1,16 +1,19 @@
 name: Snapshot season data
 
-# Manually triggered: fetches one season's schedule, standings and results
-# from the Jolpica F1 API and commits it to data/seasons/<year>.json, so the
-# app serves that season from the repo instead of the live API. Run this once
-# per completed season — re-running it just refreshes that season's file.
+# Runs manually (any season) or weekly on a schedule (the current season,
+# so completed race weekends get committed to the repo automatically — a
+# resilience net in case the community-run Jolpica API has downtime, not
+# just a one-off for past seasons). Re-running it just refreshes that
+# season's file.
 on:
   workflow_dispatch:
     inputs:
       season:
-        description: "Season year to snapshot (e.g. 2023)"
-        required: true
+        description: "Season year to snapshot (e.g. 2023). Leave blank to snapshot the current season."
+        required: false
         type: string
+  schedule:
+    - cron: "0 10 * * 1"
 
 permissions:
   contents: write
@@ -25,11 +28,20 @@ jobs:
         with:
           node-version: 20
 
+      - name: Determine season
+        id: season
+        run: |
+          SEASON="${{ inputs.season }}"
+          if [ -z "$SEASON" ]; then
+            SEASON=$(date +%Y)
+          fi
+          echo "season=$SEASON" >> "$GITHUB_OUTPUT"
+
       - name: Fetch season snapshot
-        run: node scripts/snapshot-season.mjs ${{ inputs.season }}
+        run: node scripts/snapshot-season.mjs ${{ steps.season.outputs.season }}
 
       - name: Commit snapshot
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Add ${{ inputs.season }} season snapshot"
+          commit_message: "Add ${{ steps.season.outputs.season }} season snapshot"
           file_pattern: data/seasons/*.json
