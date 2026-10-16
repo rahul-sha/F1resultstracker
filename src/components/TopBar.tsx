@@ -36,7 +36,7 @@ export default function TopBar() {
         </nav>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="topbar-controls flex items-center gap-2">
         <AccentToggle />
         <ThemeToggle />
       </div>

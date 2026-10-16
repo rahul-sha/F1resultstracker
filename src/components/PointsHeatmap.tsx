@@ -232,7 +232,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
       <table className="border-collapse">
         <thead>
           <tr>
-            <th className="sticky left-0 z-10 min-w-[160px] px-3 py-2 text-left text-xs font-semibold" />
+            <th className="sticky left-0 z-10 min-w-[84px] sm:min-w-[180px] px-2 sm:px-3 py-2 text-left text-xs font-semibold" />
             {grid.columns.map((col) => (
               <RoundHeader
                 key={col.round}
@@ -246,7 +246,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                 onLeave={hide}
               />
             ))}
-            <th className="sticky right-0 z-10 min-w-[160px] px-3 py-2 text-center text-xs font-semibold" />
+            <th className="sticky right-0 z-10 min-w-[64px] sm:min-w-[160px] px-2 sm:px-3 py-2 text-center text-xs font-semibold" />
           </tr>
         </thead>
         <tbody>
@@ -255,8 +255,14 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
 
             return (
               <tr key={row.driverId}>
-                <td className="sticky left-0 z-10 px-3 py-1.5 text-xs">
-                  <div className="flex items-center gap-2">
+                <td className="sticky left-0 z-10 px-2 sm:px-3 py-1.5 text-xs">
+                  <div className="driver-cell">
+                    <span
+                      className="driver-cell-position tabular-nums"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      {row.position}
+                    </span>
                     <span
                       className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm"
                       style={{ background: row.color }}
@@ -264,7 +270,10 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                     <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
                       {row.code}
                     </span>
-                    <span className="truncate" style={{ color: "var(--text-secondary)" }}>
+                    <span
+                      className="driver-cell-team hidden truncate sm:inline"
+                      style={{ color: "var(--text-secondary)" }}
+                    >
                       {row.constructorName}
                     </span>
                   </div>
@@ -281,9 +290,9 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                     onLeave={hide}
                   />
                 ))}
-                <td className="sticky right-0 z-10 px-3 py-1.5">
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="meter-track relative h-3 w-24 shrink-0 overflow-hidden">
+                <td className="sticky right-0 z-10 px-2 sm:px-3 py-1.5">
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                    <div className="meter-track relative hidden h-3 w-24 shrink-0 overflow-hidden sm:block">
                       <div
                         className="absolute inset-y-0 left-0"
                         style={{ width: `${barPct}%`, background: row.color }}

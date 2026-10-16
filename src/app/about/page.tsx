@@ -11,6 +11,7 @@ function CreditIcon({ children, title }: { children: React.ReactNode; title?: st
 export default function AboutPage() {
   return (
     <div className="p-6">
+      <div className="about-page-wrap">
       <div className="mb-4">
         <h1 className="text-2xl font-bold">About</h1>
         <p className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -18,7 +19,7 @@ export default function AboutPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-6" style={{ maxWidth: 760 }}>
+      <div className="about-layout">
         <section className="about table-card">
           <h2 className="mb-2.5 text-sm font-semibold">About this project</h2>
           <p>
@@ -128,104 +129,108 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <p>
-            <strong>Data &amp; tools this site is built on:</strong>
-          </p>
-          <div className="credit-grid">
-            <div className="credit">
-              <CreditIcon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M4 5h16M4 12h16M4 19h7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                  <path d="M15 16l3 3 3-3" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>Jolpica F1 API</b>Race, standings &amp; results data
-              </span>
-            </div>
-            <div className="credit">
-              <CreditIcon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M6 20V4M6 4h11l-2.5 3.5L17 11H6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>flag-icons</b>Country flag SVGs
-              </span>
-            </div>
-            <div className="credit">
-              <CreditIcon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M9 7l-4 5 4 5M15 7l4 5-4 5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>Next.js &amp; React</b>App framework
-              </span>
-            </div>
-            <div className="credit">
-              <CreditIcon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M6 17a4 4 0 010-8 5 5 0 019.6-1.5A4 4 0 0118 17H6z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>Vercel</b>Hosting
-              </span>
-            </div>
-            <div className="credit">
-              <CreditIcon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 3l1.8 5.6L19 10l-5.2 1.4L12 17l-1.8-5.6L5 10l5.2-1.4L12 3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>Claude Code</b>Design &amp; development
-              </span>
-            </div>
-            <div className="credit">
-              <CreditIcon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.9a3.1 3.1 0 00-.9-2.4c3-.3 6-1.6 6-6.7A5.1 5.1 0 0019.6 5c.5-1.1.5-2.3 0-3.5 0 0-1.3-.3-3.6 1.3a12.3 12.3 0 00-6 0C7.7 1.2 6.4 1.5 6.4 1.5c-.5 1.2-.5 2.4 0 3.5A5.1 5.1 0 004.9 8.3c0 5.1 3 6.4 6 6.7a3.1 3.1 0 00-.9 2.4V21"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>Source code</b>
-                <a href="https://github.com/rahul-sha/F1resultstracker" target="_blank" rel="noopener">
-                  View on GitHub
-                </a>{" "}
-                — private for now, may open up later
-              </span>
-            </div>
-          </div>
-
-          <p style={{ marginTop: 14 }}>
+          <p style={{ marginTop: 18 }}>
             This is an independent fan project — not affiliated with Formula 1, the FIA, or any
             team.
           </p>
         </section>
 
-        <section className="about table-card">
-          <h2 className="mb-2.5 text-sm font-semibold">About me</h2>
-          <p className="about-tag">Placeholder — to be finalised later</p>
-          <p>
-            <strong>Rahul</strong> is the person behind this site — an F1 fan who wanted a cleaner
-            way to follow race results and standings than what was out there, and ended up
-            building one. By day, just someone who likes tinkering with side projects; by race
-            weekend, fully invested in the midfield battle as much as the win. Directs every
-            design and feature decision on this site, with Claude doing the actual implementation.
-          </p>
-          <p style={{ color: "var(--text-muted)", fontSize: 12.5 }}>
-            (Made up as a stand-in — swap in a real bio, links, or whatever you&apos;d like said
-            here whenever you get to it.)
-          </p>
-        </section>
+        <aside className="about-side">
+          <section className="about table-card">
+            <h2 className="mb-2.5 text-sm font-semibold">About me</h2>
+            <p className="about-tag">Placeholder — to be finalised later</p>
+            <p>
+              <strong>Rahul</strong> is the person behind this site — an F1 fan who wanted a
+              cleaner way to follow race results and standings than what was out there, and ended
+              up building one. By day, just someone who likes tinkering with side projects; by
+              race weekend, fully invested in the midfield battle as much as the win. Directs
+              every design and feature decision on this site, with Claude doing the actual
+              implementation.
+            </p>
+            <p style={{ color: "var(--text-muted)", fontSize: 12.5 }}>
+              (Made up as a stand-in — swap in a real bio, links, or whatever you&apos;d like said
+              here whenever you get to it.)
+            </p>
+          </section>
+
+          <section className="about table-card">
+            <h2 className="mb-2.5 text-sm font-semibold">Data &amp; tools this site is built on</h2>
+            <div className="credit-grid credit-grid-single">
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 5h16M4 12h16M4 19h7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                    <path d="M15 16l3 3 3-3" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Jolpica F1 API</b>Race, standings &amp; results data
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M6 20V4M6 4h11l-2.5 3.5L17 11H6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>flag-icons</b>Country flag SVGs
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M9 7l-4 5 4 5M15 7l4 5-4 5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Next.js &amp; React</b>App framework
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M6 17a4 4 0 010-8 5 5 0 019.6-1.5A4 4 0 0118 17H6z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Vercel</b>Hosting
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3l1.8 5.6L19 10l-5.2 1.4L12 17l-1.8-5.6L5 10l5.2-1.4L12 3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Claude Code</b>Design &amp; development
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.9a3.1 3.1 0 00-.9-2.4c3-.3 6-1.6 6-6.7A5.1 5.1 0 0019.6 5c.5-1.1.5-2.3 0-3.5 0 0-1.3-.3-3.6 1.3a12.3 12.3 0 00-6 0C7.7 1.2 6.4 1.5 6.4 1.5c-.5 1.2-.5 2.4 0 3.5A5.1 5.1 0 004.9 8.3c0 5.1 3 6.4 6 6.7a3.1 3.1 0 00-.9 2.4V21"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Source code</b>
+                  <a href="https://github.com/rahul-sha/F1resultstracker" target="_blank" rel="noopener">
+                    View on GitHub
+                  </a>{" "}
+                  — private for now, may open up later
+                </span>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </div>
       </div>
     </div>
   );

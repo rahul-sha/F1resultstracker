@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import TopBar from "@/components/TopBar";
+import PageTransition from "@/components/PageTransition";
 
 export const metadata: Metadata = {
   title: "F1 Results Tracker",
@@ -26,7 +27,9 @@ export default function RootLayout({
       <body className="min-h-full">
         <div className="flex min-h-screen flex-col gap-6 p-4">
           <TopBar />
-          <main className="min-w-0 flex-1">{children}</main>
+          <main className="min-w-0 flex-1">
+            <PageTransition>{children}</PageTransition>
+          </main>
         </div>
       </body>
     </html>
