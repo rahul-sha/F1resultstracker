@@ -1,0 +1,35 @@
+name: Snapshot season data
+
+# Manually triggered: fetches one season's schedule, standings and results
+# from the Jolpica F1 API and commits it to data/seasons/<year>.json, so the
+# app serves that season from the repo instead of the live API. Run this once
+# per completed season — re-running it just refreshes that season's file.
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "Season year to snapshot (e.g. 2023)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch season snapshot
+        run: node scripts/snapshot-season.mjs ${{ inputs.season }}
+
+      - name: Commit snapshot
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Add ${{ inputs.season }} season snapshot"
+          file_pattern: data/seasons/*.json

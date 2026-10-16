@@ -3,6 +3,7 @@ import {
   getDriverStandings,
   getRaceResults,
   getSprintResults,
+  type RaceResult,
 } from "./ergast";
 import { raceAbbreviation, raceFlagIso } from "./circuits";
 import { teamColor } from "./team-colors";
@@ -55,16 +56,25 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
   const completed = schedule.filter((race) => new Date(race.date).getTime() <= now);
   const races = completed.length > 0 ? completed : schedule;
 
-  const perRound = await Promise.all(
-    races.map(async (race) => {
-      const round = Number(race.round);
-      const [results, sprintResults] = await Promise.all([
-        getRaceResults(season, round),
-        race.Sprint ? getSprintResults(season, round) : Promise.resolve([]),
-      ]);
-      return { race, results, sprintResults };
-    })
-  );
+  // Fetched in small batches rather than all at once: a full season is
+  // ~24 rounds, and firing every round's request in parallel is exactly the
+  // burst that trips Jolpica's rate limit on seasons with no local snapshot.
+  const BATCH_SIZE = 4;
+  const perRound: { race: typeof races[number]; results: RaceResult[]; sprintResults: RaceResult[] }[] = [];
+  for (let i = 0; i < races.length; i += BATCH_SIZE) {
+    const batch = races.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map(async (race) => {
+        const round = Number(race.round);
+        const [results, sprintResults] = await Promise.all([
+          getRaceResults(season, round),
+          race.Sprint ? getSprintResults(season, round) : Promise.resolve([]),
+        ]);
+        return { race, results, sprintResults };
+      })
+    );
+    perRound.push(...batchResults);
+  }
 
   const columns: PointsGridColumn[] = perRound.map(({ race }) => ({
     round: Number(race.round),
