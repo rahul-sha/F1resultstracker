@@ -19,10 +19,10 @@ export default function SeasonSelector({ season }: { season: number }) {
     <select
       value={season}
       onChange={(e) => handleChange(e.target.value)}
-      className="rounded border px-3 py-1.5 text-sm font-medium"
+      className="rounded-full px-4 py-1.5 text-sm font-medium"
       style={{
-        borderColor: "var(--baseline)",
-        background: "var(--surface-1)",
+        border: "none",
+        background: "var(--surface-2)",
         color: "var(--text-primary)",
       }}
       aria-label="Season"
