@@ -4,15 +4,24 @@ import {
   getRaceResults,
   getSprintResults,
 } from "./ergast";
-import { raceAbbreviation, raceFlag } from "./circuits";
+import { raceAbbreviation, raceFlagIso } from "./circuits";
 import { teamColor } from "./team-colors";
 
 export interface PointsGridColumn {
   round: number;
   abbreviation: string;
   raceName: string;
-  flag: string;
+  flagIso: string | null;
+  date: string;
   hasSprint: boolean;
+}
+
+export interface PointsCell {
+  points: number;
+  racePoints: number;
+  sprintPoints: number | null;
+  position: string | null;
+  status: string | null;
 }
 
 export interface PointsGridRow {
@@ -24,7 +33,7 @@ export interface PointsGridRow {
   color: string;
   seasonPoints: number;
   seasonWins: number;
-  pointsByRound: (number | null)[];
+  pointsByRound: (PointsCell | null)[];
 }
 
 export interface PointsGrid {
@@ -60,12 +69,13 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
     round: Number(race.round),
     abbreviation: raceAbbreviation(race),
     raceName: race.raceName,
-    flag: raceFlag(race),
+    flagIso: raceFlagIso(race),
+    date: race.date,
     hasSprint: Boolean(race.Sprint),
   }));
 
   const rows: PointsGridRow[] = standings.map((standing) => {
-    const pointsByRound = perRound.map(({ results, sprintResults }) => {
+    const pointsByRound = perRound.map(({ race, results, sprintResults }) => {
       const raceResult = results.find((r) => r.Driver.driverId === standing.Driver.driverId);
       const sprintResult = sprintResults.find(
         (r) => r.Driver.driverId === standing.Driver.driverId
@@ -73,7 +83,13 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
       if (!raceResult && !sprintResult) return null;
       const racePts = raceResult ? Number(raceResult.points) : 0;
       const sprintPts = sprintResult ? Number(sprintResult.points) : 0;
-      return racePts + sprintPts;
+      return {
+        points: racePts + sprintPts,
+        racePoints: racePts,
+        sprintPoints: race.Sprint ? sprintPts : null,
+        position: raceResult ? raceResult.positionText : null,
+        status: raceResult ? raceResult.status : null,
+      };
     });
 
     const constructor = standing.Constructors[standing.Constructors.length - 1];
@@ -93,7 +109,7 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
 
   const maxRoundPoints = Math.max(
     1,
-    ...rows.flatMap((r) => r.pointsByRound.filter((p): p is number => p !== null))
+    ...rows.flatMap((r) => r.pointsByRound.filter((p): p is PointsCell => p !== null).map((p) => p.points))
   );
   const maxSeasonPoints = Math.max(1, ...rows.map((r) => r.seasonPoints));
 
