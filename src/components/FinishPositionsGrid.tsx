@@ -1,22 +1,5 @@
 import type { FinishPositionSummary } from "@/lib/finish-positions";
 
-function MechanicalIcon() {
-  return (
-    <svg className="dnf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.1 2.1a2 2 0 01-2.8-2.8z" />
-    </svg>
-  );
-}
-
-function OtherDnfIcon() {
-  return (
-    <svg className="dnf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 3L2 20h20L12 3z" />
-      <path d="M12 9v5M12 17h.01" />
-    </svg>
-  );
-}
-
 export default function FinishPositionsGrid({ summary }: { summary: FinishPositionSummary }) {
   const positions = Array.from({ length: summary.maxPosition }, (_, i) => i + 1);
 
@@ -60,32 +43,32 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
                   if (!count) return <td key={p} className="w-11 h-9" />;
                   const bucket = Math.max(1, Math.round((count / rowMax) * 6));
                   const isMode = count === rowMax;
+                  const fg = bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)";
                   return (
                     <td
                       key={p}
                       className={"count-cell w-11 h-9 text-center" + (isMode ? " count-mode" : "")}
                       style={{
                         background: `var(--heat-${bucket})`,
-                        color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
+                        color: fg,
+                        // The "most frequent" ring reuses the cell's own
+                        // foreground colour rather than a fixed accent — the
+                        // accent happens to equal heat-6 in Monokai (ring
+                        // invisible) but not in Coffee/Ember, where a fixed
+                        // accent ring reads as a mismatched second colour
+                        // layered on the cell.
+                        boxShadow: isMode ? `inset 0 0 0 2px ${fg}` : undefined,
                       }}
                     >
                       {count}
                     </td>
                   );
                 })}
-                <td className="dnf-cell sticky right-0 z-10 px-2 py-1 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    {row.mechanicalDnfs ? (
-                      <span>
-                        <MechanicalIcon /> {row.mechanicalDnfs}
-                      </span>
-                    ) : null}
-                    {row.otherDnfs ? (
-                      <span>
-                        <OtherDnfIcon /> {row.otherDnfs}
-                      </span>
-                    ) : null}
-                  </div>
+                <td
+                  className="dnf-cell sticky right-0 z-10 px-2 py-1 text-center"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {row.dnfs || "—"}
                 </td>
               </tr>
             );
@@ -101,12 +84,7 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
           <span className="legend-swatch count-mode" style={{ background: "var(--heat-4)" }} />
           Driver&apos;s most frequent finish
         </span>
-        <span className="legend-chip">
-          <MechanicalIcon /> Mechanical DNF
-        </span>
-        <span className="legend-chip">
-          <OtherDnfIcon /> Other DNF (accident, DSQ, withdrawn)
-        </span>
+        <span className="legend-chip">DNFs: retirements, disqualifications and withdrawals</span>
       </div>
     </div>
   );
