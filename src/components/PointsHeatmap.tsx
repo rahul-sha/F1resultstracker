@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PointsGrid, PointsCell } from "@/lib/points-grid";
 
 const ORDINAL_SUFFIX = (day: number) => {
@@ -188,10 +188,47 @@ function Cell({
 export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
   const { tooltip, show, hide } = useTooltip();
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  function updateScrollHints() {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4);
+  }
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    // Land on the most recent race by default rather than the first round —
+    // on a narrow screen that's scrolled furthest from view, and it's the
+    // one people care about most. A no-op when everything already fits.
+    el.scrollLeft = el.scrollWidth - el.clientWidth;
+    updateScrollHints();
+
+    const onResize = () => updateScrollHints();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [grid]);
 
   return (
     <div className="table-card">
-      <div className="overflow-x-auto" ref={scrollerRef}>
+      {canScrollLeft ? (
+        <div className="scroll-hint scroll-hint-left" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M15 5l-7 7 7 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      ) : null}
+      {canScrollRight ? (
+        <div className="scroll-hint scroll-hint-right" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      ) : null}
+      <div className="overflow-x-auto" ref={scrollerRef} onScroll={updateScrollHints}>
       <table className="border-collapse">
         <thead>
           <tr>
@@ -209,12 +246,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                 onLeave={hide}
               />
             ))}
-            <th
-              className="sticky right-0 z-10 min-w-[160px] px-3 py-2 text-center text-xs font-semibold"
-              style={{ color: "var(--text-secondary)" }}
-            >
-              Points
-            </th>
+            <th className="sticky right-0 z-10 min-w-[160px] px-3 py-2 text-center text-xs font-semibold" />
           </tr>
         </thead>
         <tbody>

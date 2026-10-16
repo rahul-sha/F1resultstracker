@@ -12,6 +12,9 @@ const DRIVER_TEAM_OVERRIDES: Record<number, Record<string, string>> = {
   2025: {
     lawson: "rb",
   },
+  2026: {
+    lawson: "rb",
+  },
 };
 
 export function overrideConstructorId(
