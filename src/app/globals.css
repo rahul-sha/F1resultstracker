@@ -1,6 +1,27 @@
 @import "tailwindcss";
 @import "flag-icons/css/flag-icons.min.css";
 
+/* Material 3 "emphasized decelerate" easing: fast start, long gentle
+   settle — used for the page-enter transition below. */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.page-transition {
+  animation: page-enter 280ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    animation: none;
+  }
+}
+
 /* Monokai is the default accent theme (data-accent unset or "monokai"). */
 :root {
   color-scheme: light;
@@ -335,6 +356,23 @@ body {
   background: var(--surface-3);
 }
 
+/* Below ~640px the nav row wraps onto a second line, and a 999px pill
+   radius applied to that taller, two-row box reads as a bulging blob
+   rather than a rounded bar — so switch to a plain rounded card and stack
+   nav and the palette/theme controls as two clear rows instead. */
+@media (max-width: 640px) {
+  .topbar {
+    flex-direction: column;
+    align-items: stretch;
+    border-radius: 24px;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .topbar-controls {
+    justify-content: space-between;
+  }
+}
+
 /* Table card: the whole table sits in one rounded tonal surface instead of
    a bordered grid, with row stripes (not gridlines) separating drivers. */
 .table-card {
@@ -347,11 +385,12 @@ body {
 /* Scroll hints: small round chevrons marking that there's more to scroll to,
    shown only while that direction actually has more content (toggled via
    PointsHeatmap's scroll state, not CSS alone — the sticky columns make a
-   pure-CSS edge fade invisible, since it'd sit under their opaque background). */
+   pure-CSS edge fade invisible, since it'd sit under their opaque background).
+   Pinned level with the flag row, not centered on the whole card, so they
+   read as pointing at the round headers rather than floating mid-table. */
 .scroll-hint {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 34px;
   width: 26px;
   height: 26px;
   border-radius: 50%;
@@ -370,6 +409,22 @@ body {
 }
 .scroll-hint-right {
   right: 4px;
+}
+/* Driver cell: position, team colour swatch, code and team name laid out as
+   fixed-width columns (grid, not flex) so every row's team name lines up
+   under the next, with a tight gap rather than evenly spaced flex items. */
+.driver-cell {
+  display: grid;
+  grid-template-columns: 16px auto 34px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+.driver-cell-position {
+  font-size: 11px;
+  text-align: right;
+}
+.driver-cell-team {
+  min-width: 0;
 }
 .table-card tbody td {
   background: var(--surface-2);
@@ -539,18 +594,50 @@ body {
   font-weight: 700;
 }
 
-/* About page: credits grid and progress timeline. */
+/* About page: centred column, with "About me" and the tools credits sat
+   beside the main write-up on wide screens instead of stacked under it. */
+.about-page-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+}
+.about-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+@media (min-width: 900px) {
+  .about-layout {
+    grid-template-columns: 2fr 1fr;
+    align-items: start;
+  }
+}
+.about-side {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.about.table-card {
+  padding: 22px 24px;
+}
+.about h2 {
+  margin-bottom: 14px;
+}
+.about ul:not(.timeline) + p,
+.about .timeline-inset + p,
+.about .credit-grid + p {
+  margin-top: 18px;
+}
 .about p {
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--text-secondary);
-  margin: 0 0 10px;
+  margin: 0 0 14px;
 }
 .about p:last-child {
   margin-bottom: 0;
 }
 .about ul:not(.timeline) {
-  margin: 0 0 10px;
+  margin: 0 0 14px;
   padding-left: 20px;
   font-size: 13.5px;
   line-height: 1.6;
@@ -574,6 +661,9 @@ body {
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 10px;
   margin: 0 0 10px;
+}
+.credit-grid-single {
+  grid-template-columns: 1fr;
 }
 .credit {
   background: var(--surface-2);

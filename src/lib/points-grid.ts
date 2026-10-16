@@ -29,6 +29,7 @@ export interface PointsCell {
 
 export interface PointsGridRow {
   driverId: string;
+  position: string;
   code: string;
   name: string;
   constructorId: string;
@@ -113,6 +114,7 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
 
     return {
       driverId: standing.Driver.driverId,
+      position: standing.position,
       code: standing.Driver.code ?? standing.Driver.familyName.slice(0, 3).toUpperCase(),
       name: `${standing.Driver.givenName} ${standing.Driver.familyName}`,
       constructorId,

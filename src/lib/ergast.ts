@@ -1,7 +1,6 @@
 // Client for the Jolpica F1 API (https://api.jolpi.ca/ergast/f1), a community-run
 // successor to the retired Ergast API that keeps the same response schema.
 import { loadSeasonSnapshot } from "./season-snapshot";
-import { currentSeason } from "./seasons";
 
 const BASE_URL = "https://api.jolpi.ca/ergast/f1";
 
@@ -96,98 +95,72 @@ interface MRDataEnvelope<T> {
   MRData: T;
 }
 
-// A season that has already finished never changes, so its snapshot file is
-// the whole truth — no need to ever call the live API for it. The current
-// (in-progress) season changes every race, so the snapshot there is only a
-// fallback: a weekly re-snapshot (see .github/workflows/snapshot-season.yml)
-// keeps it close to current, and it's used only if the live call fails —
-// e.g. the community-run Jolpica API being down or rate-limiting.
-function isCompletedSeason(season: number): boolean {
-  return season < currentSeason();
-}
-
+// A snapshot, once it exists for a season, is the whole truth for that
+// season — current season included. The weekly re-snapshot (see
+// .github/workflows/snapshot-season.yml) keeps the current season close
+// enough to live (race weekends are days apart at best), and reading a
+// local file is instant, so there's no reason to pay for a live API round
+// trip, or to be at the mercy of the community-run Jolpica API's uptime,
+// once a snapshot is on disk. Live fetch is the fallback for whatever a
+// snapshot doesn't have yet (a brand-new season with no snapshot at all,
+// or this week's round before the next scheduled snapshot picks it up).
 export async function getSeasonSchedule(season: number): Promise<Race[]> {
   const snapshot = loadSeasonSnapshot(season);
-  if (snapshot && isCompletedSeason(season)) return snapshot.schedule;
+  if (snapshot) return snapshot.schedule;
 
-  try {
-    type Resp = MRDataEnvelope<{ RaceTable: { Races: Race[] } }>;
-    const data = await ergastFetch<Resp>(`/${season}.json?limit=100`, revalidateFor(season));
-    return data.MRData.RaceTable.Races;
-  } catch (err) {
-    if (snapshot) return snapshot.schedule;
-    throw err;
-  }
+  type Resp = MRDataEnvelope<{ RaceTable: { Races: Race[] } }>;
+  const data = await ergastFetch<Resp>(`/${season}.json?limit=100`, revalidateFor(season));
+  return data.MRData.RaceTable.Races;
 }
 
 export async function getDriverStandings(season: number): Promise<DriverStanding[]> {
   const snapshot = loadSeasonSnapshot(season);
-  if (snapshot && isCompletedSeason(season)) return snapshot.driverStandings;
+  if (snapshot) return snapshot.driverStandings;
 
-  try {
-    type Resp = MRDataEnvelope<{
-      StandingsTable: { StandingsLists: { DriverStandings: DriverStanding[] }[] };
-    }>;
-    const data = await ergastFetch<Resp>(
-      `/${season}/driverStandings.json?limit=100`,
-      revalidateFor(season)
-    );
-    return data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
-  } catch (err) {
-    if (snapshot) return snapshot.driverStandings;
-    throw err;
-  }
+  type Resp = MRDataEnvelope<{
+    StandingsTable: { StandingsLists: { DriverStandings: DriverStanding[] }[] };
+  }>;
+  const data = await ergastFetch<Resp>(
+    `/${season}/driverStandings.json?limit=100`,
+    revalidateFor(season)
+  );
+  return data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
 }
 
 export async function getConstructorStandings(season: number): Promise<ConstructorStanding[]> {
   const snapshot = loadSeasonSnapshot(season);
-  if (snapshot && isCompletedSeason(season)) return snapshot.constructorStandings;
+  if (snapshot) return snapshot.constructorStandings;
 
-  try {
-    type Resp = MRDataEnvelope<{
-      StandingsTable: { StandingsLists: { ConstructorStandings: ConstructorStanding[] }[] };
-    }>;
-    const data = await ergastFetch<Resp>(
-      `/${season}/constructorStandings.json?limit=100`,
-      revalidateFor(season)
-    );
-    return data.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
-  } catch (err) {
-    if (snapshot) return snapshot.constructorStandings;
-    throw err;
-  }
+  type Resp = MRDataEnvelope<{
+    StandingsTable: { StandingsLists: { ConstructorStandings: ConstructorStanding[] }[] };
+  }>;
+  const data = await ergastFetch<Resp>(
+    `/${season}/constructorStandings.json?limit=100`,
+    revalidateFor(season)
+  );
+  return data.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
 }
 
 export async function getRaceResults(season: number, round: number): Promise<RaceResult[]> {
   const snapshot = loadSeasonSnapshot(season);
-  if (snapshot && isCompletedSeason(season)) return snapshot.results[round] ?? [];
+  if (snapshot) return snapshot.results[round] ?? [];
 
-  try {
-    type Resp = MRDataEnvelope<{ RaceTable: { Races: { Results?: RaceResult[] }[] } }>;
-    const data = await ergastFetch<Resp>(
-      `/${season}/${round}/results.json?limit=100`,
-      revalidateFor(season)
-    );
-    return data.MRData.RaceTable.Races[0]?.Results ?? [];
-  } catch (err) {
-    if (snapshot?.results[round]) return snapshot.results[round];
-    throw err;
-  }
+  type Resp = MRDataEnvelope<{ RaceTable: { Races: { Results?: RaceResult[] }[] } }>;
+  const data = await ergastFetch<Resp>(
+    `/${season}/${round}/results.json?limit=100`,
+    revalidateFor(season)
+  );
+  return data.MRData.RaceTable.Races[0]?.Results ?? [];
 }
 
 export async function getSprintResults(season: number, round: number): Promise<RaceResult[]> {
   const snapshot = loadSeasonSnapshot(season);
-  if (snapshot && isCompletedSeason(season)) return snapshot.sprintResults[round] ?? [];
+  if (snapshot) return snapshot.sprintResults[round] ?? [];
 
-  try {
-    type Resp = MRDataEnvelope<{ RaceTable: { Races: { SprintResults?: RaceResult[] }[] } }>;
-    const data = await ergastFetch<Resp>(
-      `/${season}/${round}/sprint.json?limit=100`,
-      revalidateFor(season)
-    );
-    return data.MRData.RaceTable.Races[0]?.SprintResults ?? [];
-  } catch (err) {
-    if (snapshot?.sprintResults[round]) return snapshot.sprintResults[round];
-    throw err;
-  }
+  type Resp = MRDataEnvelope<{ RaceTable: { Races: { SprintResults?: RaceResult[] }[] } }>;
+  const data = await ergastFetch<Resp>(
+    `/${season}/${round}/sprint.json?limit=100`,
+    revalidateFor(season)
+  );
+  return data.MRData.RaceTable.Races[0]?.SprintResults ?? [];
 }
