@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-type Accent = "monokai" | "catppuccin" | "red";
+type Accent = "monokai" | "coffee" | "red";
 
 const STORAGE_KEY = "f1-accent";
-const ORDER: Accent[] = ["monokai", "catppuccin", "red"];
-const LABEL: Record<Accent, string> = { monokai: "Monokai", catppuccin: "Catppuccin", red: "Ember" };
+const ORDER: Accent[] = ["monokai", "coffee", "red"];
+const LABEL: Record<Accent, string> = { monokai: "Monokai", coffee: "Coffee", red: "Ember" };
 
 function applyAccent(accent: Accent) {
   const root = document.documentElement;

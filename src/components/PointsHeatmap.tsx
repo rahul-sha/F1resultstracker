@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef, useState } from "react";
 import type { PointsGrid, PointsCell } from "@/lib/points-grid";
 
 const ORDINAL_SUFFIX = (day: number) => {
@@ -22,6 +25,40 @@ function formatRaceDate(iso: string): string {
   return `${day}${ORDINAL_SUFFIX(day)} ${month}`;
 }
 
+type TooltipState = { x: number; y: number; content: React.ReactNode } | null;
+
+// A single tooltip, positioned in the viewport (not inside the scrollable
+// table), so it never gets clipped by the table's horizontal scroll area —
+// a pure-CSS hover tooltip anchored to the cell does, right at the table's
+// own left/right edges.
+function useTooltip() {
+  const [tooltip, setTooltip] = useState<TooltipState>(null);
+
+  function show(e: React.MouseEvent<HTMLElement>, content: React.ReactNode) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({ x: rect.left + rect.width / 2, y: rect.top, content });
+  }
+  function hide() {
+    setTooltip(null);
+  }
+
+  return { tooltip, show, hide };
+}
+
+function Tooltip({ tooltip }: { tooltip: TooltipState }) {
+  if (!tooltip) return null;
+  const clampedX = Math.min(Math.max(tooltip.x, 110), window.innerWidth - 110);
+  return (
+    <div
+      className="heatmap-tooltip"
+      role="tooltip"
+      style={{ left: clampedX, top: tooltip.y - 10 }}
+    >
+      {tooltip.content}
+    </div>
+  );
+}
+
 function RoundHeader({
   round,
   abbreviation,
@@ -29,6 +66,8 @@ function RoundHeader({
   flagIso,
   date,
   hasSprint,
+  onEnter,
+  onLeave,
 }: {
   round: number;
   abbreviation: string;
@@ -36,30 +75,39 @@ function RoundHeader({
   flagIso: string | null;
   date: string;
   hasSprint: boolean;
+  onEnter: (e: React.MouseEvent<HTMLElement>, content: React.ReactNode) => void;
+  onLeave: () => void;
 }) {
+  const content = (
+    <>
+      <div className="heatmap-tooltip-title">
+        Round {round} &middot; {raceName}
+      </div>
+      <div className="heatmap-tooltip-row">
+        <span>Date</span>
+        <b>{formatRaceDate(date)}</b>
+      </div>
+      {hasSprint ? (
+        <div className="heatmap-tooltip-row">
+          <span>Format</span>
+          <b>Sprint weekend</b>
+        </div>
+      ) : null}
+    </>
+  );
+
   return (
     <th
-      className="round-header w-11 px-1 py-2 text-center text-[11px] font-semibold"
+      className="round-header px-1 py-2 text-center text-[11px] font-semibold"
       style={{ color: "var(--text-secondary)" }}
     >
-      <div className={"round-chip" + (hasSprint ? " round-chip-sprint" : "")}>
+      <div
+        className={"round-chip" + (hasSprint ? " round-chip-sprint" : "")}
+        onMouseEnter={(e) => onEnter(e, content)}
+        onMouseLeave={onLeave}
+      >
         {flagIso ? <span className={`fi fi-${flagIso} round-flag`} aria-hidden="true" /> : null}
         <span>{abbreviation}</span>
-        <div className="round-tooltip" role="tooltip">
-          <div className="round-tooltip-title">
-            Round {round} &middot; {raceName}
-          </div>
-          <div className="round-tooltip-row">
-            <span>Date</span>
-            <b>{formatRaceDate(date)}</b>
-          </div>
-          {hasSprint ? (
-            <div className="round-tooltip-row">
-              <span>Format</span>
-              <b>Sprint weekend</b>
-            </div>
-          ) : null}
-        </div>
       </div>
     </th>
   );
@@ -71,15 +119,19 @@ function Cell({
   driverName,
   constructorName,
   hasSprint,
+  onEnter,
+  onLeave,
 }: {
   cell: PointsCell | null;
   max: number;
   driverName: string;
   constructorName: string;
   hasSprint: boolean;
+  onEnter: (e: React.MouseEvent<HTMLElement>, content: React.ReactNode) => void;
+  onLeave: () => void;
 }) {
   if (cell === null) {
-    return <td className="w-11 h-9 border" style={{ borderColor: "var(--gridline)" }} />;
+    return <td className="w-11 h-9" />;
   }
   // Bucket into the active theme's 7-stop --heat-0..--heat-6 ramp (defined
   // per accent palette in globals.css) rather than a fixed hardcoded ramp,
@@ -87,61 +139,64 @@ function Cell({
   const t = max > 0 ? cell.points / max : 0;
   const bucket = Math.round(t * 6);
   const style = {
-    borderColor: "var(--gridline)",
     background: `var(--heat-${bucket})`,
     color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
   } as React.CSSProperties;
-  return (
-    <td className="w-11 h-9 border text-center text-xs font-medium tabular-nums" style={style}>
-      <div className="cell-inner">
-        {cell.points}
-        <div className="cell-tooltip" role="tooltip">
-          <div className="round-tooltip-title">
-            {driverName} ({constructorName})
-          </div>
-          {cell.position ? (
-            <div className="round-tooltip-row">
-              <span>Position</span>
-              <b>{cell.position}</b>
-            </div>
-          ) : null}
-          {cell.status ? (
-            <div className="round-tooltip-row">
-              <span>Status</span>
-              <b>{cell.status}</b>
-            </div>
-          ) : null}
-          <div className="round-tooltip-row">
-            <span>Race points</span>
-            <b>{cell.racePoints}</b>
-          </div>
-          {hasSprint ? (
-            <div className="round-tooltip-row">
-              <span>Sprint points</span>
-              <b>{cell.sprintPoints ?? 0}</b>
-            </div>
-          ) : null}
-        </div>
+
+  const content = (
+    <>
+      <div className="heatmap-tooltip-title">
+        {driverName} ({constructorName})
       </div>
+      {cell.position ? (
+        <div className="heatmap-tooltip-row">
+          <span>Position</span>
+          <b>{cell.position}</b>
+        </div>
+      ) : null}
+      {cell.status ? (
+        <div className="heatmap-tooltip-row">
+          <span>Status</span>
+          <b>{cell.status}</b>
+        </div>
+      ) : null}
+      <div className="heatmap-tooltip-row">
+        <span>Race points</span>
+        <b>{cell.racePoints}</b>
+      </div>
+      {hasSprint ? (
+        <div className="heatmap-tooltip-row">
+          <span>Sprint points</span>
+          <b>{cell.sprintPoints ?? 0}</b>
+        </div>
+      ) : null}
+    </>
+  );
+
+  return (
+    <td
+      className="heat-cell w-11 h-9 text-center text-xs font-medium tabular-nums"
+      style={style}
+      onMouseEnter={(e) => onEnter(e, content)}
+      onMouseLeave={onLeave}
+    >
+      {cell.points}
     </td>
   );
 }
 
 export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
+  const { tooltip, show, hide } = useTooltip();
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="border-collapse" style={{ borderColor: "var(--gridline)" }}>
+    <div className="overflow-x-auto" ref={scrollerRef}>
+      <table className="border-collapse">
         <thead>
           <tr>
             <th
-              className="sticky left-0 z-10 w-10 border px-2 py-2 text-left text-xs font-semibold"
-              style={{ borderColor: "var(--gridline)", background: "var(--surface-1)" }}
-            >
-              #
-            </th>
-            <th
-              className="sticky left-10 z-10 min-w-[160px] border px-3 py-2 text-left text-xs font-semibold"
-              style={{ borderColor: "var(--gridline)", background: "var(--surface-1)" }}
+              className="sticky left-0 z-10 min-w-[160px] px-3 py-2 text-left text-xs font-semibold"
+              style={{ background: "var(--surface-1)" }}
             />
             {grid.columns.map((col) => (
               <RoundHeader
@@ -152,34 +207,27 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                 flagIso={col.flagIso}
                 date={col.date}
                 hasSprint={col.hasSprint}
+                onEnter={show}
+                onLeave={hide}
               />
             ))}
             <th
-              className="min-w-[180px] border px-3 py-2 text-left text-xs font-semibold"
-              style={{ borderColor: "var(--gridline)" }}
+              className="min-w-[160px] px-3 py-2 text-center text-xs font-semibold"
+              style={{ color: "var(--text-secondary)" }}
             >
               Season points
             </th>
           </tr>
         </thead>
         <tbody>
-          {grid.rows.map((row, i) => {
-            const seasonSegments = row.pointsByRound
-              .filter((c): c is PointsCell => c !== null && c.points > 0)
-              .map((c, idx) => ({ points: c.points, key: idx }));
+          {grid.rows.map((row) => {
             const barPct = Math.max(2, (row.seasonPoints / grid.maxSeasonPoints) * 100);
 
             return (
               <tr key={row.driverId}>
                 <td
-                  className="sticky left-0 z-10 border px-2 py-1.5 text-xs font-semibold tabular-nums"
-                  style={{ borderColor: "var(--gridline)", background: "var(--surface-1)" }}
-                >
-                  {i + 1}
-                </td>
-                <td
-                  className="sticky left-10 z-10 border px-3 py-1.5 text-xs"
-                  style={{ borderColor: "var(--gridline)", background: "var(--surface-1)" }}
+                  className="sticky left-0 z-10 px-3 py-1.5 text-xs"
+                  style={{ background: "var(--surface-1)" }}
                 >
                   <div className="flex items-center gap-2">
                     <span
@@ -202,23 +250,17 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
                     driverName={row.name}
                     constructorName={row.constructorName}
                     hasSprint={grid.columns[idx].hasSprint}
+                    onEnter={show}
+                    onLeave={hide}
                   />
                 ))}
-                <td className="border px-3 py-1.5" style={{ borderColor: "var(--gridline)" }}>
-                  <div className="flex items-center gap-2">
-                    <div className="season-meter-shell relative h-4 w-32 shrink-0 overflow-hidden rounded-sm">
-                      <div className="season-meter-track" style={{ width: `${barPct}%` }}>
-                        {seasonSegments.map((seg) => (
-                          <div
-                            key={seg.key}
-                            className="season-meter-seg h-full"
-                            style={{
-                              width: `${(seg.points / row.seasonPoints) * 100}%`,
-                              background: row.color,
-                            }}
-                          />
-                        ))}
-                      </div>
+                <td className="px-3 py-1.5">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="meter-track relative h-3 w-24 shrink-0 overflow-hidden rounded-sm">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-r-sm"
+                        style={{ width: `${barPct}%`, background: row.color }}
+                      />
                     </div>
                     <span
                       className="text-xs font-semibold tabular-nums"
@@ -233,6 +275,7 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
           })}
         </tbody>
       </table>
+      <Tooltip tooltip={tooltip} />
     </div>
   );
 }

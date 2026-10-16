@@ -26,7 +26,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])):where(:not([data-accent="catppuccin"])):where(:not([data-accent="red"])) {
+  :root:where(:not([data-theme="light"])):where(:not([data-accent="coffee"])):where(:not([data-accent="red"])) {
     color-scheme: dark;
     --page-plane: #1b1c17;
     --surface-1: #272822;
@@ -50,7 +50,7 @@
   }
 }
 
-:root[data-theme="dark"]:where(:not([data-accent="catppuccin"])):where(:not([data-accent="red"])) {
+:root[data-theme="dark"]:where(:not([data-accent="coffee"])):where(:not([data-accent="red"])) {
   color-scheme: dark;
   --page-plane: #1b1c17;
   --surface-1: #272822;
@@ -73,76 +73,76 @@
   --heat-fg-hi: #1b1c17;
 }
 
-/* Catppuccin (Latte light / Mocha dark). */
-:root[data-accent="catppuccin"] {
+/* Coffee — warm roast tones, light (cream/latte) and dark (espresso). */
+:root[data-accent="coffee"] {
   color-scheme: light;
-  --page-plane: #eff1f5;
-  --surface-1: #e6e9ef;
-  --surface-2: #dce0e8;
-  --text-primary: #4c4f69;
-  --text-secondary: #6c6f85;
-  --text-muted: #8c8fa1;
-  --gridline: #ccd0da;
-  --baseline: #bcc0cc;
-  --border-hairline: rgba(76, 79, 105, 0.14);
-  --accent: #1e66f5;
-  --heat-0: #d6e0fa;
-  --heat-1: #b3c9f6;
-  --heat-2: #8fb0f1;
-  --heat-3: #6a96ec;
-  --heat-4: #477de6;
-  --heat-5: #2c66e0;
-  --heat-6: #1e66f5;
-  --heat-fg-lo: #1e1e2e;
-  --heat-fg-hi: #ffffff;
+  --page-plane: #f6efe6;
+  --surface-1: #efe4d5;
+  --surface-2: #e5d5bf;
+  --text-primary: #3a2a1c;
+  --text-secondary: #6b5440;
+  --text-muted: #8f7a64;
+  --gridline: #ddc9ab;
+  --baseline: #cdb48c;
+  --border-hairline: rgba(58, 42, 28, 0.14);
+  --accent: #8a5a2b;
+  --heat-0: #f0e2cb;
+  --heat-1: #e3c89c;
+  --heat-2: #d2a86c;
+  --heat-3: #bd8a47;
+  --heat-4: #a06f30;
+  --heat-5: #7d5423;
+  --heat-6: #5c3c18;
+  --heat-fg-lo: #3a2a1c;
+  --heat-fg-hi: #f6efe6;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-accent="catppuccin"]:where(:not([data-theme="light"])) {
+  :root[data-accent="coffee"]:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --page-plane: #11111b;
-    --surface-1: #1e1e2e;
-    --surface-2: #262637;
-    --text-primary: #cdd6f4;
-    --text-secondary: #a6adc8;
-    --text-muted: #7f849c;
-    --gridline: #313244;
-    --baseline: #3c3f55;
-    --border-hairline: rgba(205, 214, 244, 0.12);
-    --accent: #89b4fa;
-    --heat-0: #2a2f45;
-    --heat-1: #33405f;
-    --heat-2: #3a5280;
-    --heat-3: #4064a0;
-    --heat-4: #5884c4;
-    --heat-5: #74a0e0;
-    --heat-6: #89b4fa;
-    --heat-fg-lo: #11111b;
-    --heat-fg-hi: #ffffff;
+    --page-plane: #1b130d;
+    --surface-1: #271c14;
+    --surface-2: #32241a;
+    --text-primary: #f2e3d2;
+    --text-secondary: #cbab8c;
+    --text-muted: #9c8268;
+    --gridline: #473528;
+    --baseline: #5a4432;
+    --border-hairline: rgba(242, 227, 210, 0.12);
+    --accent: #c99a5e;
+    --heat-0: #3a2b1e;
+    --heat-1: #5c4128;
+    --heat-2: #7e5830;
+    --heat-3: #a0702e;
+    --heat-4: #c08b3a;
+    --heat-5: #dba656;
+    --heat-6: #f0c27e;
+    --heat-fg-lo: #f2e3d2;
+    --heat-fg-hi: #1b130d;
   }
 }
 
-:root[data-accent="catppuccin"][data-theme="dark"] {
+:root[data-accent="coffee"][data-theme="dark"] {
   color-scheme: dark;
-  --page-plane: #11111b;
-  --surface-1: #1e1e2e;
-  --surface-2: #262637;
-  --text-primary: #cdd6f4;
-  --text-secondary: #a6adc8;
-  --text-muted: #7f849c;
-  --gridline: #313244;
-  --baseline: #3c3f55;
-  --border-hairline: rgba(205, 214, 244, 0.12);
-  --accent: #89b4fa;
-  --heat-0: #2a2f45;
-  --heat-1: #33405f;
-  --heat-2: #3a5280;
-  --heat-3: #4064a0;
-  --heat-4: #5884c4;
-  --heat-5: #74a0e0;
-  --heat-6: #89b4fa;
-  --heat-fg-lo: #11111b;
-  --heat-fg-hi: #ffffff;
+  --page-plane: #1b130d;
+  --surface-1: #271c14;
+  --surface-2: #32241a;
+  --text-primary: #f2e3d2;
+  --text-secondary: #cbab8c;
+  --text-muted: #9c8268;
+  --gridline: #473528;
+  --baseline: #5a4432;
+  --border-hairline: rgba(242, 227, 210, 0.12);
+  --accent: #c99a5e;
+  --heat-0: #3a2b1e;
+  --heat-1: #5c4128;
+  --heat-2: #7e5830;
+  --heat-3: #a0702e;
+  --heat-4: #c08b3a;
+  --heat-5: #dba656;
+  --heat-6: #f0c27e;
+  --heat-fg-lo: #f2e3d2;
+  --heat-fg-hi: #1b130d;
 }
 
 /* Ember — red-tinted theme. */
@@ -229,40 +229,23 @@ body {
 }
 
 /* Heatmap cells are colored inline from the active theme's --heat-0..6
-   ramp (see PointsHeatmap.tsx), so they need no theme-conditional CSS here. */
+   ramp (see PointsHeatmap.tsx) and sit border-to-border as a mosaic rather
+   than boxed-in spreadsheet cells. */
+.heat-cell {
+  cursor: help;
+}
 
-/* Meter bar (Standing page): a colored fill over a lighter track, so state
-   reads across the whole bar rather than just wherever the fill ends. */
+/* Meter bar (Results and Standing pages): a colored fill over a lighter
+   track, so state reads across the whole bar rather than just wherever the
+   fill ends. */
 .meter-track {
   background: var(--gridline);
 }
 
-/* Season-points bar (Results page): the shell is the full-width track, the
-   inner track's width scales to this driver's share of the leader's
-   points, and its segments (one per scoring round) split up only that
-   shortened bar — so a lower-scoring driver's bar is shorter, not just
-   differently segmented. */
-.season-meter-shell {
-  background: var(--gridline);
-}
-.season-meter-track {
-  display: flex;
-  align-items: stretch;
-  gap: 1px;
-  overflow: hidden;
-  height: 100%;
-}
-.season-meter-seg {
-  flex: 0 0 auto;
-}
-
 /* Round header: a floating chip with its own shadow instead of a bordered
-   spreadsheet cell, with a hover card for round/date detail. */
+   spreadsheet cell. */
 .round-header {
-  border: none;
   padding: 10px 3px 14px;
-  background: transparent;
-  position: relative;
 }
 .round-chip {
   display: flex;
@@ -275,7 +258,6 @@ body {
   padding: 7px 8px 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--border-hairline);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
-  position: relative;
 }
 .round-chip:hover {
   transform: translateY(-2px);
@@ -291,16 +273,14 @@ body {
   box-shadow: 0 0 0 1px var(--border-hairline);
 }
 
-.round-tooltip,
-.cell-tooltip {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-6px);
-  z-index: 20;
-  opacity: 0;
+/* Hover tooltip (round header + points cell): positioned in the viewport
+   by JS (PointsHeatmap.tsx), not anchored to the hovered element, so it
+   never clips against the table's own horizontal scroll area. */
+.heatmap-tooltip {
+  position: fixed;
+  z-index: 30;
+  transform: translate(-50%, -100%);
   pointer-events: none;
-  transition: opacity 0.1s ease, transform 0.1s ease;
   background: var(--surface-1);
   border: 1px solid var(--gridline);
   border-radius: 8px;
@@ -312,31 +292,21 @@ body {
   white-space: nowrap;
   text-align: left;
 }
-.round-chip:hover .round-tooltip,
-.cell-inner:hover .cell-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-10px);
-}
-.round-tooltip-title {
+.heatmap-tooltip-title {
   font-weight: 700;
   margin-bottom: 3px;
 }
-.round-tooltip-row {
+.heatmap-tooltip-row {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   color: var(--text-secondary);
 }
-.round-tooltip-row + .round-tooltip-row {
+.heatmap-tooltip-row + .heatmap-tooltip-row {
   margin-top: 2px;
 }
-.round-tooltip-row b {
+.heatmap-tooltip-row b {
   color: var(--text-primary);
   font-weight: 600;
   margin-left: 8px;
-}
-
-.cell-inner {
-  position: relative;
-  cursor: help;
 }

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getDriverStandings, getConstructorStandings } from "@/lib/ergast";
 import { currentSeason } from "@/lib/seasons";
 import { teamColor } from "@/lib/team-colors";
+import { teamDisplayName } from "@/lib/team-names";
 import SeasonSelector from "@/components/SeasonSelector";
 
 export const metadata = { title: "Standing | F1 Results Tracker" };
@@ -53,7 +54,9 @@ async function DriverStandingsTable({ season }: { season: number }) {
                   className="border-b px-2 py-1.5"
                   style={{ borderColor: "var(--gridline)", color: "var(--text-secondary)" }}
                 >
-                  {constructor?.name ?? "—"}
+                  {constructor
+                    ? teamDisplayName(constructor.constructorId, constructor.name)
+                    : "—"}
                 </td>
                 <td
                   className="border-b px-2 py-1.5 text-right tabular-nums"
@@ -118,7 +121,7 @@ async function ConstructorStandingsTable({ season }: { season: number }) {
                 </td>
                 <td className="border-b px-2 py-1.5" style={{ borderColor: "var(--gridline)" }}>
                   <span className="mr-2 inline-block h-2.5 w-2.5 rounded-sm" style={{ background: color }} />
-                  {standing.Constructor.name}
+                  {teamDisplayName(standing.Constructor.constructorId, standing.Constructor.name)}
                 </td>
                 <td
                   className="border-b px-2 py-1.5 text-right tabular-nums"

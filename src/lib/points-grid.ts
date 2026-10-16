@@ -6,6 +6,7 @@ import {
 } from "./ergast";
 import { raceAbbreviation, raceFlagIso } from "./circuits";
 import { teamColor } from "./team-colors";
+import { teamDisplayName } from "./team-names";
 
 export interface PointsGridColumn {
   round: number;
@@ -99,7 +100,9 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
       code: standing.Driver.code ?? standing.Driver.familyName.slice(0, 3).toUpperCase(),
       name: `${standing.Driver.givenName} ${standing.Driver.familyName}`,
       constructorId: constructor?.constructorId ?? "unknown",
-      constructorName: constructor?.name ?? "Unknown",
+      constructorName: constructor
+        ? teamDisplayName(constructor.constructorId, constructor.name)
+        : "Unknown",
       color: teamColor(constructor?.constructorId ?? "unknown"),
       seasonPoints: Number(standing.points),
       seasonWins: Number(standing.wins),
