@@ -24,6 +24,8 @@ export interface PointsCell {
   racePoints: number;
   sprintPoints: number | null;
   position: string | null;
+  classifiedPosition: number | null;
+  sprintPosition: string | null;
   status: string | null;
 }
 
@@ -46,6 +48,7 @@ export interface PointsGrid {
   rows: PointsGridRow[];
   maxRoundPoints: number;
   maxSeasonPoints: number;
+  maxClassifiedPosition: number;
 }
 
 export async function buildPointsGrid(season: number): Promise<PointsGrid> {
@@ -101,6 +104,8 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
         racePoints: racePts,
         sprintPoints: race.Sprint ? sprintPts : null,
         position: raceResult ? raceResult.positionText : null,
+        classifiedPosition: raceResult ? Number(raceResult.position) : null,
+        sprintPosition: race.Sprint && sprintResult ? sprintResult.positionText : null,
         status: raceResult ? raceResult.status : null,
       };
     });
@@ -131,6 +136,14 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
     ...rows.flatMap((r) => r.pointsByRound.filter((p): p is PointsCell => p !== null).map((p) => p.points))
   );
   const maxSeasonPoints = Math.max(1, ...rows.map((r) => r.seasonPoints));
+  const maxClassifiedPosition = Math.max(
+    1,
+    ...rows.flatMap((r) =>
+      r.pointsByRound
+        .filter((p): p is PointsCell => p !== null && p.classifiedPosition !== null)
+        .map((p) => p.classifiedPosition as number)
+    )
+  );
 
-  return { season, columns, rows, maxRoundPoints, maxSeasonPoints };
+  return { season, columns, rows, maxRoundPoints, maxSeasonPoints, maxClassifiedPosition };
 }
