@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 import AccentToggle from "./AccentToggle";
+import SeasonSelector from "./SeasonSelector";
 
 const NAV_SECTIONS: { label: string; href: string }[] = [
   { label: "Results", href: "/results" },
@@ -11,7 +12,7 @@ const NAV_SECTIONS: { label: string; href: string }[] = [
   { label: "About", href: "/about" },
 ];
 
-export default function TopBar() {
+export default function TopBar({ initialSeason }: { initialSeason: number }) {
   const pathname = usePathname();
 
   return (
@@ -37,6 +38,7 @@ export default function TopBar() {
       </div>
 
       <div className="topbar-controls flex items-center gap-2">
+        <SeasonSelector initialSeason={initialSeason} />
         <AccentToggle />
         <ThemeToggle />
       </div>

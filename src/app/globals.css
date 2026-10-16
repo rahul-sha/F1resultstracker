@@ -391,6 +391,17 @@ body {
   }
   .topbar-controls {
     justify-content: space-between;
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  /* Three pills (season, palette, theme) no longer fit one row at phone
+     width now the season switcher lives here too — give it the full row
+     so it doesn't fight the other two for space. */
+  .topbar-controls .switcher {
+    flex: 1 1 100%;
+  }
+  .topbar-controls .switcher-trigger {
+    width: 100%;
   }
 }
 
@@ -702,6 +713,15 @@ body {
 }
 .switcher-trigger:hover {
   background: var(--surface-3);
+}
+/* In the nav bar the switcher sits directly on --surface-2 (the topbar's
+   own background), so its default trigger colour would blend in — bump it
+   to --surface-3 there, matching the Palette/Theme pills beside it. */
+.topbar-controls .switcher-trigger {
+  background: var(--surface-3);
+}
+.topbar-controls .switcher-trigger:hover {
+  background: var(--border-hairline);
 }
 .switcher-trigger svg {
   transition: transform 0.15s ease;

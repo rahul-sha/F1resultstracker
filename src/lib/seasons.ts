@@ -1,17 +1,16 @@
-// Jolpica's data gets thinner and less consistent (sprint/results schema
-// quirks) the further back you go; capping at 2020 keeps the selector to
-// seasons the app actually renders cleanly.
-const FIRST_SEASON = 2020;
+import { cookies } from "next/headers";
+import { SEASON_COOKIE, currentSeason, availableSeasons } from "./season-constants";
 
-export function currentSeason(): number {
-  return new Date().getFullYear();
-}
+export { currentSeason, availableSeasons };
 
-export function availableSeasons(): number[] {
-  const latest = currentSeason();
-  const seasons: number[] = [];
-  for (let year = latest; year >= FIRST_SEASON; year--) {
-    seasons.push(year);
-  }
-  return seasons;
+// The season selector lives in the global nav bar, so a season picked on
+// one page needs to carry over when navigating to another without a
+// ?season= of its own (e.g. clicking "Positions" from Results). The nav
+// bar sets this cookie on every pick; pages fall back to it when their own
+// URL doesn't specify a season.
+export async function resolvePersistedSeason(): Promise<number | null> {
+  const store = await cookies();
+  const raw = store.get(SEASON_COOKIE)?.value;
+  const year = raw ? Number(raw) : NaN;
+  return Number.isFinite(year) && availableSeasons().includes(year) ? year : null;
 }
