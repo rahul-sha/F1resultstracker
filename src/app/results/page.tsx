@@ -46,35 +46,37 @@ export default async function ResultsPage({
 
   return (
     <div className="p-6">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold">Results</h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Points scored by each driver per Grand Prix. Hover a race header for details;
-            underlined races include a sprint.
-          </p>
+      <div className="content-wrap">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold">Results</h1>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              Points scored by each driver per Grand Prix. Hover a race header for details;
+              underlined races include a sprint.
+            </p>
+          </div>
+          <SeasonSelector season={season} />
         </div>
-        <SeasonSelector season={season} />
-      </div>
 
-      <Suspense
-        fallback={
-          <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-            Loading {season} results…
-          </p>
-        }
-      >
-        <PointsGridSection season={season} />
-      </Suspense>
-
-      <section className="mt-8">
-        <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-          Constructors
-        </h2>
-        <Suspense fallback={<p className="text-sm">Loading…</p>}>
-          <ConstructorPointsGridSection season={season} />
+        <Suspense
+          fallback={
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              Loading {season} results…
+            </p>
+          }
+        >
+          <PointsGridSection season={season} />
         </Suspense>
-      </section>
+
+        <section className="mt-8">
+          <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+            Constructors
+          </h2>
+          <Suspense fallback={<p className="text-sm">Loading…</p>}>
+            <ConstructorPointsGridSection season={season} />
+          </Suspense>
+        </section>
+      </div>
     </div>
   );
 }

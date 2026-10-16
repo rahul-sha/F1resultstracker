@@ -78,33 +78,35 @@ export default async function PositionsPage({
 
   return (
     <div className="p-6">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold">Positions</h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Where each driver finished in every Grand Prix, how often they finish in each
-            position across the season, and their podium count. Darker is a stronger finish;
-            retirements and non-classifications are shown in a neutral grey. Sprint weekends show
-            the sprint finish as a small superscript next to the main race result.
-          </p>
-        </div>
-        <SeasonSelector season={season} />
-      </div>
-
-      <div className="flex flex-col gap-8">
-        <Suspense
-          fallback={
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Loading {season} positions…
+      <div className="content-wrap">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold">Positions</h1>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              Where each driver finished in every Grand Prix, how often they finish in each
+              position across the season, and their podium count. Darker is a stronger finish;
+              retirements and non-classifications are shown in a neutral grey. Sprint weekends
+              show the sprint finish as a small superscript next to the main race result.
             </p>
-          }
-        >
-          <PositionsGridSection season={season} />
-        </Suspense>
+          </div>
+          <SeasonSelector season={season} />
+        </div>
 
-        <Suspense fallback={<p className="text-sm">Loading…</p>}>
-          <FinishPositionsSections season={season} />
-        </Suspense>
+        <div className="flex flex-col gap-8">
+          <Suspense
+            fallback={
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Loading {season} positions…
+              </p>
+            }
+          >
+            <PositionsGridSection season={season} />
+          </Suspense>
+
+          <Suspense fallback={<p className="text-sm">Loading…</p>}>
+            <FinishPositionsSections season={season} />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

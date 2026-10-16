@@ -744,6 +744,16 @@ body {
   font-weight: 700;
 }
 
+/* Heatmap pages (Results, Positions): on a wide screen the table-card's
+   own content is narrower than the viewport, which otherwise leaves it
+   pinned to the left with a large empty gap on the right. Capping and
+   centring the page content keeps the card's width tied to what it
+   actually holds, rather than stretching with the browser window. */
+.content-wrap {
+  max-width: 1420px;
+  margin: 0 auto;
+}
+
 /* About page: centred column, with "About me" and the tools credits sat
    beside the main write-up on wide screens instead of stacked under it. */
 .about-page-wrap {
