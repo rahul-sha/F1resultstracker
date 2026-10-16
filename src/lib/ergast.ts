@@ -72,6 +72,7 @@ export interface RaceResult {
   grid: string;
   laps: string;
   status: string;
+  FastestLap?: { rank: string };
 }
 
 export interface DriverStanding {

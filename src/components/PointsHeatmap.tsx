@@ -174,6 +174,18 @@ function PointsCellContent({
           <b>{cell.sprintPoints ?? 0}</b>
         </div>
       ) : null}
+      {cell.pole ? (
+        <div className="heatmap-tooltip-row">
+          <span>Pole position</span>
+          <b>Yes</b>
+        </div>
+      ) : null}
+      {cell.fastestLap ? (
+        <div className="heatmap-tooltip-row">
+          <span>Fastest lap</span>
+          <b>Yes</b>
+        </div>
+      ) : null}
     </>
   );
 
@@ -185,6 +197,8 @@ function PointsCellContent({
       onMouseLeave={onLeave}
     >
       {cell.points}
+      {cell.pole ? <sup>P</sup> : null}
+      {cell.fastestLap ? <sup>F</sup> : null}
     </td>
   );
 }

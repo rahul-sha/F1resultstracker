@@ -27,6 +27,8 @@ export interface PointsCell {
   classifiedPosition: number | null;
   sprintPosition: string | null;
   status: string | null;
+  pole: boolean;
+  fastestLap: boolean;
 }
 
 export interface PointsGridRow {
@@ -107,6 +109,8 @@ export async function buildPointsGrid(season: number): Promise<PointsGrid> {
         classifiedPosition: raceResult ? Number(raceResult.position) : null,
         sprintPosition: race.Sprint && sprintResult ? sprintResult.positionText : null,
         status: raceResult ? raceResult.status : null,
+        pole: raceResult?.grid === "1",
+        fastestLap: raceResult?.FastestLap?.rank === "1",
       };
     });
 
