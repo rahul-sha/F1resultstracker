@@ -3,6 +3,7 @@ import { getDriverStandings, getConstructorStandings } from "@/lib/ergast";
 import { currentSeason } from "@/lib/seasons";
 import { teamColor } from "@/lib/team-colors";
 import { teamDisplayName } from "@/lib/team-names";
+import { overrideConstructorId } from "@/lib/driver-team-overrides";
 import SeasonSelector from "@/components/SeasonSelector";
 
 export const metadata = { title: "Standing | F1 Results Tracker" };
@@ -27,7 +28,12 @@ async function DriverStandingsTable({ season }: { season: number }) {
           <tbody>
             {standings.map((standing) => {
               const constructor = standing.Constructors[standing.Constructors.length - 1];
-              const color = teamColor(constructor?.constructorId ?? "unknown");
+              const constructorId = overrideConstructorId(
+                season,
+                standing.Driver.driverId,
+                constructor?.constructorId ?? "unknown"
+              );
+              const color = teamColor(constructorId);
               const points = Number(standing.points);
               return (
                 <tr key={standing.Driver.driverId}>
@@ -40,9 +46,7 @@ async function DriverStandingsTable({ season }: { season: number }) {
                     {standing.Driver.givenName} {standing.Driver.familyName}
                   </td>
                   <td className="px-3 py-1.5" style={{ color: "var(--text-secondary)" }}>
-                    {constructor
-                      ? teamDisplayName(constructor.constructorId, constructor.name)
-                      : "—"}
+                    {constructor ? teamDisplayName(constructorId, constructor.name) : "—"}
                   </td>
                   <td className="px-3 py-1.5 text-right tabular-nums">{standing.wins}</td>
                   <td className="px-3 py-1.5">

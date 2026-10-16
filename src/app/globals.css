@@ -331,6 +331,18 @@ body {
   border-bottom-left-radius: 14px;
 }
 
+/* Sticky driver/points columns stay opaque while other columns scroll
+   underneath them; a soft edge shadow shows the boundary rather than
+   content appearing to vanish behind an invisible line. */
+.table-card th.sticky:first-child,
+.table-card td.sticky:first-child {
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+}
+.table-card th.sticky:last-child,
+.table-card td.sticky:last-child {
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.08);
+}
+
 /* Meter bar (Results and Standing pages): a colored pill fill over a
    lighter pill track, so state reads across the whole bar rather than just
    wherever the fill ends. */
