@@ -63,10 +63,12 @@ async function DriverStandingsTable({ season }: { season: number }) {
                 </td>
                 <td className="border-b px-2 py-1.5" style={{ borderColor: "var(--gridline)" }}>
                   <div className="flex items-center gap-2">
-                    <div
-                      className="h-3 rounded-r-sm"
-                      style={{ width: `${Math.max(4, (points / maxPoints) * 100)}%`, background: color }}
-                    />
+                    <div className="meter-track relative h-3 w-24 shrink-0 overflow-hidden rounded-sm">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-r-sm"
+                        style={{ width: `${Math.max(2, (points / maxPoints) * 100)}%`, background: color }}
+                      />
+                    </div>
                     <span className="text-xs font-semibold tabular-nums">{points}</span>
                   </div>
                 </td>
@@ -126,10 +128,12 @@ async function ConstructorStandingsTable({ season }: { season: number }) {
                 </td>
                 <td className="border-b px-2 py-1.5" style={{ borderColor: "var(--gridline)" }}>
                   <div className="flex items-center gap-2">
-                    <div
-                      className="h-3 rounded-r-sm"
-                      style={{ width: `${Math.max(4, (points / maxPoints) * 100)}%`, background: color }}
-                    />
+                    <div className="meter-track relative h-3 w-24 shrink-0 overflow-hidden rounded-sm">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-r-sm"
+                        style={{ width: `${Math.max(2, (points / maxPoints) * 100)}%`, background: color }}
+                      />
+                    </div>
                     <span className="text-xs font-semibold tabular-nums">{points}</span>
                   </div>
                 </td>

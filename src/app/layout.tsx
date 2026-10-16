@@ -14,6 +14,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
+      <head>
+        <script
+          // Runs before paint so the stored theme choice applies without a
+          // light-mode flash on first load.
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("f1-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full">
         <div className="flex min-h-screen">
           <Sidebar />

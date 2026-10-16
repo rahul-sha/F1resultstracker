@@ -6,12 +6,17 @@ function Cell({ value, max }: { value: number | null; max: number }) {
     return <td className="w-11 h-9 border" style={{ borderColor: "var(--gridline)" }} />;
   }
   const t = max > 0 ? value / max : 0;
-  const fill = sequentialBlue(t);
-  const textColor = textOnSequential(t);
+  const style = {
+    borderColor: "var(--gridline)",
+    "--cell-bg-light": sequentialBlue(t, "light"),
+    "--cell-bg-dark": sequentialBlue(t, "dark"),
+    "--cell-fg-light": textOnSequential(t, "light"),
+    "--cell-fg-dark": textOnSequential(t, "dark"),
+  } as React.CSSProperties;
   return (
     <td
-      className="group relative w-11 h-9 border text-center text-xs font-medium tabular-nums cursor-default"
-      style={{ borderColor: "var(--gridline)", background: fill, color: textColor }}
+      className="heat-cell w-11 h-9 border text-center text-xs font-medium tabular-nums cursor-default"
+      style={style}
     >
       {value}
     </td>
@@ -90,13 +95,15 @@ export default function PointsHeatmap({ grid }: { grid: PointsGrid }) {
               ))}
               <td className="border px-3 py-1.5" style={{ borderColor: "var(--gridline)" }}>
                 <div className="flex items-center gap-2">
-                  <div
-                    className="h-4 flex-1 rounded-r-sm"
-                    style={{
-                      width: `${Math.max(4, (row.seasonPoints / grid.maxSeasonPoints) * 100)}%`,
-                      background: row.color,
-                    }}
-                  />
+                  <div className="meter-track relative h-4 w-32 shrink-0 overflow-hidden rounded-sm">
+                    <div
+                      className="absolute inset-y-0 left-0 rounded-r-sm"
+                      style={{
+                        width: `${Math.max(2, (row.seasonPoints / grid.maxSeasonPoints) * 100)}%`,
+                        background: row.color,
+                      }}
+                    />
+                  </div>
                   <span
                     className="text-xs font-semibold tabular-nums"
                     style={{ color: "var(--text-primary)" }}
