@@ -60,3 +60,14 @@ is hardcoded to a single palette.
 - Next.js (App Router) + TypeScript
 - Tailwind CSS v4
 - Server Components for data fetching, no client-side data store
+
+## Security
+
+The season-snapshot GitHub Action (`snapshot-season.yml`) passes its
+workflow inputs to the shell via `env:` variables rather than interpolating
+them directly into `run:` script text, which avoids a class of GitHub
+Actions script-injection vulnerability. `next.config.ts` sets a small set
+of standard browser security headers (`X-Frame-Options`,
+`X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`). The
+app has no auth, forms or API routes, and no secrets are committed to the
+repo.

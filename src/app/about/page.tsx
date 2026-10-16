@@ -116,6 +116,17 @@ export default function AboutPage() {
                   rather than both looking identical.
                 </span>
               </li>
+              <li>
+                <b>Security review</b>
+                <span>
+                  Checked the site over for common security issues. Found and fixed one real
+                  one: the automated data-snapshot job built a command from its input text
+                  directly, which a malicious input could have hijacked to run its own commands.
+                  Everything else &mdash; secrets, dependencies, data handling, the site&apos;s
+                  one use of raw HTML &mdash; checked out safe. Added a few standard browser
+                  security headers while at it.
+                </span>
+              </li>
             </ul>
           </div>
 

