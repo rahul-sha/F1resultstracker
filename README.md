@@ -11,7 +11,7 @@ language.
 
 - **Results** (`/results`) — every driver's points for each round of a
   season, shaded by magnitude, with a season points total bar per driver,
-  and a Constructors standings section underneath.
+  and a matching per-race heatmap for Constructors underneath.
 - **Positions** (`/positions`) — where each driver finished each race
   (not points), with a median-finish summary. Sprint weekends show the
   sprint result as a small superscript next to the main race result.
