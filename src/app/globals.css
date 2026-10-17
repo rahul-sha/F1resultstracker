@@ -1,27 +1,6 @@
 @import "tailwindcss";
 @import "flag-icons/css/flag-icons.min.css";
 
-/* Material 3 "emphasized decelerate" easing: fast start, long gentle
-   settle — used for the page-enter transition below. */
-@keyframes page-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.page-transition {
-  animation: page-enter 280ms cubic-bezier(0.05, 0.7, 0.1, 1) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .page-transition {
-    animation: none;
-  }
-}
-
 /* Monokai is the default accent theme (data-accent unset or "monokai"). */
 :root {
   color-scheme: light;
@@ -397,7 +376,7 @@ body::before {
   max-width: 900px;
   max-height: 900px;
   background: color-mix(in srgb, var(--accent) 26%, transparent);
-  animation: blob-drift-a 26s ease-in-out infinite alternate;
+  animation: blob-drift-a 20.8s ease-in-out infinite alternate;
 }
 body::after {
   top: 5%;
@@ -407,7 +386,7 @@ body::after {
   max-width: 750px;
   max-height: 750px;
   background: color-mix(in srgb, var(--accent) 18%, transparent);
-  animation: blob-drift-b 32s ease-in-out infinite alternate;
+  animation: blob-drift-b 25.6s ease-in-out infinite alternate;
 }
 @keyframes blob-drift-a {
   0% {
@@ -465,9 +444,6 @@ body::after {
 /* Heatmap cells are colored inline from the active theme's --heat-0..6
    ramp (see PointsHeatmap.tsx) and sit border-to-border as a mosaic rather
    than boxed-in spreadsheet cells. */
-.heat-cell {
-  cursor: help;
-}
 .heat-cell sup {
   font-size: 9px;
   font-weight: 700;
@@ -487,7 +463,9 @@ body::after {
   z-index: 40;
   max-width: calc(100vw - 28px);
   border-radius: 28px;
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline);
   display: flex;
   flex-direction: column;
@@ -655,7 +633,9 @@ body::after {
    a bordered grid, with row stripes (not gridlines) separating drivers. */
 .table-card {
   position: relative;
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 20px;
   padding: 10px;
   overflow: hidden;
@@ -712,10 +692,16 @@ body::after {
    (.heat-cell) rather than a boxed, gapped chip — plus a pinned DNF count
    column and the podium bars underneath. */
 .count-cell {
-  cursor: help;
   font-weight: 600;
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;
+}
+
+/* Points-paying cutoff in the finish-frequency grid: F1 only awards points
+   to the top 10 finishers, so a thin dashed divider (not a solid gridline,
+   which would read as a table border) marks that boundary. */
+.points-cutoff {
+  border-right: 1px dashed var(--border-hairline);
 }
 .dnf-cell {
   font-size: 11.5px;
@@ -875,7 +861,6 @@ body::after {
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  cursor: help;
   background: var(--surface-2);
   border-radius: 10px;
   padding: 7px 8px 6px;

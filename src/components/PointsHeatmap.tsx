@@ -42,6 +42,16 @@ export function useTooltip() {
     setTooltip(null);
   }
 
+  // The tooltip's position is captured once, on hover — it doesn't track
+  // the cell afterwards. Scrolling the page, or panning the table itself,
+  // moves the cell out from under a tooltip that stays put, so dismiss it
+  // on any scroll rather than leave it stranded at stale coordinates.
+  useEffect(() => {
+    if (!tooltip) return;
+    window.addEventListener("scroll", hide, true);
+    return () => window.removeEventListener("scroll", hide, true);
+  }, [tooltip]);
+
   return { tooltip, show, hide };
 }
 
