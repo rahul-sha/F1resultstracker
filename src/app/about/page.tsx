@@ -245,6 +245,17 @@ export default function AboutPage() {
                   entrance animation, which read as jumpy rather than smooth.
                 </span>
               </li>
+              <li>
+                <b>A proper glass effect, and tighter phone margins</b>
+                <span>
+                  The glass treatment from the previous update read as plain transparency rather
+                  than blur, so it now has a stronger blur, lower opacity, and a faint highlight,
+                  which visibly softens what&apos;s behind the nav bar and table cards. The
+                  race-header flags no longer sit in their own solid boxed chip &mdash; they now
+                  sit flush on the table like everything else. Phone-screen side margins are
+                  narrower too, so more of the table fits without scrolling.
+                </span>
+              </li>
             </ul>
           </div>
 
