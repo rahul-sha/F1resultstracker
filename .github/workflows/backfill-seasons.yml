@@ -64,4 +64,5 @@ jobs:
               git commit -m "Add ${year} season snapshot"
               git push
             fi
+            sleep 3
           done
