@@ -17,7 +17,14 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
           <tr>
             <th className="sticky left-0 z-10 min-w-[84px] sm:min-w-[180px] px-2 sm:px-3 py-2 text-left text-xs font-semibold" />
             {positions.map((p) => (
-              <th key={p} className="w-9 min-w-9 sm:w-11 sm:min-w-11 px-0.5 py-2 text-center text-[10px] sm:text-[11px] font-semibold" style={{ color: "var(--text-secondary)" }}>
+              <th
+                key={p}
+                className={
+                  "w-9 min-w-9 sm:w-11 sm:min-w-11 px-0.5 py-2 text-center text-[10px] sm:text-[11px] font-semibold" +
+                  (p === 10 ? " points-cutoff" : "")
+                }
+                style={{ color: "var(--text-secondary)" }}
+              >
                 {p}
               </th>
             ))}
@@ -46,8 +53,12 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
                   </div>
                 </td>
                 {positions.map((p) => {
+                  const cutoff = p === 10 ? " points-cutoff" : "";
                   const count = row.countsByPosition[p];
-                  if (!count) return <td key={p} className="w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11" />;
+                  if (!count)
+                    return (
+                      <td key={p} className={"w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11" + cutoff} />
+                    );
                   // The most-frequent cell is always bucket 6 (count/rowMax
                   // rounds to the top of the ramp) so the shading alone
                   // already marks it — no separate ring needed, which only
@@ -57,7 +68,7 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
                   return (
                     <td
                       key={p}
-                      className="count-cell w-9 h-8 sm:w-11 sm:h-9 text-center text-[11px] sm:text-xs"
+                      className={"count-cell w-9 h-8 sm:w-11 sm:h-9 text-center text-[11px] sm:text-xs" + cutoff}
                       style={{
                         background: `var(--heat-${bucket})`,
                         color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
