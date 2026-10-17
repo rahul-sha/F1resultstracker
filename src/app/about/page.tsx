@@ -252,8 +252,9 @@ export default function AboutPage() {
                   than blur, so it now has a stronger blur, lower opacity, and a faint highlight,
                   which visibly softens what&apos;s behind the nav bar and table cards. The
                   race-header flags no longer sit in their own solid boxed chip &mdash; they now
-                  sit flush on the table like everything else. Phone-screen side margins are
-                  narrower too, so more of the table fits without scrolling.
+                  sit flush on the table like everything else. Phone-screen side margins are now a
+                  small fixed 10px rather than a percentage of the screen width, which still left
+                  a visible gutter on narrow phones, so more of the table fits without scrolling.
                 </span>
               </li>
             </ul>
