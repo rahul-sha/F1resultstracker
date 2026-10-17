@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 import AccentToggle from "./AccentToggle";
 import SeasonSelector from "./SeasonSelector";
+import type { ReactNode } from "react";
+import { ResultsIcon, PositionsIcon, AboutIcon } from "./nav-icons";
 
-const NAV_SECTIONS: { label: string; href: string }[] = [
-  { label: "Results", href: "/results" },
-  { label: "Positions", href: "/positions" },
-  { label: "About", href: "/about" },
+const NAV_SECTIONS: { label: string; href: string; icon: ReactNode }[] = [
+  { label: "Results", href: "/results", icon: <ResultsIcon /> },
+  { label: "Positions", href: "/positions", icon: <PositionsIcon /> },
+  { label: "About", href: "/about", icon: <AboutIcon /> },
 ];
 
 export default function TopBar({ initialSeason }: { initialSeason: number }) {
@@ -30,6 +32,7 @@ export default function TopBar({ initialSeason }: { initialSeason: number }) {
                 href={section.href}
                 className={"navitem" + (active ? " active" : "")}
               >
+                {section.icon}
                 {section.label}
               </Link>
             );
