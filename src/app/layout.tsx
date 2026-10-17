@@ -23,7 +23,7 @@ export default async function RootLayout({
           // Runs before paint so the stored theme choice applies without a
           // light-mode flash on first load.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("f1-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}var a=localStorage.getItem("f1-accent");if(a==="coffee"||a==="red"){document.documentElement.setAttribute("data-accent",a);}}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem("f1-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}var a=localStorage.getItem("f1-accent");if(a==="coffee"||a==="red"||a==="dracula"){document.documentElement.setAttribute("data-accent",a);}}catch(e){}})();`,
           }}
         />
       </head>

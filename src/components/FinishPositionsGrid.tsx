@@ -10,7 +10,7 @@ export default function FinishPositionsGrid({ summary }: { summary: FinishPositi
   const dragPan = useDragPan(scrollerRef);
 
   return (
-    <div className="table-card scroll-grid">
+    <div className="table-card">
       <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
       <table className="border-collapse">
         <thead>

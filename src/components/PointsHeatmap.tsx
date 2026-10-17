@@ -403,7 +403,7 @@ export default function PointsHeatmap({
   }, [grid]);
 
   return (
-    <div className="table-card scroll-grid">
+    <div className="table-card">
       <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
       <table className="border-collapse">
         <thead>

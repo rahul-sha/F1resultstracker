@@ -209,12 +209,9 @@ export default function AboutPage() {
                 </span>
               </li>
               <li>
-                <b>Mobile corner-bleed fixed for good, consistent cell sizes, a background glow</b>
+                <b>Consistent cell sizes and a background glow</b>
                 <span>
-                  The heatmap tables&apos; rounded corner kept letting a coloured cell bleed past
-                  it on phones even after two earlier attempts — square corners on just those
-                  three scrolling tables (the About and podium cards keep theirs) settled it for
-                  good. Fixed the Positions page&apos;s finish-frequency grid shrinking its own
+                  Fixed the Positions page&apos;s finish-frequency grid shrinking its own
                   cells on narrow screens so they now match Results&apos; size exactly. Brought
                   back the Results and Positions page headings at the same size as the site&apos;s
                   other section headings. Fixed the season pill in the nav bar showing a stale
@@ -222,6 +219,18 @@ export default function AboutPage() {
                   Evened out the padding below the Theme/Palette row in the nav bar&apos;s
                   hamburger panel. Added a soft theme-coloured gradient behind every page instead
                   of a single flat background colour.
+                </span>
+              </li>
+              <li>
+                <b>Rounded corners back, a moving gradient, and a Dracula light mode</b>
+                <span>
+                  Brought the rounded corner back on the heatmap tables — it reads better than the
+                  squared-off edge did, even with the odd bleeding cell on some phones. The
+                  background glow now drifts slowly instead of sitting still. Dracula previously
+                  only had a dark variant; it now has a proper light one too, and the appearance
+                  menu correctly restores the chosen palette after a page reload (a Dracula-shaped
+                  gap in the restore logic meant it fell back to the default palette before). Also
+                  matched the season selector&apos;s height to the other nav bar buttons.
                 </span>
               </li>
             </ul>

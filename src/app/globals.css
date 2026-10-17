@@ -277,12 +277,66 @@
   --dnf-bg: var(--surface-1);
 }
 
-/* Dracula — the classic dark purple/pink palette. Unlike the other three
-   palettes it has no separate light variant (the scheme is dark by
-   design), so the light-mode block and the dark-mode block use the same
-   values; data-theme="light" still works, it just renders identically to
-   dark for this one palette. */
+/* Dracula — the classic dark purple/pink palette, lightened for a light
+   variant (lavender surfaces, the dark palette's own background colour
+   reused as light-mode text) the same way Coffee and Ember get one. */
 :root[data-accent="dracula"] {
+  color-scheme: light;
+  --page-plane: #f8f6fc;
+  --surface-1: #f1ecfa;
+  --surface-2: #e8e0f7;
+  --surface-3: #ded3f2;
+  --text-primary: #282a36;
+  --text-secondary: #5a5570;
+  --text-muted: #8884a0;
+  --gridline: #ded3f2;
+  --baseline: #cabbe8;
+  --border-hairline: rgba(40, 42, 54, 0.12);
+  --accent: #8c54d1;
+  --accent-container: #ecd9ff;
+  --on-accent-container: #4a2a7a;
+  --heat-0: #f0e6fb;
+  --heat-1: #ddc2f5;
+  --heat-2: #c89cee;
+  --heat-3: #b378e3;
+  --heat-4: #9b57d6;
+  --heat-5: #7f3fc2;
+  --heat-6: #ff5fb8;
+  --heat-fg-lo: #282a36;
+  --heat-fg-hi: #faf7ff;
+  --dnf-bg: var(--surface-3);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-accent="dracula"]:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page-plane: #1e1f29;
+    --surface-1: #282a36;
+    --surface-2: #2f3142;
+    --surface-3: #3b3d52;
+    --text-primary: #f8f8f2;
+    --text-secondary: #c2c3d6;
+    --text-muted: #8a8cab;
+    --gridline: #44475a;
+    --baseline: #51536b;
+    --border-hairline: rgba(248, 248, 242, 0.12);
+    --accent: #bd93f9;
+    --accent-container: #44355f;
+    --on-accent-container: #e5d4ff;
+    --heat-0: #333648;
+    --heat-1: #4a3f66;
+    --heat-2: #614685;
+    --heat-3: #7a4ea3;
+    --heat-4: #9458bf;
+    --heat-5: #b166d8;
+    --heat-6: #ff79c6;
+    --heat-fg-lo: #f8f8f2;
+    --heat-fg-hi: #1e1f29;
+    --dnf-bg: var(--surface-1);
+  }
+}
+
+:root[data-accent="dracula"][data-theme="dark"] {
   color-scheme: dark;
   --page-plane: #1e1f29;
   --surface-1: #282a36;
@@ -314,19 +368,74 @@
   --color-foreground: var(--text-primary);
 }
 
-/* Two soft accent-tinted glows over the flat page-plane, instead of one flat
-   colour — built from the active theme's own --accent and --page-plane
-   tokens, so it re-colours itself with the theme rather than being a
-   separate hardcoded background. Fixed attachment keeps it calm (doesn't
-   scroll with the page) rather than reading as a texture. */
+/* Two soft accent-tinted glows drifting slowly behind the page, instead of
+   a flat colour — built from the active theme's own --accent token, so
+   they re-colour themselves with the theme rather than being a separate
+   hardcoded background. Blurred, fixed-position blobs (not a background-
+   position animation) since a radial-gradient()'s own "at" offset can't be
+   animated directly; translating a blurred circle can. */
 body {
-  background:
-    radial-gradient(1100px 650px at 12% -8%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
-    radial-gradient(900px 550px at 100% 15%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 55%),
-    var(--page-plane);
-  background-attachment: fixed;
+  position: relative;
+  background: var(--page-plane);
   color: var(--text-primary);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+}
+body::before {
+  top: -15%;
+  left: -10%;
+  width: 60vw;
+  height: 60vw;
+  max-width: 900px;
+  max-height: 900px;
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  animation: blob-drift-a 26s ease-in-out infinite alternate;
+}
+body::after {
+  top: 5%;
+  right: -15%;
+  width: 50vw;
+  height: 50vw;
+  max-width: 750px;
+  max-height: 750px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  animation: blob-drift-b 32s ease-in-out infinite alternate;
+}
+@keyframes blob-drift-a {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6vw, 8vh) scale(1.08);
+  }
+  100% {
+    transform: translate(-4vw, 4vh) scale(0.96);
+  }
+}
+@keyframes blob-drift-b {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-7vw, -5vh) scale(1.05);
+  }
+  100% {
+    transform: translate(3vw, 6vh) scale(0.95);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after {
+    animation: none;
+  }
 }
 
 /* Scrollbars themed to match the active surface, everywhere — the page
@@ -479,8 +588,8 @@ body {
 }
 .navbar-season .switcher-trigger {
   background: var(--surface-3);
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
   min-width: 0;
 }
 .navbar-season .switcher-trigger:hover {
@@ -550,15 +659,6 @@ body {
   border-radius: 20px;
   padding: 10px;
   overflow: hidden;
-}
-
-/* The three horizontally-scrolling heatmap grids (not the static About/
-   Podium cards, which also use .table-card) go square-cornered: a rounded
-   corner here let a sticky column's coloured cell bleed past it on mobile
-   WebKit in a way overflow:hidden and clip-path both failed to reliably
-   clip. */
-.table-card.scroll-grid {
-  border-radius: 0;
 }
 
 /* No themed scrollbar any more — the table pans by click-and-hold drag
@@ -732,6 +832,15 @@ body {
    (e.g. a 22-driver season) and the table hasn't been scrolled yet. */
 .table-card thead th.sticky {
   background: var(--surface-2);
+}
+/* The first/last data row's sticky left cell sits right in the card's own
+   rounded corner, so it needs a matching corner radius or its square edge
+   shows inside the curve. */
+.table-card tbody tr:first-child td:first-child {
+  border-top-left-radius: 14px;
+}
+.table-card tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 14px;
 }
 /* Sticky driver/points columns stay opaque while other columns scroll
    underneath them; a soft edge shadow shows the boundary rather than

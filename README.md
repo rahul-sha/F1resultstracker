@@ -25,7 +25,8 @@ language.
   timeline.
 
 Every page sits over a soft gradient glow built from the active theme's
-own colours, rather than a single flat background.
+own colours, rather than a single flat background — it drifts slowly
+rather than sitting still.
 
 Pick a season from the selector, built into the nav bar at every screen
 size. The app defaults to the current calendar year. Only seasons 2020
@@ -71,8 +72,7 @@ overrides are mapped locally in `src/lib/circuits.ts`,
 
 Four colour palettes — Monokai (default), Coffee, Ember and Dracula — each
 togglable from the nav bar's hamburger menu and persisted in `localStorage`.
-Monokai, Coffee and Ember each have a light and dark variant; Dracula is a
-single dark scheme by design. All colour in the UI, including the heatmap
+All four have both a light and a dark variant. All colour in the UI, including the heatmap
 shading, comes from theme CSS custom properties (see `src/app/globals.css`),
 so nothing is hardcoded to a single palette.
 
