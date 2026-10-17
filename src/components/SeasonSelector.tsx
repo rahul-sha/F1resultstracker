@@ -70,7 +70,20 @@ export default function SeasonSelector({ initialSeason }: { initialSeason: numbe
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <span>{season} season</span>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+          className="switcher-calendar-icon"
+        >
+          <rect x="1.5" y="2.5" width="11" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+          <path d="M1.5 5.5H12.5" stroke="currentColor" strokeWidth="1.2" />
+          <path d="M4 1.5V3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+          <path d="M10 1.5V3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+        </svg>
+        <span>{season}</span>
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
           <path
             d="M2.5 4.5L6 8L9.5 4.5"
@@ -92,7 +105,7 @@ export default function SeasonSelector({ initialSeason }: { initialSeason: numbe
               className={"switcher-option" + (year === season ? " active" : "")}
               onClick={() => handleSelect(year)}
             >
-              {year} season
+              {year}
             </button>
           ))}
         </div>
