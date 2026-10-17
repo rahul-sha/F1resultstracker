@@ -341,7 +341,12 @@ body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  /* Deliberately no overflow:hidden here: the season menu is an absolutely
+     positioned child that needs to render outside this box's own bounds
+     (above or below it). The rounded corners don't need it either, since
+     no child paints its own background out to the edge. Only the growing
+     hamburger panel (.navbar-menu) clips its own height during the open
+     transition. */
 }
 .navbar-row {
   display: flex;
@@ -351,6 +356,23 @@ body {
 }
 .navbar-spacer {
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
+}
+/* Above ~640px the bar moves to the top of the viewport instead of
+   floating at the bottom, so the tab row (not the hamburger panel) sits
+   flush with the bar's top edge, and the panel grows downward below it
+   when opened instead of upward above it. */
+@media (min-width: 641px) {
+  .navbar {
+    top: 20px;
+    bottom: auto;
+  }
+  .navbar-row {
+    order: -1;
+  }
+  .navbar-spacer {
+    padding-bottom: 0;
+    padding-top: 92px;
+  }
 }
 /* The fixed 16px (p-4) side margin reads as too wide a gutter on a
    phone screen — a percentage of the viewport scales better. */
@@ -398,19 +420,19 @@ body {
 .navbar-tab:hover:not(.active) {
   background: var(--surface-3);
 }
-/* Below ~640px, showing every inactive tab's label alongside Results and
-   Positions left About hidden off the edge of the scroll strip with no
-   sign there was more to find. Collapsing inactive tabs to icon-only (the
-   active tab keeps its label) means all three are visible at once, so
-   there's nothing left to discover by scrolling. */
+/* Below ~640px every tab is icon-only, active tab included — labels made
+   the active tab wider than the others, so the bar's width (and the
+   season chip and hamburger beside it) shifted between pages. Icon-only
+   throughout keeps the bar a constant width and keeps Results, Positions
+   and About all visible at once, nothing left to discover by scrolling. */
 @media (max-width: 640px) {
-  .navbar-tab:not(.active) {
+  .navbar-tab {
     width: 32px;
     height: 32px;
     padding: 0;
     justify-content: center;
   }
-  .navbar-tab:not(.active) .navbar-tab-label {
+  .navbar-tab-label {
     display: none;
   }
 }
@@ -423,13 +445,17 @@ body {
 .navbar-season .switcher-trigger:hover {
   background: var(--border-hairline);
 }
-/* The bar sits at the bottom of the viewport, so the season menu would
-   run off-screen opening downward — flip it to open upward instead. */
-.navbar-season .switcher-menu {
-  top: auto;
-  bottom: calc(100% + 8px);
-  right: 0;
-  left: auto;
+/* Below ~640px the bar sits at the bottom of the viewport, so the season
+   menu would run off-screen opening downward — flip it to open upward
+   instead. Above that width the bar is at the top, where the menu's
+   default downward opening already works. */
+@media (max-width: 640px) {
+  .navbar-season .switcher-menu {
+    top: auto;
+    bottom: calc(100% + 8px);
+    right: 0;
+    left: auto;
+  }
 }
 .navbar-menu-btn {
   display: flex;
@@ -855,9 +881,11 @@ body {
 }
 
 /* About page: centred column, with "About me" and the tools credits sat
-   beside the main write-up on wide screens instead of stacked under it. */
+   beside the main write-up on wide screens instead of stacked under it.
+   Same max-width as .content-wrap (Results/Positions) so every page reads
+   the same overall width rather than About looking narrower. */
 .about-page-wrap {
-  max-width: 980px;
+  max-width: 1420px;
   margin: 0 auto;
 }
 .about-layout {

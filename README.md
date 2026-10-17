@@ -28,13 +28,16 @@ onwards are supported.
 
 ## Navigation
 
-A single floating nav bar, fixed to the bottom of the viewport, is used
-at every screen size — there's no separate desktop top bar. Results,
+A single floating nav bar is used at every screen size — there's no
+separate desktop top bar and mobile dock, just one component. Results,
 Positions and About sit in a horizontally scrollable tab strip (hidden
-scrollbar; on narrow screens an inactive tab collapses to icon-only so
-all three stay visible without scrolling), the season selector stays
-pinned beside them, and a hamburger button grows the bar itself upward
-into a panel holding the theme and palette toggles.
+scrollbar; on narrow screens every tab, including the active one, is
+icon-only, so the bar stays a constant width across pages), the season
+selector stays pinned beside them, and a hamburger button grows the bar
+itself into a panel holding the theme and palette toggles. The bar sits
+at the bottom of the viewport on narrow screens and at the top on wider
+ones, with the hamburger panel opening in whichever direction (up or
+down) keeps it growing away from the screen edge the bar is pinned to.
 
 ## Getting started
 

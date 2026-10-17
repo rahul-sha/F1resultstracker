@@ -49,7 +49,12 @@ export default function NavBar({ initialSeason }: { initialSeason: number }) {
           {NAV_TABS.map((tab) => {
             const active = pathname === tab.href;
             return (
-              <Link key={tab.href} href={tab.href} className={"navbar-tab" + (active ? " active" : "")}>
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={"navbar-tab" + (active ? " active" : "")}
+                aria-label={tab.label}
+              >
                 {tab.icon}
                 <span className="navbar-tab-label">{tab.label}</span>
               </Link>
