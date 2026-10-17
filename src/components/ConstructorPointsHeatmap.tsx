@@ -36,7 +36,7 @@ export default function ConstructorPointsHeatmap({ grid }: { grid: ConstructorPo
   }, [grid]);
 
   return (
-    <div className="table-card scroll-grid">
+    <div className="table-card">
       <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
         <table className="border-collapse">
           <thead>
