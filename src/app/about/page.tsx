@@ -10,7 +10,7 @@ function CreditIcon({ children, title }: { children: React.ReactNode; title?: st
 
 export default function AboutPage() {
   return (
-    <div className="p-6">
+    <div className="px-[10px] py-6 sm:p-6">
       <div className="about-page-wrap">
       <div className="mb-4">
         <h1 className="text-2xl font-bold">About</h1>

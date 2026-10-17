@@ -503,13 +503,26 @@ body::after {
     padding-top: 44px;
   }
 }
+/* Mobile browsers weren't rendering the blur at all (just the translucent
+   background on its own, which reads as flat/murky rather than glass) -
+   drop the glass effect entirely below 640px and go fully solid instead. */
+@media (max-width: 640px) {
+  .navbar {
+    background: var(--surface-2);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
 /* The fixed 16px (p-4) side margin reads as too wide a gutter on a
-   phone screen. A percentage (5%, then 2.5%) still left a visible gutter
-   on narrow phones, so this is now a small fixed value instead. */
+   phone screen. Each page's own content wrapper (the "p-6" div in
+   results/positions/about/*) owns the mobile horizontal padding
+   directly (px-[10px]) - page-shell's own horizontal padding was
+   compounding with it, so it's dropped to 0 here instead of also
+   contributing its own margin. */
 @media (max-width: 640px) {
   .page-shell {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 

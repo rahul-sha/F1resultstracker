@@ -13,7 +13,7 @@ export default function PositionsError({ reset }: { error: Error; reset: () => v
   }
 
   return (
-    <div className="p-6">
+    <div className="px-[10px] py-6 sm:p-6">
       <h1 className="text-2xl font-bold">Positions</h1>
       <p className="mt-2 text-sm" style={{ color: "var(--text-secondary)" }}>
         Couldn&apos;t load positions from the F1 data API right now.
