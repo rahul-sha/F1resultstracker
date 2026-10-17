@@ -463,10 +463,11 @@ body::after {
   z-index: 40;
   max-width: calc(100vw - 28px);
   border-radius: 28px;
-  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline);
+  background: color-mix(in srgb, var(--surface-2) 50%, transparent);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
   display: flex;
   flex-direction: column;
   /* Deliberately no overflow:hidden here: the season menu is an absolutely
@@ -503,11 +504,12 @@ body::after {
   }
 }
 /* The fixed 16px (p-4) side margin reads as too wide a gutter on a
-   phone screen — a percentage of the viewport scales better. */
+   phone screen — a percentage of the viewport scales better. Trimmed
+   from 5% to 2.5% (Rahul: more content visible, less wasted edge). */
 @media (max-width: 640px) {
   .page-shell {
-    padding-left: 5%;
-    padding-right: 5%;
+    padding-left: 2.5%;
+    padding-right: 2.5%;
   }
 }
 
@@ -633,9 +635,9 @@ body::after {
    a bordered grid, with row stripes (not gridlines) separating drivers. */
 .table-card {
   position: relative;
-  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: color-mix(in srgb, var(--surface-2) 62%, transparent);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
   border-radius: 20px;
   padding: 10px;
   overflow: hidden;
@@ -851,8 +853,9 @@ body::after {
   border-radius: 999px;
 }
 
-/* Round header: a floating chip with its own shadow instead of a bordered
-   spreadsheet cell. */
+/* Round header: just the flag and abbreviation sitting directly on the
+   table card's own surface — no separate boxed chip behind them, which
+   read as its own solid panel floating over the (now translucent) table. */
 .round-header {
   padding: 10px 3px 14px;
 }
@@ -861,18 +864,15 @@ body::after {
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  background: var(--surface-2);
-  border-radius: 10px;
   padding: 7px 8px 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--border-hairline);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.12s ease, opacity 0.12s ease;
 }
 .round-chip:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14), 0 0 0 1px var(--border-hairline);
+  opacity: 0.8;
 }
-.round-chip-sprint {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 0 0 1.5px var(--accent);
+.round-chip-sprint .round-flag {
+  box-shadow: 0 0 0 1.5px var(--accent);
 }
 .round-flag {
   width: 22px;
