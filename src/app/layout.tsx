@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import TopBar from "@/components/TopBar";
-import BottomDock from "@/components/BottomDock";
+import NavBar from "@/components/NavBar";
 import PageTransition from "@/components/PageTransition";
 import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
 
@@ -30,11 +29,10 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full">
         <div className="page-shell flex min-h-screen flex-col gap-6 p-4">
-          <TopBar initialSeason={initialSeason} />
-          <main className="min-w-0 flex-1 dock-spacer">
+          <main className="min-w-0 flex-1 navbar-spacer">
             <PageTransition>{children}</PageTransition>
           </main>
-          <BottomDock initialSeason={initialSeason} />
+          <NavBar initialSeason={initialSeason} />
         </div>
       </body>
     </html>

@@ -22,18 +22,19 @@ language.
 - **About** (`/about`) — who built this and how, credits, and a progress
   timeline.
 
-Pick a season from the selector; on a wide screen it sits in the top nav
-bar, on a phone it's built into the bottom dock nav. The app defaults to
-the current calendar year. Only seasons 2020 onwards are supported.
+Pick a season from the selector, built into the nav bar at every screen
+size. The app defaults to the current calendar year. Only seasons 2020
+onwards are supported.
 
 ## Navigation
 
-On screens wider than 640px, navigation is a floating top bar with
-Results, Positions and About, each paired with a small icon, plus the
-season selector and the theme/palette toggles. Below that width the top
-bar is replaced by a bottom dock: Results and Positions as the two main
-tabs, the season selector and an About shortcut built in, and a hamburger
-button that opens a sheet with the same theme and palette toggles.
+A single floating nav bar, fixed to the bottom of the viewport, is used
+at every screen size — there's no separate desktop top bar. Results,
+Positions and About sit in a horizontally scrollable tab strip (hidden
+scrollbar; on narrow screens an inactive tab collapses to icon-only so
+all three stay visible without scrolling), the season selector stays
+pinned beside them, and a hamburger button grows the bar itself upward
+into a panel holding the theme and palette toggles.
 
 ## Getting started
 
@@ -61,8 +62,8 @@ overrides are mapped locally in `src/lib/circuits.ts`,
 ## Theming
 
 Three colour palettes — Monokai (default), Coffee and Ember — each with a
-light and dark variant, togglable from the top bar (or, on mobile, the
-dock's hamburger menu) and persisted in `localStorage`. All colour in the UI, including the heatmap shading, comes
+light and dark variant, togglable from the nav bar's hamburger menu and
+persisted in `localStorage`. All colour in the UI, including the heatmap shading, comes
 from theme CSS custom properties (see `src/app/globals.css`), so nothing
 is hardcoded to a single palette.
 
