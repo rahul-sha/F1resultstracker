@@ -257,6 +257,15 @@ export default function AboutPage() {
                   a visible gutter on narrow phones, so more of the table fits without scrolling.
                 </span>
               </li>
+              <li>
+                <b>Glass effect scoped down, icon-only season picker</b>
+                <span>
+                  The glass look now stays only on the nav bar and this About page &mdash; every
+                  table card is back to a solid surface. The season picker no longer spells out
+                  &ldquo;season&rdquo;; it&apos;s just a small calendar icon next to the year, so it
+                  takes up less space.
+                </span>
+              </li>
             </ul>
           </div>
 
