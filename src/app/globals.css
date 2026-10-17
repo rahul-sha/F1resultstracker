@@ -367,6 +367,12 @@ body {
   font-weight: 500;
   white-space: nowrap;
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.navitem svg {
+  flex-shrink: 0;
 }
 .navitem.active {
   background: var(--accent-container);
@@ -377,32 +383,140 @@ body {
   background: var(--surface-3);
 }
 
-/* Below ~640px the nav row wraps onto a second line, and a 999px pill
-   radius applied to that taller, two-row box reads as a bulging blob
-   rather than a rounded bar — so switch to a plain rounded card and stack
-   nav and the palette/theme controls as two clear rows instead. */
+/* Below ~640px the top bar is replaced by the bottom dock, so it's simply
+   hidden rather than reflowed. */
 @media (max-width: 640px) {
   .topbar {
-    flex-direction: column;
-    align-items: stretch;
-    border-radius: 24px;
-    padding: 14px 16px;
-    gap: 12px;
+    display: none;
   }
-  .topbar-controls {
+  .dock-spacer {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Bottom dock: the mobile nav pattern, a floating pill fixed to the
+   bottom of the viewport. Hidden above the 640px breakpoint where the
+   top bar takes over instead. */
+.dock {
+  display: none;
+}
+@media (max-width: 640px) {
+  .dock {
+    display: flex;
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    z-index: 40;
+    align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    row-gap: 8px;
+    gap: 2px;
+    padding: 6px 6px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline);
   }
-  /* Three pills (season, palette, theme) no longer fit one row at phone
-     width now the season switcher lives here too — give it the full row
-     so it doesn't fight the other two for space. */
-  .topbar-controls .switcher {
-    flex: 1 1 100%;
-  }
-  .topbar-controls .switcher-trigger {
-    width: 100%;
-  }
+}
+.dock-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.dock-tab.active {
+  background: var(--accent-container);
+  color: var(--on-accent-container);
+}
+.dock-tab svg {
+  flex-shrink: 0;
+}
+.dock-season .switcher-trigger {
+  background: var(--surface-3);
+  padding: 8px 10px;
+  font-size: 12px;
+}
+/* The dock sits at the bottom of the viewport, so the season menu would
+   run off-screen opening downward like it does in the top bar — flip it
+   to open upward instead. */
+.dock-season .switcher-menu {
+  top: auto;
+  bottom: calc(100% + 8px);
+  right: auto;
+  left: 0;
+}
+.dock-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.dock-icon-btn:hover {
+  background: var(--surface-3);
+}
+.dock-icon-btn.menu-open {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+
+/* The dock's hamburger opens this as a bottom sheet: a scrim plus a panel
+   sliding up from the dock itself, holding the existing palette/theme
+   cycle toggles at a size that suits a tap target. */
+.dock-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 45;
+}
+.dock-sheet {
+  position: fixed;
+  left: 14px;
+  right: 14px;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 46;
+  background: var(--surface-2);
+  border-radius: 26px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--border-hairline);
+  padding: 18px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dock-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.dock-sheet-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--text-secondary);
+}
+.dock-sheet-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dock-sheet-controls button {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 13px;
 }
 
 /* Table card: the whole table sits in one rounded tonal surface instead of
@@ -425,6 +539,7 @@ body {
   overflow-y: hidden;
   height: 12px;
   margin-bottom: 2px;
+  width: 80%;
 }
 .top-scrollbar > div {
   height: 1px;

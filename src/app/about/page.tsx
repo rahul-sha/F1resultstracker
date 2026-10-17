@@ -48,6 +48,7 @@ export default function AboutPage() {
               historical-season caching that avoids hitting the live API repeatedly
             </li>
             <li>Every design change was mocked up and approved before going live — this page included</li>
+            <li>Replaced the mobile top bar with a bottom dock nav, and added icons to the desktop nav items</li>
           </ul>
 
           <p>
@@ -144,6 +145,17 @@ export default function AboutPage() {
                   right on wide screens. The season selector moved out of each page and into
                   the top nav bar, and the season you pick now stays selected as you move
                   between pages instead of resetting.
+                </span>
+              </li>
+              <li>
+                <b>Bottom dock nav on mobile, nav icons on desktop</b>
+                <span>
+                  On narrow screens the top bar is now a floating bottom dock with Results and
+                  Positions as the two main tabs, the season selector and an About shortcut
+                  built in, and a hamburger that opens a sheet for the theme and light/dark
+                  toggles. The desktop top bar gained matching icons next to its nav labels, and
+                  the race-header scrollbar on Results and Positions was narrowed so it no longer
+                  spans the full width of the table.
                 </span>
               </li>
             </ul>
