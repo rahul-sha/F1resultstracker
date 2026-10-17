@@ -233,6 +233,18 @@ export default function AboutPage() {
                   matched the season selector&apos;s height to the other nav bar buttons.
                 </span>
               </li>
+              <li>
+                <b>Faster background, glassmorphism, and tooltip/cursor fixes</b>
+                <span>
+                  Sped up the drifting background glow by a fifth. Gave the nav bar and every
+                  table card a blurred, translucent glass look so the background shows through
+                  them. Added a thin dashed line after 10th place on the finish-frequency grid,
+                  marking where points stop being awarded. Removed the question-mark cursor from
+                  heatmap cells, and fixed the hover tooltip staying stuck in place — rather than
+                  following the cell — if you scrolled while hovering. Also removed the page-switch
+                  entrance animation, which read as jumpy rather than smooth.
+                </span>
+              </li>
             </ul>
           </div>
 
