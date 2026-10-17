@@ -6,7 +6,7 @@ import { RoundHeader, Tooltip, useDragPan, useTooltip } from "./PointsHeatmap";
 
 function Cell({ cell, max }: { cell: ConstructorPointsCell | null; max: number }) {
   if (cell === null) {
-    return <td className="w-9 h-8 sm:w-11 sm:h-9" />;
+    return <td className="w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11" />;
   }
 
   const t = max > 0 ? cell.points / max : 0;
@@ -18,7 +18,7 @@ function Cell({ cell, max }: { cell: ConstructorPointsCell | null; max: number }
   } as React.CSSProperties;
 
   return (
-    <td className="heat-cell w-9 h-8 sm:w-11 sm:h-9 text-center text-[11px] sm:text-xs font-medium tabular-nums" style={style}>
+    <td className="heat-cell w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11 text-center text-[11px] sm:text-xs font-medium tabular-nums" style={style}>
       {cell.points}
     </td>
   );
@@ -36,7 +36,7 @@ export default function ConstructorPointsHeatmap({ grid }: { grid: ConstructorPo
   }, [grid]);
 
   return (
-    <div className="table-card">
+    <div className="table-card scroll-grid">
       <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
         <table className="border-collapse">
           <thead>

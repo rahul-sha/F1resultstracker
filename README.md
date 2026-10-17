@@ -24,9 +24,8 @@ language.
 - **About** (`/about`) — who built this and how, credits, and a progress
   timeline.
 
-Results and Positions show their tables directly below the nav bar — the
-nav bar's own tab already says which page you're on, so there's no
-repeated page title.
+Every page sits over a soft gradient glow built from the active theme's
+own colours, rather than a single flat background.
 
 Pick a season from the selector, built into the nav bar at every screen
 size. The app defaults to the current calendar year. Only seasons 2020

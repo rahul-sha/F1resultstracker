@@ -26,8 +26,21 @@ export default function SeasonSelector({ initialSeason }: { initialSeason: numbe
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  // The nav bar (and this selector within it) stays mounted across page
+  // navigations rather than re-rendering from the server, so initialSeason
+  // is only ever correct on first load — picking a season on one page and
+  // then following a plain nav link (no ?season=) to another would keep
+  // showing the season you started on. Track the last season actually
+  // seen in the URL in state instead, so the display stays in sync even
+  // once the URL param that set it is gone.
   const urlSeason = Number(searchParams.get("season"));
-  const season = seasons.includes(urlSeason) ? urlSeason : initialSeason;
+  const hasUrlSeason = seasons.includes(urlSeason);
+  const [lastKnownSeason, setLastKnownSeason] = useState(initialSeason);
+  const season = hasUrlSeason ? urlSeason : lastKnownSeason;
+
+  useEffect(() => {
+    if (hasUrlSeason) setLastKnownSeason(urlSeason);
+  }, [hasUrlSeason, urlSeason]);
 
   useEffect(() => {
     if (!open) return;

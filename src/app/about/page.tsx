@@ -199,16 +199,29 @@ export default function AboutPage() {
                 </span>
               </li>
               <li>
-                <b>Drag-to-pan tables, a Dracula theme &amp; a tidier layout</b>
+                <b>Drag-to-pan tables &amp; a Dracula theme</b>
                 <span>
                   Removed the themed scrollbar under the race headers — a table that overflows
                   now pans by clicking and dragging on desktop, or the normal touch scroll on
-                  phones. Fixed a lingering corner-bleed on phones where a coloured cell could
-                  paint past the table card&apos;s rounded corner while scrolling. Shrunk the gap
-                  between the nav bar and the page content on wide screens, dropped the repeated
-                  Results/Positions page titles since the nav bar already shows which page
-                  you&apos;re on, and added icons to the Theme and Palette toggles. Added a fourth
+                  phones. Shrunk the gap between the nav bar and the page content on wide
+                  screens, and added icons to the Theme and Palette toggles. Added a fourth
                   colour palette, Dracula.
+                </span>
+              </li>
+              <li>
+                <b>Mobile corner-bleed fixed for good, consistent cell sizes, a background glow</b>
+                <span>
+                  The heatmap tables&apos; rounded corner kept letting a coloured cell bleed past
+                  it on phones even after two earlier attempts — square corners on just those
+                  three scrolling tables (the About and podium cards keep theirs) settled it for
+                  good. Fixed the Positions page&apos;s finish-frequency grid shrinking its own
+                  cells on narrow screens so they now match Results&apos; size exactly. Brought
+                  back the Results and Positions page headings at the same size as the site&apos;s
+                  other section headings. Fixed the season pill in the nav bar showing a stale
+                  year after following a nav link to another page rather than a season link.
+                  Evened out the padding below the Theme/Palette row in the nav bar&apos;s
+                  hamburger panel. Added a soft theme-coloured gradient behind every page instead
+                  of a single flat background colour.
                 </span>
               </li>
             </ul>
