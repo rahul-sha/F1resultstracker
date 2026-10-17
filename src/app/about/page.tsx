@@ -266,6 +266,36 @@ export default function AboutPage() {
                   takes up less space.
                 </span>
               </li>
+              <li>
+                <b>Nav bar opacity, and the real fix for phone-screen margins</b>
+                <span>
+                  The nav bar and About card now read solid enough on their own on browsers where
+                  the blur effect doesn&apos;t render. Tracked down why the phone-margin fix kept
+                  looking like it did nothing across several rounds of tuning: every page&apos;s own
+                  content wrapper had a fixed padding stacking on top of the nav bar&apos;s, so the
+                  real total margin barely moved. Fixed both layers together, and dropped the nav
+                  bar&apos;s blur entirely on phones, where it wasn&apos;t rendering at all.
+                </span>
+              </li>
+              <li>
+                <b>Qualifying frequency heatmap</b>
+                <span>
+                  Added a Qualifying frequency section to the Positions page, in the same heatmap
+                  style as Finish frequency &mdash; how often each driver has qualified in each grid
+                  position, with a marker at the Q3 cutoff. Ranked by average qualifying position
+                  rather than the championship standings, so it shows who qualifies well
+                  independent of how the race itself went. Backfilled real qualifying data for every
+                  season from 2020 to 2026.
+                </span>
+              </li>
+              <li>
+                <b>Podium bar scaling fix</b>
+                <span>
+                  Fixed the podium-finishes bar chart on phones: bars with very different totals
+                  were rendering at the same width once the longest one ran out of room, making the
+                  scale look broken. Bars are now proportional to their total at any screen size.
+                </span>
+              </li>
             </ul>
           </div>
 

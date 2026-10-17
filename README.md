@@ -18,9 +18,12 @@ language.
   separate scrollbar.
 - **Positions** (`/positions`) — where each driver finished each race
   (not points), with a median-finish summary, followed by how often each
-  driver finished in each position across the season (with a DNF count)
-  and a podium-finishes count for drivers and teams. Sprint weekends show
-  the sprint result as a small superscript next to the main race result.
+  driver finished in each position across the season (with a DNF count),
+  a Qualifying frequency heatmap in the same style (ranked by average
+  qualifying position rather than the championship standings, so it shows
+  qualifying form on its own), and a podium-finishes count for drivers and
+  teams. Sprint weekends show the sprint result as a small superscript
+  next to the main race result.
 - **About** (`/about`) — who built this and how, credits, and a progress
   timeline.
 
