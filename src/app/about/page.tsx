@@ -182,11 +182,20 @@ export default function AboutPage() {
                 <span>
                   Replaced the separate desktop top bar and mobile dock with a single floating
                   bar used at every screen size: Results, Positions and About sit in a
-                  horizontally scrollable strip (About no longer hides off-screen on phones,
-                  since inactive tabs collapse to icon-only there) and the season selector stays
-                  pinned beside them. The hamburger menu now grows the bar itself upward into a
-                  panel holding the theme and palette toggles, instead of opening a separate
-                  sheet.
+                  horizontally scrollable strip and the season selector stays pinned beside them.
+                  The hamburger menu grows the bar itself into a panel holding the theme and
+                  palette toggles, instead of opening a separate sheet.
+                </span>
+              </li>
+              <li>
+                <b>Nav bar polish</b>
+                <span>
+                  On phones every tab is now icon-only, including the active one, so the bar
+                  stays the same width from page to page instead of shifting with the active
+                  label. Fixed the season menu rendering invisibly behind the page. On wide
+                  screens the bar now sits at the top (its hamburger panel opens downward to
+                  match), and the About page&apos;s content now matches the width of Results and
+                  Positions instead of reading narrower.
                 </span>
               </li>
             </ul>
