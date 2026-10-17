@@ -51,13 +51,27 @@ jobs:
         run: |
           FROM="${FROM_INPUT:-1950}"
           TO="${TO_INPUT:-2019}"
+          failed=()
           for (( year = FROM; year <= TO; year++ )); do
             if [ -f "data/seasons/${year}.json" ]; then
               echo "Skipping ${year} — snapshot already exists"
               continue
             fi
             echo "::group::Season ${year}"
-            node scripts/snapshot-season.mjs "$year"
+            # A single season occasionally hits a rate-limit window that the
+            # script's own retry/backoff (up to ~2 minutes of patience)
+            # can't ride out. Rather than let one stuck season kill the rest
+            # of the range (and burn the remaining job time waiting on it),
+            # log it and move on — re-running this workflow later skips
+            # every season that already has a file, so it naturally mops up
+            # just the ones that failed.
+            if ! node scripts/snapshot-season.mjs "$year"; then
+              echo "::warning::Season ${year} failed after retries — skipping, re-run the workflow later to pick it up"
+              failed+=("$year")
+              echo "::endgroup::"
+              sleep 3
+              continue
+            fi
             echo "::endgroup::"
             if [ -n "$(git status --porcelain "data/seasons/${year}.json")" ]; then
               git add "data/seasons/${year}.json"
@@ -66,3 +80,6 @@ jobs:
             fi
             sleep 3
           done
+          if [ "${#failed[@]}" -gt 0 ]; then
+            echo "::warning::Seasons that need a re-run: ${failed[*]}"
+          fi
