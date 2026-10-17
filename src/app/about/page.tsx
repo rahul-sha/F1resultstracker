@@ -50,6 +50,7 @@ export default function AboutPage() {
             <li>Every design change was mocked up and approved before going live — this page included</li>
             <li>Replaced the mobile top bar with a bottom dock nav, and added icons to the desktop nav items</li>
             <li>Fixed a Positions-page scrolling bug and tightened phone-side page margins</li>
+            <li>Unified the desktop and mobile nav into one bar, the same design at every size</li>
           </ul>
 
           <p>
@@ -174,6 +175,18 @@ export default function AboutPage() {
                   column &mdash; it now scrolls horizontally like every other table on the site.
                   Reduced the page&apos;s left/right margin on phones from a fixed amount to 5%
                   of the screen width, so it no longer feels cramped.
+                </span>
+              </li>
+              <li>
+                <b>One nav bar, same design everywhere</b>
+                <span>
+                  Replaced the separate desktop top bar and mobile dock with a single floating
+                  bar used at every screen size: Results, Positions and About sit in a
+                  horizontally scrollable strip (About no longer hides off-screen on phones,
+                  since inactive tabs collapse to icon-only there) and the season selector stays
+                  pinned beside them. The hamburger menu now grows the bar itself upward into a
+                  panel holding the theme and palette toggles, instead of opening a separate
+                  sheet.
                 </span>
               </li>
             </ul>

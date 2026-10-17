@@ -326,136 +326,112 @@ body {
   opacity: 0.8;
 }
 
-/* Top bar: a floating pill surface with its own shadow, clear of the page
-   content below it, in place of a sidebar sharing an edge with the page. */
-.topbar {
+/* Nav bar: one design on every screen size, a content-hugging pill fixed
+   to the bottom of the viewport and centred, rather than a desktop top
+   bar and a separate mobile dock. */
+.navbar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 40;
+  max-width: calc(100vw - 28px);
+  border-radius: 28px;
   background: var(--surface-2);
-  border-radius: 999px;
-  padding: 10px 14px 10px 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.navbar-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--border-hairline);
+  gap: 8px;
+  padding: 6px 8px;
 }
-.topbar-nav {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex-wrap: wrap;
+.navbar-spacer {
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
-.topbar-brand {
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text-primary);
-}
-.topbar-brand span {
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 13px;
-}
-.navlist {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.navitem {
-  padding: 8px 16px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.navitem svg {
-  flex-shrink: 0;
-}
-.navitem.active {
-  background: var(--accent-container);
-  color: var(--on-accent-container);
-  font-weight: 600;
-}
-.navitem:hover:not(.active) {
-  background: var(--surface-3);
-}
-
-/* Below ~640px the top bar is replaced by the bottom dock, so it's simply
-   hidden rather than reflowed. */
+/* The fixed 16px (p-4) side margin reads as too wide a gutter on a
+   phone screen — a percentage of the viewport scales better. */
 @media (max-width: 640px) {
-  .topbar {
-    display: none;
-  }
-  .dock-spacer {
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
-  }
-  /* The fixed 16px (p-4) side margin reads as too wide a gutter on a
-     phone screen — a percentage of the viewport scales better. */
   .page-shell {
     padding-left: 5%;
     padding-right: 5%;
   }
 }
 
-/* Bottom dock: the mobile nav pattern, a floating pill fixed to the
-   bottom of the viewport. Hidden above the 640px breakpoint where the
-   top bar takes over instead. */
-.dock {
+/* The tab strip scrolls when it overflows, but the scrollbar itself
+   stays hidden — the row only ever needs to scroll once more pages are
+   added than fit, not as the normal way to find one. */
+.navbar-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.navbar-tabs::-webkit-scrollbar {
   display: none;
 }
-@media (max-width: 640px) {
-  .dock {
-    display: flex;
-    position: fixed;
-    left: 14px;
-    right: 14px;
-    bottom: max(14px, env(safe-area-inset-bottom));
-    z-index: 40;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2px;
-    padding: 6px 6px;
-    border-radius: 999px;
-    background: var(--surface-2);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline);
-  }
-}
-.dock-tab {
+.navbar-tab {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 10px 16px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   white-space: nowrap;
+  flex-shrink: 0;
 }
-.dock-tab.active {
+.navbar-tab svg {
+  flex-shrink: 0;
+}
+.navbar-tab.active {
   background: var(--accent-container);
   color: var(--on-accent-container);
 }
-.dock-tab svg {
-  flex-shrink: 0;
-}
-.dock-season .switcher-trigger {
+.navbar-tab:hover:not(.active) {
   background: var(--surface-3);
-  padding: 8px 10px;
-  font-size: 12px;
 }
-/* The dock sits at the bottom of the viewport, so the season menu would
-   run off-screen opening downward like it does in the top bar — flip it
-   to open upward instead. */
-.dock-season .switcher-menu {
+/* Below ~640px, showing every inactive tab's label alongside Results and
+   Positions left About hidden off the edge of the scroll strip with no
+   sign there was more to find. Collapsing inactive tabs to icon-only (the
+   active tab keeps its label) means all three are visible at once, so
+   there's nothing left to discover by scrolling. */
+@media (max-width: 640px) {
+  .navbar-tab:not(.active) {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    justify-content: center;
+  }
+  .navbar-tab:not(.active) .navbar-tab-label {
+    display: none;
+  }
+}
+.navbar-season .switcher-trigger {
+  background: var(--surface-3);
+  padding: 8px 12px;
+  font-size: 12px;
+  min-width: 0;
+}
+.navbar-season .switcher-trigger:hover {
+  background: var(--border-hairline);
+}
+/* The bar sits at the bottom of the viewport, so the season menu would
+   run off-screen opening downward — flip it to open upward instead. */
+.navbar-season .switcher-menu {
   top: auto;
   bottom: calc(100% + 8px);
-  right: auto;
-  left: 0;
+  right: 0;
+  left: auto;
 }
-.dock-icon-btn {
+.navbar-menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -465,64 +441,38 @@ body {
   color: var(--text-muted);
   flex-shrink: 0;
 }
-.dock-icon-btn:hover {
+.navbar-menu-btn:hover {
   background: var(--surface-3);
 }
-.dock-icon-btn.menu-open {
+.navbar-menu-btn.menu-open {
   background: var(--surface-3);
   color: var(--text-primary);
 }
 
-/* The dock's hamburger opens this as a bottom sheet: a scrim plus a panel
-   sliding up from the dock itself, holding the existing palette/theme
-   cycle toggles at a size that suits a tap target. */
-.dock-scrim {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  z-index: 45;
+/* The hamburger grows the bar itself upward into a panel, rather than
+   opening a separate floating sheet, so it reads as one shape extending
+   rather than two different ones appearing side by side. */
+.navbar-menu {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.18s ease, opacity 0.15s ease;
 }
-.dock-sheet {
-  position: fixed;
-  left: 14px;
-  right: 14px;
-  bottom: max(14px, env(safe-area-inset-bottom));
-  z-index: 46;
-  background: var(--surface-2);
-  border-radius: 26px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--border-hairline);
-  padding: 18px 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.navbar-menu.open {
+  max-height: 88px;
+  opacity: 1;
 }
-.dock-sheet-header {
+.navbar-menu-controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
+  gap: 6px;
+  padding: 10px 10px 2px;
 }
-.dock-sheet-close {
-  display: flex;
-  align-items: center;
+.navbar-menu-controls > button {
+  flex: 1 1 0;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: var(--surface-3);
-  color: var(--text-secondary);
-}
-.dock-sheet-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.dock-sheet-controls button {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 13px;
+  padding: 8px 10px;
+  font-size: 11.5px;
 }
 
 /* Table card: the whole table sits in one rounded tonal surface instead of
@@ -852,15 +802,6 @@ body {
 }
 .switcher-trigger:hover {
   background: var(--surface-3);
-}
-/* In the nav bar the switcher sits directly on --surface-2 (the topbar's
-   own background), so its default trigger colour would blend in — bump it
-   to --surface-3 there, matching the Palette/Theme pills beside it. */
-.topbar-controls .switcher-trigger {
-  background: var(--surface-3);
-}
-.topbar-controls .switcher-trigger:hover {
-  background: var(--border-hairline);
 }
 .switcher-trigger svg {
   transition: transform 0.15s ease;
