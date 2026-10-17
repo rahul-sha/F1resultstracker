@@ -314,8 +314,17 @@
   --color-foreground: var(--text-primary);
 }
 
+/* Two soft accent-tinted glows over the flat page-plane, instead of one flat
+   colour — built from the active theme's own --accent and --page-plane
+   tokens, so it re-colours itself with the theme rather than being a
+   separate hardcoded background. Fixed attachment keeps it calm (doesn't
+   scroll with the page) rather than reading as a texture. */
 body {
-  background: var(--page-plane);
+  background:
+    radial-gradient(1100px 650px at 12% -8%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+    radial-gradient(900px 550px at 100% 15%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 55%),
+    var(--page-plane);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -517,14 +526,14 @@ body {
   transition: max-height 0.18s ease, opacity 0.15s ease;
 }
 .navbar-menu.open {
-  max-height: 88px;
+  max-height: 72px;
   opacity: 1;
 }
 .navbar-menu-controls {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 10px 2px;
+  padding: 10px;
 }
 .navbar-menu-controls > button {
   flex: 1 1 0;
@@ -540,14 +549,16 @@ body {
   background: var(--surface-2);
   border-radius: 20px;
   padding: 10px;
-  /* The scrollable table's edge-to-edge cells would otherwise paint past
-     the card's rounded corners at the left/right edges. overflow:hidden
-     alone doesn't reliably clip a position:sticky descendant to a rounded
-     corner on mobile WebKit (it can bleed through at the corner while
-     scrolling); clip-path clips sticky content correctly there too, so
-     both are kept. */
   overflow: hidden;
-  clip-path: inset(0 round 20px);
+}
+
+/* The three horizontally-scrolling heatmap grids (not the static About/
+   Podium cards, which also use .table-card) go square-cornered: a rounded
+   corner here let a sticky column's coloured cell bleed past it on mobile
+   WebKit in a way overflow:hidden and clip-path both failed to reliably
+   clip. */
+.table-card.scroll-grid {
+  border-radius: 0;
 }
 
 /* No themed scrollbar any more — the table pans by click-and-hold drag
@@ -722,13 +733,6 @@ body {
 .table-card thead th.sticky {
   background: var(--surface-2);
 }
-.table-card tbody tr:first-child td:first-child {
-  border-top-left-radius: 14px;
-}
-.table-card tbody tr:last-child td:first-child {
-  border-bottom-left-radius: 14px;
-}
-
 /* Sticky driver/points columns stay opaque while other columns scroll
    underneath them; a soft edge shadow shows the boundary rather than
    content appearing to vanish behind an invisible line. */

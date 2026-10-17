@@ -46,6 +46,16 @@ export default async function ResultsPage({
   return (
     <div className="p-6">
       <div className="content-wrap">
+        <div className="mb-4">
+          <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+            Results
+          </h1>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            Points scored by each driver per Grand Prix. Hover a race header for details;
+            underlined races include a sprint.
+          </p>
+        </div>
+
         <Suspense
           fallback={
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>

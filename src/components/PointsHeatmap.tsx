@@ -229,7 +229,7 @@ function PointsCellContent({
 
   return (
     <td
-      className="heat-cell w-9 h-8 sm:w-11 sm:h-9 text-center text-[11px] sm:text-xs font-medium tabular-nums"
+      className="heat-cell w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11 text-center text-[11px] sm:text-xs font-medium tabular-nums"
       style={style}
       onMouseEnter={(e) => onEnter(e, content)}
       onMouseLeave={onLeave}
@@ -286,7 +286,7 @@ function PositionCellContent({
     // without looking like a different kind of thing on the grid.
     return (
       <td
-        className="heat-cell w-9 h-8 sm:w-11 sm:h-9 text-center text-[11px] sm:text-xs font-medium tabular-nums"
+        className="heat-cell w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11 text-center text-[11px] sm:text-xs font-medium tabular-nums"
         style={{ background: "var(--dnf-bg)", color: "var(--text-muted)" }}
         onMouseEnter={(e) => onEnter(e, content)}
         onMouseLeave={onLeave}
@@ -314,7 +314,7 @@ function PositionCellContent({
 
   return (
     <td
-      className="heat-cell w-9 h-8 sm:w-11 sm:h-9 text-center text-[11px] sm:text-xs font-medium tabular-nums"
+      className="heat-cell w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11 text-center text-[11px] sm:text-xs font-medium tabular-nums"
       style={style}
       onMouseEnter={(e) => onEnter(e, content)}
       onMouseLeave={onLeave}
@@ -347,7 +347,7 @@ function Cell({
   onLeave: () => void;
 }) {
   if (cell === null) {
-    return <td className="w-9 h-8 sm:w-11 sm:h-9" />;
+    return <td className="w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11" />;
   }
   if (mode === "position") {
     return (
@@ -403,7 +403,7 @@ export default function PointsHeatmap({
   }, [grid]);
 
   return (
-    <div className="table-card">
+    <div className="table-card scroll-grid">
       <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
       <table className="border-collapse">
         <thead>
