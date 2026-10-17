@@ -504,12 +504,12 @@ body::after {
   }
 }
 /* The fixed 16px (p-4) side margin reads as too wide a gutter on a
-   phone screen — a percentage of the viewport scales better. Trimmed
-   from 5% to 2.5% (Rahul: more content visible, less wasted edge). */
+   phone screen. A percentage (5%, then 2.5%) still left a visible gutter
+   on narrow phones, so this is now a small fixed value instead. */
 @media (max-width: 640px) {
   .page-shell {
-    padding-left: 2.5%;
-    padding-right: 2.5%;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 }
 
