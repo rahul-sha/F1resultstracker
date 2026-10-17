@@ -62,6 +62,7 @@ async function main() {
 
   const results = {};
   const sprintResults = {};
+  const qualifying = {};
 
   // Sequential, not parallel: Jolpica rate-limits aggressively enough that a
   // full season fetched round-by-round is far more reliable than firing all
@@ -77,6 +78,10 @@ async function main() {
       const sprintData = await getJson(`/${season}/${round}/sprint.json?limit=100`);
       sprintResults[round] = sprintData.MRData.RaceTable.Races[0]?.SprintResults ?? [];
     }
+
+    console.log(`Fetching ${season} round ${round} qualifying...`);
+    const qualifyingData = await getJson(`/${season}/${round}/qualifying.json?limit=100`);
+    qualifying[round] = qualifyingData.MRData.RaceTable.Races[0]?.QualifyingResults ?? [];
   }
 
   const snapshot = {
@@ -86,6 +91,7 @@ async function main() {
     constructorStandings,
     results,
     sprintResults,
+    qualifying,
   };
 
   const outDir = path.join(process.cwd(), "data", "seasons");

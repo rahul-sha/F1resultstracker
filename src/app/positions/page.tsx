@@ -1,9 +1,11 @@
 import { Suspense } from "react";
 import { buildPointsGrid } from "@/lib/points-grid";
 import { buildFinishPositionSummary } from "@/lib/finish-positions";
+import { buildQualifyingPositionSummary } from "@/lib/qualifying-positions";
 import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
 import PointsHeatmap from "@/components/PointsHeatmap";
 import FinishPositionsGrid from "@/components/FinishPositionsGrid";
+import QualifyingPositionsGrid from "@/components/QualifyingPositionsGrid";
 import PodiumBars from "@/components/PodiumBars";
 
 export const metadata = { title: "Positions | F1 Results Tracker" };
@@ -20,6 +22,27 @@ async function PositionsGridSection({ season }: { season: number }) {
   }
 
   return <PointsHeatmap grid={grid} mode="position" />;
+}
+
+async function QualifyingPositionsSection({ season }: { season: number }) {
+  const summary = await buildQualifyingPositionSummary(season);
+
+  const hasData = summary.drivers.some((d) => Object.keys(d.countsByPosition).length > 0);
+  if (!hasData) {
+    return null;
+  }
+
+  return (
+    <section>
+      <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+        Qualifying frequency
+      </h2>
+      <p className="mb-3 text-sm" style={{ color: "var(--text-muted)" }}>
+        How often each driver has qualified in each grid position this season.
+      </p>
+      <QualifyingPositionsGrid summary={summary} />
+    </section>
+  );
 }
 
 async function FinishPositionsSections({ season }: { season: number }) {
@@ -40,6 +63,10 @@ async function FinishPositionsSections({ season }: { season: number }) {
         </p>
         <FinishPositionsGrid summary={summary} />
       </section>
+
+      <Suspense fallback={null}>
+        <QualifyingPositionsSection season={season} />
+      </Suspense>
 
       <section>
         <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
