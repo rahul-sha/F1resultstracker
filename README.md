@@ -26,7 +26,8 @@ language.
 
 Every page sits over a soft gradient glow built from the active theme's
 own colours, rather than a single flat background — it drifts slowly
-rather than sitting still.
+rather than sitting still. The nav bar and every table card sit on a
+blurred, translucent glass surface so that glow shows through them.
 
 Pick a season from the selector, built into the nav bar at every screen
 size. The app defaults to the current calendar year. Only seasons 2020
