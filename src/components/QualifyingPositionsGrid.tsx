@@ -41,7 +41,7 @@ export default function QualifyingPositionsGrid({ summary }: { summary: Qualifyi
                 <td className="sticky left-0 z-10 px-2 sm:px-3 py-1 text-xs">
                   <div className="driver-cell">
                     <span className="driver-cell-position tabular-nums" style={{ color: "var(--text-muted)" }}>
-                      {row.standingsPosition}
+                      {row.qualifyingRank}
                     </span>
                     <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: row.color }} />
                     <span className="font-semibold" style={{ color: "var(--text-primary)" }}>

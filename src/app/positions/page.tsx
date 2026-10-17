@@ -38,7 +38,8 @@ async function QualifyingPositionsSection({ season }: { season: number }) {
         Qualifying frequency
       </h2>
       <p className="mb-3 text-sm" style={{ color: "var(--text-muted)" }}>
-        How often each driver has qualified in each grid position this season.
+        How often each driver has qualified in each grid position this season, ranked by average
+        qualifying position rather than the championship standings.
       </p>
       <QualifyingPositionsGrid summary={summary} />
     </section>
