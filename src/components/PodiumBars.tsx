@@ -18,17 +18,19 @@ const PLACE_FG: Record<1 | 2 | 3, string> = {
   3: "var(--heat-fg-lo)",
 };
 
-// The bar's track is a fixed pixel width (matching .podium-bar's own
-// max-width), not a percentage of the row's available space — a percentage
-// here was resolving against whatever width was left after the label and
-// total text, which varies, so two very different totals (e.g. 50% and
-// 100%) could both exceed .podium-bar's max-width and get clamped to the
-// same rendered length.
-const BAR_TRACK_PX = 420;
-
+// .podium-track is the flex item that actually shrinks to fit the row
+// (fixed flex-basis, so every row shrinks by the same factor regardless of
+// its own total); .podium-bar sits inside it at a percentage width, so the
+// bar is always proportional to the track's real rendered width, whether
+// that's the full 420px on desktop or squeezed down on a narrow phone. A
+// percentage width directly on the flex item itself doesn't work: it
+// resolves against the row's available space after the label and total,
+// which varies, so two very different totals could both get clamped to
+// the same rendered length once they exceed that space (see mobile-margins
+// memory's note on this file for the symptom that gave this away).
 function PodiumRow({ entry, maxTotal }: { entry: PodiumEntry; maxTotal: number }) {
   const total = entry.podiums[1] + entry.podiums[2] + entry.podiums[3];
-  const widthPx = Math.max(24, (total / maxTotal) * BAR_TRACK_PX);
+  const widthPct = Math.max(6, (total / maxTotal) * 100);
 
   return (
     <div className="podium-row">
@@ -36,22 +38,24 @@ function PodiumRow({ entry, maxTotal }: { entry: PodiumEntry; maxTotal: number }
         <span className="podium-swatch" style={{ background: entry.color }} />
         {entry.label}
       </div>
-      <div className="podium-bar" style={{ width: `${widthPx}px` }}>
-        {([1, 2, 3] as const).map((place) =>
-          entry.podiums[place] ? (
-            <div
-              key={place}
-              className="podium-seg"
-              style={{
-                background: PLACE_SHADE[place],
-                color: PLACE_FG[place],
-                flex: entry.podiums[place] / total,
-              }}
-            >
-              {entry.podiums[place]}
-            </div>
-          ) : null
-        )}
+      <div className="podium-track">
+        <div className="podium-bar" style={{ width: `${widthPct}%` }}>
+          {([1, 2, 3] as const).map((place) =>
+            entry.podiums[place] ? (
+              <div
+                key={place}
+                className="podium-seg"
+                style={{
+                  background: PLACE_SHADE[place],
+                  color: PLACE_FG[place],
+                  flex: entry.podiums[place] / total,
+                }}
+              >
+                {entry.podiums[place]}
+              </div>
+            ) : null
+          )}
+        </div>
       </div>
       <span className="podium-total">{total}</span>
     </div>

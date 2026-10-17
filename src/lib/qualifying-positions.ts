@@ -10,7 +10,7 @@ import { overrideConstructorId } from "./driver-team-overrides";
 
 export interface QualifyingPositionRow {
   driverId: string;
-  standingsPosition: string;
+  qualifyingRank: number;
   code: string;
   name: string;
   constructorId: string;
@@ -56,7 +56,8 @@ export async function buildQualifyingPositionSummary(season: number): Promise<Qu
 
   let maxPosition = 1;
 
-  const drivers: QualifyingPositionRow[] = standings.map((standing) => {
+  const drivers: (Omit<QualifyingPositionRow, "qualifyingRank"> & { avgPosition: number })[] =
+    standings.map((standing) => {
     const constructor = standing.Constructors[standing.Constructors.length - 1];
     const constructorId = overrideConstructorId(
       season,
@@ -83,9 +84,14 @@ export async function buildQualifyingPositionSummary(season: number): Promise<Qu
       }
     }
 
+    const qualified = Object.values(countsByPosition).reduce((a, b) => a + b, 0);
+    const avgPosition = qualified > 0
+      ? Object.entries(countsByPosition).reduce((sum, [pos, count]) => sum + Number(pos) * count, 0) / qualified
+      : Infinity;
+
     return {
       driverId: standing.Driver.driverId,
-      standingsPosition: standing.position,
+      avgPosition,
       code: standing.Driver.code ?? standing.Driver.familyName.slice(0, 3).toUpperCase(),
       name: `${standing.Driver.givenName} ${standing.Driver.familyName}`,
       constructorId,
@@ -96,11 +102,20 @@ export async function buildQualifyingPositionSummary(season: number): Promise<Qu
     };
   });
 
+  // Ranked by average qualifying position (best first) rather than the
+  // championship standings order - this is meant to show who qualifies
+  // well independent of how the race itself went.
+  drivers.sort((a, b) => a.avgPosition - b.avgPosition);
+  const ranked: QualifyingPositionRow[] = drivers.map(({ avgPosition: _avgPosition, ...driver }, index) => ({
+    ...driver,
+    qualifyingRank: index + 1,
+  }));
+
   // Same floor-on-observed-max logic as finish-positions.ts: a mid-season
   // driver swap means driver-standings length overcounts the real grid
   // size, so use the largest qualifying field actually seen instead.
   const fieldSize = Math.max(0, ...allResults.map((results) => results.length));
   maxPosition = Math.max(maxPosition, fieldSize);
 
-  return { season, maxPosition, drivers };
+  return { season, maxPosition, drivers: ranked };
 }
