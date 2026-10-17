@@ -78,16 +78,6 @@ export default async function PositionsPage({
   return (
     <div className="p-6">
       <div className="content-wrap">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold">Positions</h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            Where each driver finished in every Grand Prix, how often they finish in each
-            position across the season, and their podium count. Darker is a stronger finish;
-            retirements and non-classifications are shown in a neutral grey. Sprint weekends show
-            the sprint finish as a small superscript next to the main race result.
-          </p>
-        </div>
-
         <div className="flex flex-col gap-8">
           <Suspense
             fallback={

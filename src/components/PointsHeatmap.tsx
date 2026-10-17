@@ -45,6 +45,44 @@ export function useTooltip() {
   return { tooltip, show, hide };
 }
 
+// Click-and-hold-drag panning for a horizontally scrolling table on desktop,
+// replacing the themed scrollbar. Only engages for a mouse (pointerType
+// "mouse"), so touch scrolling on mobile is left completely untouched.
+export function useDragPan(ref: React.RefObject<HTMLDivElement | null>) {
+  const drag = useRef<{ startX: number; startScroll: number } | null>(null);
+
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    const el = ref.current;
+    if (!el) return;
+    drag.current = { startX: e.clientX, startScroll: el.scrollLeft };
+    el.setPointerCapture(e.pointerId);
+    el.classList.add("dragging");
+  }
+
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el || !drag.current) return;
+    el.scrollLeft = drag.current.startScroll - (e.clientX - drag.current.startX);
+  }
+
+  function endDrag(e: React.PointerEvent<HTMLDivElement>) {
+    const el = ref.current;
+    drag.current = null;
+    if (el) {
+      el.classList.remove("dragging");
+      if (el.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+    }
+  }
+
+  return {
+    onPointerDown,
+    onPointerMove,
+    onPointerUp: endDrag,
+    onPointerLeave: endDrag,
+  };
+}
+
 export function Tooltip({ tooltip }: { tooltip: TooltipState }) {
   if (!tooltip) return null;
   const clampedX = Math.min(Math.max(tooltip.x, 110), window.innerWidth - 110);
@@ -353,25 +391,7 @@ export default function PointsHeatmap({
 }) {
   const { tooltip, show, hide } = useTooltip();
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const topScrollRef = useRef<HTMLDivElement>(null);
-  const [scrollWidth, setScrollWidth] = useState(0);
-
-  function updateScrollWidth() {
-    const el = scrollerRef.current;
-    if (el) setScrollWidth(el.scrollWidth);
-  }
-
-  function syncFromMain() {
-    if (scrollerRef.current && topScrollRef.current) {
-      topScrollRef.current.scrollLeft = scrollerRef.current.scrollLeft;
-    }
-  }
-
-  function syncFromTop() {
-    if (scrollerRef.current && topScrollRef.current) {
-      scrollerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
-    }
-  }
+  const dragPan = useDragPan(scrollerRef);
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -380,29 +400,11 @@ export default function PointsHeatmap({
     // on a narrow screen that's scrolled furthest from view, and it's the
     // one people care about most. A no-op when everything already fits.
     el.scrollLeft = el.scrollWidth - el.clientWidth;
-    updateScrollWidth();
-
-    const onResize = () => updateScrollWidth();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
   }, [grid]);
-
-  // The top scrollbar's spacer only grows to its full width once the
-  // scrollWidth state above has applied and re-rendered — syncing its
-  // scrollLeft any earlier (e.g. in the same effect that measures it)
-  // clamps to 0, since the spacer isn't wide enough to scroll yet.
-  useEffect(() => {
-    if (scrollerRef.current && topScrollRef.current) {
-      topScrollRef.current.scrollLeft = scrollerRef.current.scrollLeft;
-    }
-  }, [scrollWidth]);
 
   return (
     <div className="table-card">
-      <div className="top-scrollbar" ref={topScrollRef} onScroll={syncFromTop} aria-hidden="true">
-        <div style={{ width: scrollWidth }} />
-      </div>
-      <div className="overflow-x-auto" ref={scrollerRef} onScroll={syncFromMain}>
+      <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
       <table className="border-collapse">
         <thead>
           <tr>

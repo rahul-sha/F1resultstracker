@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PaletteIcon } from "./nav-icons";
 
-type Accent = "monokai" | "coffee" | "red";
+type Accent = "monokai" | "coffee" | "red" | "dracula";
 
 const STORAGE_KEY = "f1-accent";
-const ORDER: Accent[] = ["monokai", "coffee", "red"];
-const LABEL: Record<Accent, string> = { monokai: "Monokai", coffee: "Coffee", red: "Ember" };
+const ORDER: Accent[] = ["monokai", "coffee", "red", "dracula"];
+const LABEL: Record<Accent, string> = {
+  monokai: "Monokai",
+  coffee: "Coffee",
+  red: "Ember",
+  dracula: "Dracula",
+};
 
 function applyAccent(accent: Accent) {
   const root = document.documentElement;
@@ -51,7 +57,10 @@ export default function AccentToggle() {
       style={{ background: "var(--surface-3)", color: "var(--text-secondary)" }}
       aria-label="Cycle color palette"
     >
-      <span>Palette</span>
+      <span className="flex items-center gap-1.5">
+        <PaletteIcon />
+        <span>Palette</span>
+      </span>
       <span style={{ color: "var(--text-primary)" }}>{mounted ? LABEL[accent] : ""}</span>
     </button>
   );

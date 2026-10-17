@@ -42,7 +42,7 @@ export default function AboutPage() {
               Designed and built the Results, Positions, and Finish Positions pages, including the
               heatmap, hover details, and the Material 3 visual style
             </li>
-            <li>Built the season/colour theme system (Monokai, Coffee, Ember)</li>
+            <li>Built the season/colour theme system (Monokai, Coffee, Ember, Dracula)</li>
             <li>
               Wired up the F1 data pipeline, fixed data bugs (flags, team names), and built the
               historical-season caching that avoids hitting the live API repeatedly
@@ -196,6 +196,19 @@ export default function AboutPage() {
                   screens the bar now sits at the top (its hamburger panel opens downward to
                   match), and the About page&apos;s content now matches the width of Results and
                   Positions instead of reading narrower.
+                </span>
+              </li>
+              <li>
+                <b>Drag-to-pan tables, a Dracula theme &amp; a tidier layout</b>
+                <span>
+                  Removed the themed scrollbar under the race headers — a table that overflows
+                  now pans by clicking and dragging on desktop, or the normal touch scroll on
+                  phones. Fixed a lingering corner-bleed on phones where a coloured cell could
+                  paint past the table card&apos;s rounded corner while scrolling. Shrunk the gap
+                  between the nav bar and the page content on wide screens, dropped the repeated
+                  Results/Positions page titles since the nav bar already shows which page
+                  you&apos;re on, and added icons to the Theme and Palette toggles. Added a fourth
+                  colour palette, Dracula.
                 </span>
               </li>
             </ul>

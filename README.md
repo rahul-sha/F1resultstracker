@@ -13,7 +13,9 @@ language.
   season, shaded by magnitude, with a season points total bar per driver,
   and a matching per-race heatmap for Constructors underneath. Pole
   position and fastest lap are marked with a small "P"/"F" superscript
-  next to the points value.
+  next to the points value. Tables that overflow pan by clicking and
+  dragging on desktop, or normal touch scrolling on phones — there's no
+  separate scrollbar.
 - **Positions** (`/positions`) — where each driver finished each race
   (not points), with a median-finish summary, followed by how often each
   driver finished in each position across the season (with a DNF count)
@@ -21,6 +23,10 @@ language.
   the sprint result as a small superscript next to the main race result.
 - **About** (`/about`) — who built this and how, credits, and a progress
   timeline.
+
+Results and Positions show their tables directly below the nav bar — the
+nav bar's own tab already says which page you're on, so there's no
+repeated page title.
 
 Pick a season from the selector, built into the nav bar at every screen
 size. The app defaults to the current calendar year. Only seasons 2020
@@ -64,11 +70,12 @@ overrides are mapped locally in `src/lib/circuits.ts`,
 
 ## Theming
 
-Three colour palettes — Monokai (default), Coffee and Ember — each with a
-light and dark variant, togglable from the nav bar's hamburger menu and
-persisted in `localStorage`. All colour in the UI, including the heatmap shading, comes
-from theme CSS custom properties (see `src/app/globals.css`), so nothing
-is hardcoded to a single palette.
+Four colour palettes — Monokai (default), Coffee, Ember and Dracula — each
+togglable from the nav bar's hamburger menu and persisted in `localStorage`.
+Monokai, Coffee and Ember each have a light and dark variant; Dracula is a
+single dark scheme by design. All colour in the UI, including the heatmap
+shading, comes from theme CSS custom properties (see `src/app/globals.css`),
+so nothing is hardcoded to a single palette.
 
 ## Tech stack
 
