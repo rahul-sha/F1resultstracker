@@ -526,6 +526,9 @@ body {
   background: var(--surface-2);
   border-radius: 20px;
   padding: 10px;
+  /* The scrollable table's edge-to-edge cells would otherwise paint past
+     the card's rounded corners at the left/right edges. */
+  overflow: hidden;
 }
 
 /* Top scrollbar: a themed horizontal scrollbar sitting right under the
@@ -763,6 +766,21 @@ body {
   height: 15px;
   border-radius: 2px;
   box-shadow: 0 0 0 1px var(--border-hairline);
+}
+
+/* The round chip's own padding/flag size, not the cell width, is what
+   actually sets each race column's width (the sticky header is wider
+   than the points cells beneath it) — so shrinking the cells alone
+   doesn't fit more races on screen. Shrink the chip to match on mobile. */
+@media (max-width: 640px) {
+  .round-chip {
+    gap: 3px;
+    padding: 5px 4px 4px;
+  }
+  .round-flag {
+    width: 16px;
+    height: 11px;
+  }
 }
 
 /* Hover tooltip (round header + points cell): positioned in the viewport

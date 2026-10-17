@@ -158,6 +158,14 @@ export default function AboutPage() {
                   spans the full width of the table.
                 </span>
               </li>
+              <li>
+                <b>Mobile heatmap fixes</b>
+                <span>
+                  Fixed the coloured cells painting past the table card&apos;s rounded corners on
+                  phones. Shrunk the points/positions cells and race-header chips on narrow
+                  screens so more races fit on screen before you need to scroll.
+                </span>
+              </li>
             </ul>
           </div>
 
