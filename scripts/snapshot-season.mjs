@@ -10,6 +10,13 @@ import path from "node:path";
 const BASE_URL = "https://api.jolpi.ca/ergast/f1";
 const season = Number(process.argv[2]);
 
+// A courtesy gap between requests to this free, unauthenticated community
+// API — keeps a multi-season backfill (dozens of seasons, each with a
+// couple dozen calls) from firing as a burst even though the retry/backoff
+// below already keeps it from hammering the API on a 429.
+const REQUEST_DELAY_MS = 350;
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 if (!season || Number.isNaN(season)) {
   console.error("Usage: node scripts/snapshot-season.mjs <season>");
   process.exit(1);
@@ -20,13 +27,15 @@ async function getJson(pathSuffix, attempt = 1) {
   if (res.status === 429 && attempt <= 5) {
     const wait = attempt * 1500;
     console.log(`Rate limited on ${pathSuffix}, retrying in ${wait}ms...`);
-    await new Promise((resolve) => setTimeout(resolve, wait));
+    await sleep(wait);
     return getJson(pathSuffix, attempt + 1);
   }
   if (!res.ok) {
     throw new Error(`${pathSuffix} failed: ${res.status} ${res.statusText}`);
   }
-  return res.json();
+  const json = await res.json();
+  await sleep(REQUEST_DELAY_MS);
+  return json;
 }
 
 async function main() {
