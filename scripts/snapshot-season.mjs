@@ -14,7 +14,7 @@ const season = Number(process.argv[2]);
 // API — keeps a multi-season backfill (dozens of seasons, each with a
 // couple dozen calls) from firing as a burst even though the retry/backoff
 // below already keeps it from hammering the API on a 429.
-const REQUEST_DELAY_MS = 350;
+const REQUEST_DELAY_MS = 500;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 if (!season || Number.isNaN(season)) {
@@ -22,11 +22,19 @@ if (!season || Number.isNaN(season)) {
   process.exit(1);
 }
 
+// Jolpica's limit isn't just per-request — a sustained run (a multi-season
+// backfill keeping requests flowing for 20+ minutes straight) gets rate
+// limited more persistently than a one-off burst, so a fixed handful of
+// short retries (observed: 5 retries capped at 7.5s each, ~22s total) isn't
+// always enough to ride out. Backs off exponentially instead, capped at
+// 20s/attempt, up to 8 attempts (~100s+ of total patience) before giving up
+// on that one request.
+const MAX_ATTEMPTS = 8;
 async function getJson(pathSuffix, attempt = 1) {
   const res = await fetch(`${BASE_URL}${pathSuffix}`);
-  if (res.status === 429 && attempt <= 5) {
-    const wait = attempt * 1500;
-    console.log(`Rate limited on ${pathSuffix}, retrying in ${wait}ms...`);
+  if (res.status === 429 && attempt <= MAX_ATTEMPTS) {
+    const wait = Math.min(2 ** attempt * 1000, 20000);
+    console.log(`Rate limited on ${pathSuffix}, retrying in ${wait}ms (attempt ${attempt}/${MAX_ATTEMPTS})...`);
     await sleep(wait);
     return getJson(pathSuffix, attempt + 1);
   }
