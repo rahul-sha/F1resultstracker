@@ -392,6 +392,12 @@ body {
   .dock-spacer {
     padding-bottom: calc(76px + env(safe-area-inset-bottom));
   }
+  /* The fixed 16px (p-4) side margin reads as too wide a gutter on a
+     phone screen — a percentage of the viewport scales better. */
+  .page-shell {
+    padding-left: 5%;
+    padding-right: 5%;
+  }
 }
 
 /* Bottom dock: the mobile nav pattern, a floating pill fixed to the
