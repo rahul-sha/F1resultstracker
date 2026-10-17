@@ -635,9 +635,7 @@ body::after {
    a bordered grid, with row stripes (not gridlines) separating drivers. */
 .table-card {
   position: relative;
-  background: color-mix(in srgb, var(--surface-2) 62%, transparent);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  background: var(--surface-2);
   border-radius: 20px;
   padding: 10px;
   overflow: hidden;
@@ -945,7 +943,7 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   border: none;
   cursor: pointer;
   background: var(--surface-2);
@@ -955,7 +953,10 @@ body::after {
   padding: 9px 16px;
   border-radius: 999px;
   white-space: nowrap;
-  min-width: 112px;
+  min-width: 0;
+}
+.switcher-calendar-icon {
+  flex-shrink: 0;
 }
 .switcher-trigger:hover {
   background: var(--surface-3);
@@ -1037,6 +1038,9 @@ body::after {
 }
 .about.table-card {
   padding: 22px 24px;
+  background: color-mix(in srgb, var(--surface-2) 62%, transparent);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
 }
 .about h2 {
   margin-bottom: 14px;
