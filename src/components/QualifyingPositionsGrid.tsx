@@ -1,0 +1,98 @@
+"use client";
+
+import { useRef } from "react";
+import type { QualifyingPositionSummary } from "@/lib/qualifying-positions";
+import { useDragPan } from "./PointsHeatmap";
+
+export default function QualifyingPositionsGrid({ summary }: { summary: QualifyingPositionSummary }) {
+  const positions = Array.from({ length: summary.maxPosition }, (_, i) => i + 1);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const dragPan = useDragPan(scrollerRef);
+
+  return (
+    <div className="table-card">
+      <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
+      <table className="border-collapse">
+        <thead>
+          <tr>
+            <th className="sticky left-0 z-10 min-w-[84px] sm:min-w-[180px] px-2 sm:px-3 py-2 text-left text-xs font-semibold" />
+            {positions.map((p) => (
+              <th
+                key={p}
+                className={
+                  "w-9 min-w-9 sm:w-11 sm:min-w-11 px-0.5 py-2 text-center text-[10px] sm:text-[11px] font-semibold" +
+                  (p === 10 ? " points-cutoff" : "")
+                }
+                style={{ color: "var(--text-secondary)" }}
+              >
+                {p}
+              </th>
+            ))}
+            <th className="sticky right-0 z-10 min-w-[64px] sm:min-w-[96px] px-2 py-2 text-center text-[10px] font-bold uppercase" style={{ color: "var(--text-muted)" }}>
+              No time
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {summary.drivers.map((row) => {
+            const rowMax = Math.max(1, ...Object.values(row.countsByPosition));
+            return (
+              <tr key={row.driverId}>
+                <td className="sticky left-0 z-10 px-2 sm:px-3 py-1 text-xs">
+                  <div className="driver-cell">
+                    <span className="driver-cell-position tabular-nums" style={{ color: "var(--text-muted)" }}>
+                      {row.standingsPosition}
+                    </span>
+                    <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: row.color }} />
+                    <span className="font-semibold" style={{ color: "var(--text-primary)" }}>
+                      {row.code}
+                    </span>
+                    <span className="driver-cell-team hidden truncate sm:inline" style={{ color: "var(--text-secondary)" }}>
+                      {row.constructorName}
+                    </span>
+                  </div>
+                </td>
+                {positions.map((p) => {
+                  const cutoff = p === 10 ? " points-cutoff" : "";
+                  const count = row.countsByPosition[p];
+                  if (!count)
+                    return (
+                      <td key={p} className={"w-9 h-8 min-w-9 sm:w-11 sm:h-9 sm:min-w-11" + cutoff} />
+                    );
+                  const bucket = Math.max(1, Math.round((count / rowMax) * 6));
+                  return (
+                    <td
+                      key={p}
+                      className={"count-cell w-9 h-8 sm:w-11 sm:h-9 text-center text-[11px] sm:text-xs" + cutoff}
+                      style={{
+                        background: `var(--heat-${bucket})`,
+                        color: bucket >= 4 ? "var(--heat-fg-hi)" : "var(--heat-fg-lo)",
+                      }}
+                    >
+                      {count}
+                    </td>
+                  );
+                })}
+                <td
+                  className="dnf-cell sticky right-0 z-10 px-2 py-1 text-center"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  {row.noTimes || "—"}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      </div>
+      <div className="legend">
+        <span className="legend-chip">
+          <span className="legend-swatch" style={{ background: "var(--heat-4)" }} />
+          Qualifying results at that position — darkest is the driver&apos;s most frequent grid slot
+        </span>
+        <span className="legend-chip">The dashed line marks the Q3 cutoff (top 10)</span>
+        <span className="legend-chip">No time: no qualifying time set that weekend</span>
+      </div>
+    </div>
+  );
+}

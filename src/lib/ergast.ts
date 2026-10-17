@@ -75,6 +75,17 @@ export interface RaceResult {
   FastestLap?: { rank: string };
 }
 
+export interface QualifyingResult {
+  number: string;
+  position: string;
+  positionText?: string;
+  Driver: Driver;
+  Constructor: Constructor;
+  Q1?: string;
+  Q2?: string;
+  Q3?: string;
+}
+
 export interface DriverStanding {
   position: string;
   positionText: string;
@@ -164,4 +175,19 @@ export async function getSprintResults(season: number, round: number): Promise<R
     revalidateFor(season)
   );
   return data.MRData.RaceTable.Races[0]?.SprintResults ?? [];
+}
+
+// A snapshot taken before qualifying data was tracked has no `qualifying`
+// key at all (not an empty one) - fall through to a live fetch for that
+// round rather than reading it as "this round has no qualifying data".
+export async function getQualifyingResults(season: number, round: number): Promise<QualifyingResult[]> {
+  const snapshot = loadSeasonSnapshot(season);
+  if (snapshot?.qualifying) return snapshot.qualifying[round] ?? [];
+
+  type Resp = MRDataEnvelope<{ RaceTable: { Races: { QualifyingResults?: QualifyingResult[] }[] } }>;
+  const data = await ergastFetch<Resp>(
+    `/${season}/${round}/qualifying.json?limit=100`,
+    revalidateFor(season)
+  );
+  return data.MRData.RaceTable.Races[0]?.QualifyingResults ?? [];
 }

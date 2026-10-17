@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import type { Race, DriverStanding, ConstructorStanding, RaceResult } from "./ergast";
+import type { Race, DriverStanding, ConstructorStanding, RaceResult, QualifyingResult } from "./ergast";
 
 export interface SeasonSnapshot {
   season: number;
@@ -9,6 +9,9 @@ export interface SeasonSnapshot {
   constructorStandings: ConstructorStanding[];
   results: Record<string, RaceResult[]>;
   sprintResults: Record<string, RaceResult[]>;
+  // Absent on a snapshot taken before qualifying data was tracked - see the
+  // snapshot?.qualifying check in ergast.ts's getQualifyingResults.
+  qualifying?: Record<string, QualifyingResult[]>;
 }
 
 const cache = new Map<number, SeasonSnapshot | null>();
