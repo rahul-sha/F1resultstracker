@@ -1,0 +1,67 @@
+name: Backfill historical seasons
+
+# One-off backfill for seasons the app doesn't currently offer (pre-2020,
+# F1 World Championship history goes back to 1950). Commits each season's
+# snapshot to data/seasons/ as soon as it's fetched, rather than waiting
+# until the whole range is done, so a run that fails or times out partway
+# through still keeps what it already fetched. Manual only. Capturing this
+# data doesn't change which seasons the app serves — that's a separate
+# change in src/lib/season-constants.ts (FIRST_SEASON) once the data's
+# ready to use; see that file's comment on why it's deliberately capped.
+on:
+  workflow_dispatch:
+    inputs:
+      from:
+        description: "First season to backfill (inclusive)"
+        required: false
+        type: string
+        default: "1950"
+      to:
+        description: "Last season to backfill (inclusive)"
+        required: false
+        type: string
+        default: "2019"
+
+permissions:
+  contents: write
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Backfill seasons
+        env:
+          # Passed as env vars rather than interpolated into the script text
+          # directly — workflow_dispatch input is attacker-controlled by
+          # anyone who can trigger the workflow (see snapshot-season.yml).
+          FROM_INPUT: ${{ inputs.from }}
+          TO_INPUT: ${{ inputs.to }}
+        run: |
+          FROM="${FROM_INPUT:-1950}"
+          TO="${TO_INPUT:-2019}"
+          for (( year = FROM; year <= TO; year++ )); do
+            if [ -f "data/seasons/${year}.json" ]; then
+              echo "Skipping ${year} — snapshot already exists"
+              continue
+            fi
+            echo "::group::Season ${year}"
+            node scripts/snapshot-season.mjs "$year"
+            echo "::endgroup::"
+            if [ -n "$(git status --porcelain "data/seasons/${year}.json")" ]; then
+              git add "data/seasons/${year}.json"
+              git commit -m "Add ${year} season snapshot"
+              git push
+            fi
+          done
