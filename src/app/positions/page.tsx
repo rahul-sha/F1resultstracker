@@ -76,7 +76,7 @@ export default async function PositionsPage({
   const season = Number(params.season) || (await resolvePersistedSeason()) || currentSeason();
 
   return (
-    <div className="p-6">
+    <div className="px-[10px] py-6 sm:p-6">
       <div className="content-wrap">
         <div className="mb-4">
           <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
