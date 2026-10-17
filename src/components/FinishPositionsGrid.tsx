@@ -1,44 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import type { FinishPositionSummary } from "@/lib/finish-positions";
+import { useDragPan } from "./PointsHeatmap";
 
 export default function FinishPositionsGrid({ summary }: { summary: FinishPositionSummary }) {
   const positions = Array.from({ length: summary.maxPosition }, (_, i) => i + 1);
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const topScrollRef = useRef<HTMLDivElement>(null);
-  const [scrollWidth, setScrollWidth] = useState(0);
-
-  function updateScrollWidth() {
-    const el = scrollerRef.current;
-    if (el) setScrollWidth(el.scrollWidth);
-  }
-
-  function syncFromMain() {
-    if (scrollerRef.current && topScrollRef.current) {
-      topScrollRef.current.scrollLeft = scrollerRef.current.scrollLeft;
-    }
-  }
-
-  function syncFromTop() {
-    if (scrollerRef.current && topScrollRef.current) {
-      scrollerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
-    }
-  }
-
-  useEffect(() => {
-    updateScrollWidth();
-    const onResize = () => updateScrollWidth();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [summary]);
+  const dragPan = useDragPan(scrollerRef);
 
   return (
     <div className="table-card">
-      <div className="top-scrollbar" ref={topScrollRef} onScroll={syncFromTop} aria-hidden="true">
-        <div style={{ width: scrollWidth }} />
-      </div>
-      <div className="overflow-x-auto" ref={scrollerRef} onScroll={syncFromMain}>
+      <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
       <table className="border-collapse">
         <thead>
           <tr>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { ConstructorPointsGrid, ConstructorPointsCell } from "@/lib/constructor-points-grid";
-import { RoundHeader, Tooltip, useTooltip } from "./PointsHeatmap";
+import { RoundHeader, Tooltip, useDragPan, useTooltip } from "./PointsHeatmap";
 
 function Cell({ cell, max }: { cell: ConstructorPointsCell | null; max: number }) {
   if (cell === null) {
@@ -27,53 +27,17 @@ function Cell({ cell, max }: { cell: ConstructorPointsCell | null; max: number }
 export default function ConstructorPointsHeatmap({ grid }: { grid: ConstructorPointsGrid }) {
   const { tooltip, show, hide } = useTooltip();
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const topScrollRef = useRef<HTMLDivElement>(null);
-  const [scrollWidth, setScrollWidth] = useState(0);
-
-  function updateScrollWidth() {
-    const el = scrollerRef.current;
-    if (el) setScrollWidth(el.scrollWidth);
-  }
-
-  function syncFromMain() {
-    if (scrollerRef.current && topScrollRef.current) {
-      topScrollRef.current.scrollLeft = scrollerRef.current.scrollLeft;
-    }
-  }
-
-  function syncFromTop() {
-    if (scrollerRef.current && topScrollRef.current) {
-      scrollerRef.current.scrollLeft = topScrollRef.current.scrollLeft;
-    }
-  }
+  const dragPan = useDragPan(scrollerRef);
 
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
     el.scrollLeft = el.scrollWidth - el.clientWidth;
-    updateScrollWidth();
-
-    const onResize = () => updateScrollWidth();
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
   }, [grid]);
-
-  // The top scrollbar's spacer only grows to its full width once the
-  // scrollWidth state above has applied and re-rendered — syncing its
-  // scrollLeft any earlier clamps to 0, since the spacer isn't wide
-  // enough to scroll yet.
-  useEffect(() => {
-    if (scrollerRef.current && topScrollRef.current) {
-      topScrollRef.current.scrollLeft = scrollerRef.current.scrollLeft;
-    }
-  }, [scrollWidth]);
 
   return (
     <div className="table-card">
-      <div className="top-scrollbar" ref={topScrollRef} onScroll={syncFromTop} aria-hidden="true">
-        <div style={{ width: scrollWidth }} />
-      </div>
-      <div className="overflow-x-auto" ref={scrollerRef} onScroll={syncFromMain}>
+      <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
         <table className="border-collapse">
           <thead>
             <tr>

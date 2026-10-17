@@ -277,6 +277,38 @@
   --dnf-bg: var(--surface-1);
 }
 
+/* Dracula — the classic dark purple/pink palette. Unlike the other three
+   palettes it has no separate light variant (the scheme is dark by
+   design), so the light-mode block and the dark-mode block use the same
+   values; data-theme="light" still works, it just renders identically to
+   dark for this one palette. */
+:root[data-accent="dracula"] {
+  color-scheme: dark;
+  --page-plane: #1e1f29;
+  --surface-1: #282a36;
+  --surface-2: #2f3142;
+  --surface-3: #3b3d52;
+  --text-primary: #f8f8f2;
+  --text-secondary: #c2c3d6;
+  --text-muted: #8a8cab;
+  --gridline: #44475a;
+  --baseline: #51536b;
+  --border-hairline: rgba(248, 248, 242, 0.12);
+  --accent: #bd93f9;
+  --accent-container: #44355f;
+  --on-accent-container: #e5d4ff;
+  --heat-0: #333648;
+  --heat-1: #4a3f66;
+  --heat-2: #614685;
+  --heat-3: #7a4ea3;
+  --heat-4: #9458bf;
+  --heat-5: #b166d8;
+  --heat-6: #ff79c6;
+  --heat-fg-lo: #f8f8f2;
+  --heat-fg-hi: #1e1f29;
+  --dnf-bg: var(--surface-1);
+}
+
 @theme inline {
   --color-background: var(--page-plane);
   --color-foreground: var(--text-primary);
@@ -371,7 +403,7 @@ body {
   }
   .navbar-spacer {
     padding-bottom: 0;
-    padding-top: 92px;
+    padding-top: 44px;
   }
 }
 /* The fixed 16px (p-4) side margin reads as too wide a gutter on a
@@ -509,31 +541,32 @@ body {
   border-radius: 20px;
   padding: 10px;
   /* The scrollable table's edge-to-edge cells would otherwise paint past
-     the card's rounded corners at the left/right edges. */
+     the card's rounded corners at the left/right edges. overflow:hidden
+     alone doesn't reliably clip a position:sticky descendant to a rounded
+     corner on mobile WebKit (it can bleed through at the corner while
+     scrolling); clip-path clips sticky content correctly there too, so
+     both are kept. */
   overflow: hidden;
+  clip-path: inset(0 round 20px);
 }
 
-/* Top scrollbar: a themed horizontal scrollbar sitting right under the
-   round-header row, synced to the table's own horizontal scroll — sitting
-   up here, where you're already looking to read the race columns, rather
-   than at the bottom of a tall driver list. Replaces the round chevrons
-   that used to mark "more to scroll to" instead. The table's own scrollbar
-   is hidden since this bar drives the same scroll position. */
-.top-scrollbar {
-  overflow-x: auto;
-  overflow-y: hidden;
-  height: 12px;
-  margin-bottom: 2px;
-  width: 80%;
-}
-.top-scrollbar > div {
-  height: 1px;
-}
+/* No themed scrollbar any more — the table pans by click-and-hold drag
+   (desktop, see useDragPan in PointsHeatmap.tsx) or native touch scrolling
+   (mobile), so the browser's own scrollbar is hidden either way. */
 .table-card .overflow-x-auto {
   scrollbar-width: none;
 }
 .table-card .overflow-x-auto::-webkit-scrollbar {
   display: none;
+}
+@media (pointer: fine) {
+  .table-card .overflow-x-auto {
+    cursor: grab;
+  }
+}
+.table-card .overflow-x-auto.dragging {
+  cursor: grabbing;
+  user-select: none;
 }
 /* Driver cell: position, team colour swatch, code and team name laid out as
    fixed-width columns (grid, not flex) so every row's team name lines up

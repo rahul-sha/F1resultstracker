@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ThemeIcon } from "./nav-icons";
 
 type Theme = "system" | "light" | "dark";
 
@@ -49,7 +50,10 @@ export default function ThemeToggle() {
       style={{ background: "var(--surface-3)", color: "var(--text-secondary)" }}
       aria-label="Toggle color theme"
     >
-      <span>Theme</span>
+      <span className="flex items-center gap-1.5">
+        <ThemeIcon />
+        <span>Theme</span>
+      </span>
       <span style={{ color: "var(--text-primary)" }}>{mounted ? LABEL[theme] : ""}</span>
     </button>
   );
