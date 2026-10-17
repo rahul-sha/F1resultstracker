@@ -790,11 +790,14 @@ body::after {
   flex-shrink: 0;
   display: inline-block;
 }
+.podium-track {
+  flex: 0 1 420px;
+  min-width: 40px;
+}
 .podium-bar {
   display: flex;
   height: 22px;
   min-width: 24px;
-  max-width: 420px;
   border-radius: 6px;
   overflow: hidden;
 }
