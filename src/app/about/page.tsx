@@ -49,6 +49,7 @@ export default function AboutPage() {
             </li>
             <li>Every design change was mocked up and approved before going live — this page included</li>
             <li>Replaced the mobile top bar with a bottom dock nav, and added icons to the desktop nav items</li>
+            <li>Fixed a Positions-page scrolling bug and tightened phone-side page margins</li>
           </ul>
 
           <p>
@@ -164,6 +165,15 @@ export default function AboutPage() {
                   Fixed the coloured cells painting past the table card&apos;s rounded corners on
                   phones. Shrunk the points/positions cells and race-header chips on narrow
                   screens so more races fit on screen before you need to scroll.
+                </span>
+              </li>
+              <li>
+                <b>Positions scroll fix &amp; tighter phone margins</b>
+                <span>
+                  Fixed the Positions page&apos;s finish-frequency grid overlapping its own DNFs
+                  column &mdash; it now scrolls horizontally like every other table on the site.
+                  Reduced the page&apos;s left/right margin on phones from a fixed amount to 5%
+                  of the screen width, so it no longer feels cramped.
                 </span>
               </li>
             </ul>
