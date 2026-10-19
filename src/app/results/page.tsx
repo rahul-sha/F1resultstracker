@@ -69,9 +69,12 @@ export default async function ResultsPage({
         </div>
 
         <section id="results-constructors" data-rail-label="Constructors" className="mt-8">
-          <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-            Constructors
-          </h2>
+          <div className="section-header mb-2">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Constructors
+            </h2>
+            <p className="text-sm">Points scored by each team per Grand Prix.</p>
+          </div>
           <Suspense fallback={<p className="text-sm">Loading…</p>}>
             <ConstructorPointsGridSection season={season} />
           </Suspense>

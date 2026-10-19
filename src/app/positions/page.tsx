@@ -34,13 +34,15 @@ async function QualifyingPositionsSection({ season }: { season: number }) {
 
   return (
     <section id="positions-qualifying" data-rail-label="Qualifying frequency">
-      <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-        Qualifying frequency
-      </h2>
-      <p className="mb-3 text-sm" style={{ color: "var(--text-muted)" }}>
-        How often each driver has qualified in each grid position this season, ranked by average
-        qualifying position rather than the championship standings.
-      </p>
+      <div className="section-header mb-3">
+        <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+          Qualifying frequency
+        </h2>
+        <p className="text-sm">
+          How often each driver has qualified in each grid position this season, ranked by average
+          qualifying position rather than the championship standings.
+        </p>
+      </div>
       <QualifyingPositionsGrid summary={summary} />
     </section>
   );
@@ -56,12 +58,14 @@ async function FinishPositionsSections({ season }: { season: number }) {
   return (
     <div className="flex flex-col gap-8">
       <section id="positions-finish" data-rail-label="Finish frequency">
-        <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-          Finish frequency
-        </h2>
-        <p className="mb-3 text-sm" style={{ color: "var(--text-muted)" }}>
-          How often each driver has finished in each position this season, plus a DNF count.
-        </p>
+        <div className="section-header mb-3">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+            Finish frequency
+          </h2>
+          <p className="text-sm">
+            How often each driver has finished in each position this season, plus a DNF count.
+          </p>
+        </div>
         <FinishPositionsGrid summary={summary} />
       </section>
 
@@ -70,13 +74,15 @@ async function FinishPositionsSections({ season }: { season: number }) {
       </Suspense>
 
       <section id="positions-podiums" data-rail-label="Podium finishes">
-        <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-          Podium finishes
-        </h2>
-        <p className="mb-3 text-sm" style={{ color: "var(--text-muted)" }}>
-          How many 1st/2nd/3rd place finishes each driver and team has this season. Drivers with
-          no podiums are left off the list.
-        </p>
+        <div className="section-header mb-3">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+            Podium finishes
+          </h2>
+          <p className="text-sm">
+            How many 1st/2nd/3rd place finishes each driver and team has this season. Drivers with
+            no podiums are left off the list.
+          </p>
+        </div>
         <PodiumBars
           drivers={summary.driverPodiums.map((d) => ({
             label: d.code,

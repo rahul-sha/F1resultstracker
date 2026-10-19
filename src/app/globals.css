@@ -1042,38 +1042,59 @@ body::after {
   margin: 0 auto;
 }
 
-/* Page title + subtitle, as their own glass card (same blur/opacity recipe
-   as .navbar) instead of floating text on the page background. Fixed
-   width and a fixed minimum height, shared by every page's header, so
-   Results' one-line subtitle and Positions' much longer one still leave
-   the card — and the content starting beneath it — at the same height. */
+/* Page title + subtitle, as their own glass card instead of floating text
+   on the page background — deliberately lighter/more transparent than
+   .navbar's glass (45% vs. the nav bar's 80%), and sized to its own
+   content rather than a fixed height. */
 .page-header {
   width: 60%;
   min-width: 260px;
   max-width: 100%;
-  min-height: 136px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 4px;
   padding: 14px 20px;
   border-radius: 20px;
-  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--border-hairline),
-    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 8%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 45%, transparent);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14), 0 0 0 1px var(--border-hairline),
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
 }
 .page-header p {
   margin-top: 2px;
   color: var(--text-muted);
 }
 
+/* The same glass card, used for a sub-section's own title + subtitle
+   (Constructors, Finish/Qualifying frequency, Podium finishes) — narrower
+   padding, no forced width, since it sits above that section's own card
+   rather than the whole page. */
+.section-header {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-2) 45%, transparent);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14), 0 0 0 1px var(--border-hairline),
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+.section-header p {
+  color: var(--text-muted);
+}
+
 /* Blur doesn't render reliably on mobile browsers (see .navbar) — drop to
-   a flat solid card and full width below 640px, same as the nav bar. */
+   a flat solid card below 640px, same as the nav bar; the page header also
+   goes full width there. */
 @media (max-width: 640px) {
   .page-header {
     width: 100%;
+  }
+  .page-header,
+  .section-header {
     background: var(--surface-2);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
