@@ -42,6 +42,12 @@ Pick a season from the selector, built into the nav bar at every screen
 size — shown as a calendar icon next to the year. The app defaults to
 the current calendar year. Only seasons 2020 onwards are supported.
 
+Every heatmap, grid and chart has a small share button beside its heading.
+It renders that one graphic as a PNG in the browser (no server or image
+hosting involved) and offers saving it, copying it to the clipboard for
+pasting into Reddit, X or Discord, or, on phone and Mac, opening the native
+share sheet directly.
+
 A thin rail down the left edge (900px and wider) lists the sections on
 the current page and highlights whichever one is in view as you scroll
 — a hint that there's more below, and a click-to-jump shortcut. With it
