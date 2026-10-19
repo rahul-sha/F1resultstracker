@@ -55,6 +55,10 @@ export default function AboutPage() {
               Added a scroll-aware section rail, a sprint marker you can actually see, and an
               overscroll gesture that springs to the next page
             </li>
+            <li>
+              Added a share button to every graphic, so it can be saved, copied or shared
+              straight from the page
+            </li>
           </ul>
 
           <p>
@@ -313,6 +317,16 @@ export default function AboutPage() {
                   browser&apos;s own scrollbar redundant so it&apos;s hidden; and reaching the
                   bottom of a page and continuing to scroll springs forward to the next page in
                   nav order, with a high enough threshold that a normal over-scroll does nothing.
+                </span>
+              </li>
+              <li>
+                <b>Share button on every graphic</b>
+                <span>
+                  A small share icon now sits beside each heatmap, grid and chart. It turns that
+                  one graphic into a PNG right in the browser &mdash; no server or image hosting
+                  involved &mdash; and lets you save it, copy it to the clipboard for pasting
+                  into Reddit, X or Discord, or, on phone and Mac, open the native share sheet
+                  directly.
                 </span>
               </li>
             </ul>

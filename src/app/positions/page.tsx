@@ -7,6 +7,7 @@ import PointsHeatmap from "@/components/PointsHeatmap";
 import FinishPositionsGrid from "@/components/FinishPositionsGrid";
 import QualifyingPositionsGrid from "@/components/QualifyingPositionsGrid";
 import PodiumBars from "@/components/PodiumBars";
+import ShareButton from "@/components/ShareButton";
 
 export const metadata = { title: "Positions | F1 Results Tracker" };
 
@@ -34,11 +35,14 @@ async function QualifyingPositionsSection({ season }: { season: number }) {
 
   return (
     <section id="positions-qualifying" data-rail-label="Qualifying frequency">
-      <div className="section-header">
-        <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-          Qualifying frequency
-        </h2>
-        <p className="text-sm">How often each driver has qualified in each grid position.</p>
+      <div className="flex items-start justify-between gap-4">
+        <div className="section-header">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+            Qualifying frequency
+          </h2>
+          <p className="text-sm">How often each driver has qualified in each grid position.</p>
+        </div>
+        <ShareButton targetId="positions-qualifying" fileName={`f1-qualifying-frequency-${season}`} label="the Qualifying frequency grid" />
       </div>
       <QualifyingPositionsGrid summary={summary} />
       <p className="graphic-caption">
@@ -58,11 +62,14 @@ async function FinishPositionsSections({ season }: { season: number }) {
   return (
     <div className="flex flex-col gap-8">
       <section id="positions-finish" data-rail-label="Finish frequency">
-        <div className="section-header">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-            Finish frequency
-          </h2>
-          <p className="text-sm">How often each driver has finished in each position.</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="section-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Finish frequency
+            </h2>
+            <p className="text-sm">How often each driver has finished in each position.</p>
+          </div>
+          <ShareButton targetId="positions-finish" fileName={`f1-finish-frequency-${season}`} label="the Finish frequency grid" />
         </div>
         <FinishPositionsGrid summary={summary} />
         <p className="graphic-caption">Includes a DNF count for each driver.</p>
@@ -73,11 +80,14 @@ async function FinishPositionsSections({ season }: { season: number }) {
       </Suspense>
 
       <section id="positions-podiums" data-rail-label="Podium finishes">
-        <div className="section-header">
-          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-            Podium finishes
-          </h2>
-          <p className="text-sm">1st/2nd/3rd place finishes per driver and team.</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="section-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Podium finishes
+            </h2>
+            <p className="text-sm">1st/2nd/3rd place finishes per driver and team.</p>
+          </div>
+          <ShareButton targetId="positions-podiums" fileName={`f1-podium-finishes-${season}`} label="the Podium finishes chart" />
         </div>
         <PodiumBars
           drivers={summary.driverPodiums.map((d) => ({
@@ -109,11 +119,14 @@ export default async function PositionsPage({
   return (
     <div className="px-[10px] py-6 sm:p-6">
       <div className="content-wrap">
-        <div className="page-header">
-          <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-            Positions
-          </h1>
-          <p className="text-sm">Where each driver finished in every Grand Prix.</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="page-header">
+            <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Positions
+            </h1>
+            <p className="text-sm">Where each driver finished in every Grand Prix.</p>
+          </div>
+          <ShareButton targetId="positions-heatmap" fileName={`f1-positions-${season}`} label="the Positions heatmap" />
         </div>
 
         <div className="flex flex-col gap-8">
