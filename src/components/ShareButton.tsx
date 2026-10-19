@@ -11,19 +11,65 @@ type Status = { kind: "idle" } | { kind: "busy" } | { kind: "done"; message: str
 // excluding it, the button would capture itself.
 const IGNORE_ATTR = "data-share-ignore";
 
+// The heatmap/grid tables pan sideways on narrow screens (useDragPan in
+// PointsHeatmap.tsx) rather than shrinking — each one sits in a fixed-width
+// ".overflow-x-auto" wrapper that only shows part of the table at a time.
+// Capturing that wrapper as it's rendered on screen would only grab whatever
+// part happens to be scrolled into view. So every horizontally-overflowing
+// element inside the clone is widened to its full content width (and every
+// ancestor up to the clone's root along with it, since a block element's own
+// width doesn't grow to fit an oversized child by itself) before capture.
+function expandScrollersToFit(root: HTMLElement) {
+  const all = [root, ...Array.from(root.querySelectorAll<HTMLElement>("*"))];
+  const scrollers = all.filter((el) => el.scrollWidth - el.clientWidth > 1);
+
+  for (const scroller of scrollers) {
+    scroller.style.overflowX = "visible";
+    scroller.style.width = "max-content";
+    let ancestor: HTMLElement | null = scroller.parentElement;
+    while (ancestor && root.contains(ancestor)) {
+      ancestor.style.width = "max-content";
+      if (ancestor === root) break;
+      ancestor = ancestor.parentElement;
+    }
+  }
+}
+
 async function captureSection(targetId: string): Promise<Blob> {
-  const node = document.getElementById(targetId);
-  if (!node) throw new Error("Could not find that section on the page.");
+  const original = document.getElementById(targetId);
+  if (!original) throw new Error("Could not find that section on the page.");
 
-  const surface = getComputedStyle(document.documentElement).getPropertyValue("--surface-1").trim() || "#ffffff";
+  // Captured off-screen, from a detached clone, rather than widening the
+  // live section in place — so there's no visible flash/reflow on the page
+  // while the image is put together.
+  const holder = document.createElement("div");
+  holder.style.position = "fixed";
+  holder.style.top = "0";
+  holder.style.left = "-99999px";
+  holder.style.pointerEvents = "none";
 
-  const blob = await toBlob(node, {
-    backgroundColor: surface,
-    pixelRatio: 2,
-    filter: (domNode) => !(domNode instanceof Element && domNode.hasAttribute(IGNORE_ATTR)),
-  });
-  if (!blob) throw new Error("Could not create an image from that section.");
-  return blob;
+  const clone = original.cloneNode(true) as HTMLElement;
+  clone.removeAttribute("id");
+  holder.appendChild(clone);
+  document.body.appendChild(holder);
+
+  try {
+    expandScrollersToFit(clone);
+    const rect = clone.getBoundingClientRect();
+    const surface = getComputedStyle(document.documentElement).getPropertyValue("--surface-1").trim() || "#ffffff";
+
+    const blob = await toBlob(clone, {
+      backgroundColor: surface,
+      pixelRatio: 2,
+      width: Math.ceil(rect.width),
+      height: Math.ceil(rect.height),
+      filter: (domNode) => !(domNode instanceof Element && domNode.hasAttribute(IGNORE_ATTR)),
+    });
+    if (!blob) throw new Error("Could not create an image from that section.");
+    return blob;
+  } finally {
+    document.body.removeChild(holder);
+  }
 }
 
 function downloadBlob(blob: Blob, fileName: string) {
