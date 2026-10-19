@@ -1046,6 +1046,10 @@ body::after {
    on the page background — deliberately lighter/more transparent than
    .navbar's glass (45% vs. the nav bar's 80%), and sized to its own
    content rather than a fixed height. */
+/* Pulled down by a negative margin so its bottom edge tucks behind the
+   graphic that follows (which, painting later in normal flow, naturally
+   draws over it with no z-index needed) — reads as one joined object
+   rather than a card floating separately above another card. */
 .page-header {
   width: 60%;
   min-width: 260px;
@@ -1053,7 +1057,8 @@ body::after {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 14px 20px;
+  padding: 14px 20px 28px;
+  margin-bottom: -18px;
   border-radius: 20px;
   background: color-mix(in srgb, var(--surface-2) 45%, transparent);
   backdrop-filter: blur(18px) saturate(150%);
@@ -1074,7 +1079,8 @@ body::after {
   display: inline-flex;
   flex-direction: column;
   gap: 2px;
-  padding: 10px 16px;
+  padding: 10px 16px 20px;
+  margin-bottom: -12px;
   border-radius: 16px;
   background: color-mix(in srgb, var(--surface-2) 45%, transparent);
   backdrop-filter: blur(18px) saturate(150%);
@@ -1083,6 +1089,15 @@ body::after {
     inset 0 1px 0 color-mix(in srgb, var(--text-primary) 6%, transparent);
 }
 .section-header p {
+  color: var(--text-muted);
+}
+
+/* A brief legend line for a graphic — how to read it, not what it is
+   (that's the header's job) — sat underneath instead of bulking out the
+   header's own subtitle. */
+.graphic-caption {
+  margin-top: 8px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 

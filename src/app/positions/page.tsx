@@ -34,16 +34,16 @@ async function QualifyingPositionsSection({ season }: { season: number }) {
 
   return (
     <section id="positions-qualifying" data-rail-label="Qualifying frequency">
-      <div className="section-header mb-3">
+      <div className="section-header">
         <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
           Qualifying frequency
         </h2>
-        <p className="text-sm">
-          How often each driver has qualified in each grid position this season, ranked by average
-          qualifying position rather than the championship standings.
-        </p>
+        <p className="text-sm">How often each driver has qualified in each grid position.</p>
       </div>
       <QualifyingPositionsGrid summary={summary} />
+      <p className="graphic-caption">
+        Ranked by average qualifying position rather than the championship standings.
+      </p>
     </section>
   );
 }
@@ -58,15 +58,14 @@ async function FinishPositionsSections({ season }: { season: number }) {
   return (
     <div className="flex flex-col gap-8">
       <section id="positions-finish" data-rail-label="Finish frequency">
-        <div className="section-header mb-3">
+        <div className="section-header">
           <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
             Finish frequency
           </h2>
-          <p className="text-sm">
-            How often each driver has finished in each position this season, plus a DNF count.
-          </p>
+          <p className="text-sm">How often each driver has finished in each position.</p>
         </div>
         <FinishPositionsGrid summary={summary} />
+        <p className="graphic-caption">Includes a DNF count for each driver.</p>
       </section>
 
       <Suspense fallback={null}>
@@ -74,14 +73,11 @@ async function FinishPositionsSections({ season }: { season: number }) {
       </Suspense>
 
       <section id="positions-podiums" data-rail-label="Podium finishes">
-        <div className="section-header mb-3">
+        <div className="section-header">
           <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
             Podium finishes
           </h2>
-          <p className="text-sm">
-            How many 1st/2nd/3rd place finishes each driver and team has this season. Drivers with
-            no podiums are left off the list.
-          </p>
+          <p className="text-sm">1st/2nd/3rd place finishes per driver and team.</p>
         </div>
         <PodiumBars
           drivers={summary.driverPodiums.map((d) => ({
@@ -96,6 +92,7 @@ async function FinishPositionsSections({ season }: { season: number }) {
             podiums: t.podiums,
           }))}
         />
+        <p className="graphic-caption">Drivers with no podiums are left off the list.</p>
       </section>
     </div>
   );
@@ -112,16 +109,11 @@ export default async function PositionsPage({
   return (
     <div className="px-[10px] py-6 sm:p-6">
       <div className="content-wrap">
-        <div className="page-header mb-4">
+        <div className="page-header">
           <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
             Positions
           </h1>
-          <p className="text-sm">
-            Where each driver finished in every Grand Prix, how often they finish in each
-            position across the season, and their podium count. Darker is a stronger finish;
-            retirements and non-classifications are shown in a neutral grey. Sprint weekends show
-            the sprint finish as a small superscript next to the main race result.
-          </p>
+          <p className="text-sm">Where each driver finished in every Grand Prix.</p>
         </div>
 
         <div className="flex flex-col gap-8">
@@ -135,6 +127,11 @@ export default async function PositionsPage({
             >
               <PositionsGridSection season={season} />
             </Suspense>
+            <p className="graphic-caption">
+              Darker is a stronger finish; retirements and non-classifications are shown in a
+              neutral grey. Sprint weekends show the sprint finish as a small superscript next to
+              the main race result.
+            </p>
           </div>
 
           <Suspense fallback={<p className="text-sm">Loading…</p>}>
