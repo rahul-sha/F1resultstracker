@@ -12,15 +12,13 @@ export default function AboutPage() {
   return (
     <div className="px-[10px] py-6 sm:p-6">
       <div className="about-page-wrap">
-      <div className="mb-4">
+      <div className="page-header mb-4">
         <h1 className="text-2xl font-bold">About</h1>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Who built this, how, and who it&apos;s built on.
-        </p>
+        <p className="text-sm">Who built this, how, and who it&apos;s built on.</p>
       </div>
 
       <div className="about-layout">
-        <section className="about table-card">
+        <section id="about-project" data-rail-label="About this project" className="about table-card">
           <h2 className="mb-2.5 text-sm font-semibold">About this project</h2>
           <p>
             This is a personal F1 results tracker built by Rahul, with Claude (Anthropic&apos;s AI
@@ -51,6 +49,10 @@ export default function AboutPage() {
             <li>Replaced the mobile top bar with a bottom dock nav, and added icons to the desktop nav items</li>
             <li>Fixed a Positions-page scrolling bug and tightened phone-side page margins</li>
             <li>Unified the desktop and mobile nav into one bar, the same design at every size</li>
+            <li>
+              Added a scroll-aware section rail, a sprint marker you can actually see, and an
+              overscroll gesture that springs to the next page
+            </li>
           </ul>
 
           <p>
@@ -296,6 +298,21 @@ export default function AboutPage() {
                   scale look broken. Bars are now proportional to their total at any screen size.
                 </span>
               </li>
+              <li>
+                <b>Sprint marker, header cards, section rail &amp; overscroll navigation</b>
+                <span>
+                  Five fixes from one round of feedback: the sprint-race marker above the race
+                  grids is now a visible underline instead of a faint ring, so it actually matches
+                  its own caption; the page title and subtitle on Results, Positions and About sit
+                  in their own fixed-size glass card (matching the nav bar&apos;s blur) instead of
+                  floating text, so every page&apos;s content starts at the same height regardless
+                  of how long that page&apos;s subtitle runs; a thin rail down the left edge now
+                  shows and highlights the sections on the page as you scroll, which also made the
+                  browser&apos;s own scrollbar redundant so it&apos;s hidden; and reaching the
+                  bottom of a page and continuing to scroll springs forward to the next page in
+                  nav order, with a high enough threshold that a normal over-scroll does nothing.
+                </span>
+              </li>
             </ul>
           </div>
 
@@ -353,7 +370,7 @@ export default function AboutPage() {
         </section>
 
         <aside className="about-side">
-          <section className="about table-card">
+          <section id="about-me" data-rail-label="About me" className="about table-card">
             <h2 className="mb-2.5 text-sm font-semibold">About me</h2>
             <p className="about-tag">Placeholder — to be finalised later</p>
             <p>
@@ -370,7 +387,7 @@ export default function AboutPage() {
             </p>
           </section>
 
-          <section className="about table-card">
+          <section id="about-tools" data-rail-label="Data & tools" className="about table-card">
             <h2 className="mb-2.5 text-sm font-semibold">Data &amp; tools this site is built on</h2>
             <div className="credit-grid credit-grid-single">
               <div className="credit">

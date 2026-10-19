@@ -13,7 +13,8 @@ language.
   season, shaded by magnitude, with a season points total bar per driver,
   and a matching per-race heatmap for Constructors underneath. Pole
   position and fastest lap are marked with a small "P"/"F" superscript
-  next to the points value. Tables that overflow pan by clicking and
+  next to the points value. A thin underline beneath a round's flag chip
+  marks a sprint weekend. Tables that overflow pan by clicking and
   dragging on desktop, or normal touch scrolling on phones — there's no
   separate scrollbar.
 - **Positions** (`/positions`) — where each driver finished each race
@@ -29,13 +30,27 @@ language.
 
 Every page sits over a soft gradient glow built from the active theme's
 own colours, rather than a single flat background — it drifts slowly
-rather than sitting still. The nav bar and the About page sit on a
-blurred, translucent glass surface so that glow shows through them;
-table cards elsewhere are solid.
+rather than sitting still. The nav bar, each page's title/subtitle card,
+and the About page sit on a blurred, translucent glass surface so that
+glow shows through them (solid below 640px, where backdrop blur isn't
+reliable); table cards elsewhere are solid. Every page's title/subtitle
+card is a fixed width and height, so the content underneath always
+starts at the same position regardless of how long that page's
+subtitle runs.
 
 Pick a season from the selector, built into the nav bar at every screen
 size — shown as a calendar icon next to the year. The app defaults to
 the current calendar year. Only seasons 2020 onwards are supported.
+
+A thin rail down the left edge (900px and wider) lists the sections on
+the current page and highlights whichever one is in view as you scroll
+— a hint that there's more below, and a click-to-jump shortcut. With it
+in place the browser's own scrollbar is hidden, since it would just be
+a second copy of the same information. Scrolling past the very bottom
+of a page and continuing to pull springs forward to the next page in
+nav order (Results → Positions → About); a short, ordinary over-scroll
+does nothing, so this only fires on a deliberate, sustained pull, and
+the footer is still reached by scrolling normally.
 
 ## Navigation
 

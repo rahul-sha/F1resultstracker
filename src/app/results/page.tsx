@@ -46,27 +46,29 @@ export default async function ResultsPage({
   return (
     <div className="px-[10px] py-6 sm:p-6">
       <div className="content-wrap">
-        <div className="mb-4">
+        <div className="page-header mb-4">
           <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
             Results
           </h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          <p className="text-sm">
             Points scored by each driver per Grand Prix. Hover a race header for details;
             underlined races include a sprint.
           </p>
         </div>
 
-        <Suspense
-          fallback={
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Loading {season} results…
-            </p>
-          }
-        >
-          <PointsGridSection season={season} />
-        </Suspense>
+        <div id="results-heatmap" data-rail-label="Results heatmap">
+          <Suspense
+            fallback={
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                Loading {season} results…
+              </p>
+            }
+          >
+            <PointsGridSection season={season} />
+          </Suspense>
+        </div>
 
-        <section className="mt-8">
+        <section id="results-constructors" data-rail-label="Constructors" className="mt-8">
           <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
             Constructors
           </h2>

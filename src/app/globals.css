@@ -885,14 +885,25 @@ body::after {
   transform: translateY(-2px);
   opacity: 0.8;
 }
-.round-chip-sprint .round-flag {
-  box-shadow: 0 0 0 1.5px var(--accent);
-}
 .round-flag {
   width: 22px;
   height: 15px;
   border-radius: 2px;
   box-shadow: 0 0 0 1px var(--border-hairline);
+}
+
+/* Sprint marker: an actual underline bar beneath the chip, matching what
+   the Results/Positions copy says ("underlined races include a sprint") —
+   a 1.5px ring on the flag alone (the previous treatment) didn't read as
+   an underline and was easy to miss entirely. */
+.sprint-bar {
+  width: 22px;
+  height: 2.5px;
+  border-radius: 2px;
+  margin-top: -1px;
+}
+.round-chip-sprint .sprint-bar {
+  background: var(--accent);
 }
 
 /* The round chip's own padding/flag size, not the cell width, is what
@@ -907,6 +918,9 @@ body::after {
   .round-flag {
     width: 16px;
     height: 11px;
+  }
+  .sprint-bar {
+    width: 16px;
   }
 }
 
@@ -1026,6 +1040,44 @@ body::after {
 .content-wrap {
   max-width: 1420px;
   margin: 0 auto;
+}
+
+/* Page title + subtitle, as their own glass card (same blur/opacity recipe
+   as .navbar) instead of floating text on the page background. Fixed
+   width and a fixed minimum height, shared by every page's header, so
+   Results' one-line subtitle and Positions' much longer one still leave
+   the card — and the content starting beneath it — at the same height. */
+.page-header {
+  width: 60%;
+  min-width: 260px;
+  max-width: 100%;
+  min-height: 136px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 20px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--border-hairline),
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+.page-header p {
+  margin-top: 2px;
+  color: var(--text-muted);
+}
+
+/* Blur doesn't render reliably on mobile browsers (see .navbar) — drop to
+   a flat solid card and full width below 640px, same as the nav bar. */
+@media (max-width: 640px) {
+  .page-header {
+    width: 100%;
+    background: var(--surface-2);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 /* About page: centred column, with "About me" and the tools credits sat
@@ -1197,4 +1249,99 @@ body::after {
   color: var(--text-secondary);
   font-size: 12.5px;
   line-height: 1.5;
+}
+
+/* The page's own scroll bar is redundant once the section rail shows the
+   same "how far down the page am I" information — scrolling itself is
+   unaffected, only the visible track is hidden. */
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+/* Section rail: a thin tick per section, down the left edge, that lights
+   up for whichever section is in view — a hint that there's more below.
+   Hidden below 900px, where there isn't room for it beside the content. */
+.section-rail {
+  position: fixed;
+  left: max(10px, env(safe-area-inset-left, 0px));
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 15;
+}
+.section-rail-tick {
+  width: 3px;
+  height: 20px;
+  border-radius: 2px;
+  border: none;
+  padding: 0;
+  background: var(--border-hairline);
+  cursor: pointer;
+  transition: background 0.25s ease, width 0.25s ease, height 0.25s ease;
+}
+.section-rail-tick:hover {
+  background: var(--text-muted);
+}
+.section-rail-tick.active {
+  background: var(--accent);
+  width: 4px;
+  height: 28px;
+}
+@media (max-width: 900px) {
+  .section-rail {
+    display: none;
+  }
+}
+
+/* Overscroll-to-next-page indicator: a soft glow that grows from the
+   bottom edge while the pull builds, so the gesture is visible before it
+   fires rather than feeling like a sudden jump. */
+.page-spring-indicator {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  z-index: 35;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(to top, color-mix(in srgb, var(--accent) 16%, transparent), transparent);
+  transition: height 0.12s linear;
+}
+.page-spring-chip {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-container);
+  color: var(--on-accent-container);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.12s linear, transform 0.12s linear;
+}
+.page-spring-chip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.page-spring-chip svg {
+  width: 16px;
+  height: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-spring-indicator,
+  .page-spring-chip {
+    transition: none;
+  }
 }

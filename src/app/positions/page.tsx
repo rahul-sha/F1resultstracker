@@ -33,7 +33,7 @@ async function QualifyingPositionsSection({ season }: { season: number }) {
   }
 
   return (
-    <section>
+    <section id="positions-qualifying" data-rail-label="Qualifying frequency">
       <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
         Qualifying frequency
       </h2>
@@ -55,7 +55,7 @@ async function FinishPositionsSections({ season }: { season: number }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <section>
+      <section id="positions-finish" data-rail-label="Finish frequency">
         <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
           Finish frequency
         </h2>
@@ -69,7 +69,7 @@ async function FinishPositionsSections({ season }: { season: number }) {
         <QualifyingPositionsSection season={season} />
       </Suspense>
 
-      <section>
+      <section id="positions-podiums" data-rail-label="Podium finishes">
         <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
           Podium finishes
         </h2>
@@ -106,11 +106,11 @@ export default async function PositionsPage({
   return (
     <div className="px-[10px] py-6 sm:p-6">
       <div className="content-wrap">
-        <div className="mb-4">
+        <div className="page-header mb-4">
           <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
             Positions
           </h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          <p className="text-sm">
             Where each driver finished in every Grand Prix, how often they finish in each
             position across the season, and their podium count. Darker is a stronger finish;
             retirements and non-classifications are shown in a neutral grey. Sprint weekends show
@@ -119,15 +119,17 @@ export default async function PositionsPage({
         </div>
 
         <div className="flex flex-col gap-8">
-          <Suspense
-            fallback={
-              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                Loading {season} positions…
-              </p>
-            }
-          >
-            <PositionsGridSection season={season} />
-          </Suspense>
+          <div id="positions-heatmap" data-rail-label="Positions heatmap">
+            <Suspense
+              fallback={
+                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                  Loading {season} positions…
+                </p>
+              }
+            >
+              <PositionsGridSection season={season} />
+            </Suspense>
+          </div>
 
           <Suspense fallback={<p className="text-sm">Loading…</p>}>
             <FinishPositionsSections season={season} />
