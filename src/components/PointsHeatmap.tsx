@@ -156,6 +156,7 @@ export function RoundHeader({
       >
         {flagIso ? <span className={`fi fi-${flagIso} round-flag`} aria-hidden="true" /> : null}
         <span>{abbreviation}</span>
+        <span className="sprint-bar" aria-hidden="true" />
       </div>
     </th>
   );
