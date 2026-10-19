@@ -13,7 +13,9 @@ export default function AboutPage() {
     <div className="px-[10px] py-6 sm:p-6">
       <div className="about-page-wrap">
       <div className="page-header">
-        <h1 className="text-2xl font-bold">About</h1>
+        <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+          About
+        </h1>
         <p className="text-sm">Who built this, how, and who it&apos;s built on.</p>
       </div>
 
