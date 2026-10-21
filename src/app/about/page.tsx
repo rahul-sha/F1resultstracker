@@ -60,8 +60,8 @@ export default function AboutPage() {
               straight from the page
             </li>
             <li>
-              Added a cumulative Driver Points Evolution chart to the Results page, one line per
-              driver across the season
+              Added cumulative Driver and Constructors Points Evolution charts to the Results
+              page, side by side, with a race-by-race draw-in animation on scroll
             </li>
           </ul>
 
@@ -69,11 +69,19 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            33 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            34 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">34</span>
+                <b>Constructors evolution chart, scroll animation</b>
+                <span>
+                  A matching Constructors Points Evolution chart sits beside the driver one instead
+                  of full width, and both now draw themselves in, round by round, as you scroll to them.
+                </span>
+              </li>
               <li>
                 <span className="seq">33</span>
                 <b>Driver Points Evolution chart</b>
