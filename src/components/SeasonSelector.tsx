@@ -36,11 +36,10 @@ export default function SeasonSelector({ initialSeason }: { initialSeason: numbe
   const urlSeason = Number(searchParams.get("season"));
   const hasUrlSeason = seasons.includes(urlSeason);
   const [lastKnownSeason, setLastKnownSeason] = useState(initialSeason);
+  if (hasUrlSeason && urlSeason !== lastKnownSeason) {
+    setLastKnownSeason(urlSeason);
+  }
   const season = hasUrlSeason ? urlSeason : lastKnownSeason;
-
-  useEffect(() => {
-    if (hasUrlSeason) setLastKnownSeason(urlSeason);
-  }, [hasUrlSeason, urlSeason]);
 
   useEffect(() => {
     if (!open) return;

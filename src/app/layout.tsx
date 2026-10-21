@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
+import SectionRail from "@/components/SectionRail";
+import PageSpring from "@/components/PageSpring";
 import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
 
 export const metadata: Metadata = {
@@ -28,8 +30,10 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full">
         <div className="page-shell flex min-h-screen flex-col gap-6 p-4">
+          <SectionRail />
           <main className="min-w-0 flex-1 navbar-spacer">{children}</main>
           <NavBar initialSeason={initialSeason} />
+          <PageSpring />
         </div>
       </body>
     </html>

@@ -12,15 +12,15 @@ export default function AboutPage() {
   return (
     <div className="px-[10px] py-6 sm:p-6">
       <div className="about-page-wrap">
-      <div className="mb-4">
-        <h1 className="text-2xl font-bold">About</h1>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-          Who built this, how, and who it&apos;s built on.
-        </p>
+      <div className="page-header">
+        <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+          About
+        </h1>
+        <p className="text-sm">Who built this, how, and who it&apos;s built on.</p>
       </div>
 
       <div className="about-layout">
-        <section className="about table-card">
+        <section id="about-project" data-rail-label="About this project" className="about table-card">
           <h2 className="mb-2.5 text-sm font-semibold">About this project</h2>
           <p>
             This is a personal F1 results tracker built by one person, with Claude (Anthropic&apos;s
@@ -51,21 +51,45 @@ export default function AboutPage() {
             <li>Replaced the mobile top bar with a bottom dock nav, and added icons to the desktop nav items</li>
             <li>Fixed a Positions-page scrolling bug and tightened phone-side page margins</li>
             <li>Unified the desktop and mobile nav into one bar, the same design at every size</li>
+            <li>
+              Added a scroll-aware section rail, a sprint marker you can actually see, and an
+              overscroll gesture that springs to the next page
+            </li>
+            <li>
+              Added a share button to every graphic, so it can be saved, copied or shared
+              straight from the page
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            30 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            32 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
               <li>
-                <span className="seq">30</span>
+                <span className="seq">32</span>
                 <b>Real bio, timeline tidy-up</b>
                 <span>Added the real About me bio, compacted this timeline, and tinted the credit icons.</span>
+              </li>
+              <li>
+                <span className="seq">31</span>
+                <b>Share button on every graphic</b>
+                <span>
+                  A share icon beside each heatmap, grid and chart turns it into a PNG right in the
+                  browser &mdash; save it, copy it, or open the native share sheet on phone and Mac.
+                </span>
+              </li>
+              <li>
+                <span className="seq">30</span>
+                <b>Sprint marker, header cards, section rail &amp; overscroll navigation</b>
+                <span>
+                  Fixed the sprint-race marker, gave page titles a matching glass card, added a
+                  scroll-aware section rail, and made reaching the page bottom spring to the next page.
+                </span>
               </li>
               <li>
                 <span className="seq">29</span>
@@ -229,7 +253,7 @@ export default function AboutPage() {
         </section>
 
         <aside className="about-side">
-          <section className="about table-card">
+          <section id="about-me" data-rail-label="About me" className="about table-card">
             <h2 className="mb-2.5 text-sm font-semibold">About me</h2>
             <p>
               This site is built and run by one person — an F1 fan who wanted a cleaner way to
@@ -240,7 +264,7 @@ export default function AboutPage() {
             </p>
           </section>
 
-          <section className="about table-card">
+          <section id="about-tools" data-rail-label="Data & tools" className="about table-card">
             <h2 className="mb-2.5 text-sm font-semibold">Data &amp; tools this site is built on</h2>
             <div className="credit-grid credit-grid-single">
               <div className="credit">
