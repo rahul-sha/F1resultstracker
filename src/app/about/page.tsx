@@ -66,9 +66,9 @@ export default function AboutPage() {
               fit its container rather than a fixed size
             </li>
             <li>
-              Replaced the homepage with Grid Walk: a drag-navigable 3D scene where the
-              Results, Positions and About pages are cards on the inside of a sphere, with a
-              cursor-reactive background and live standings pulled into each card
+              Grew Grid Walk from three cards (Results, Positions, About) into eight — one
+              per data section — where clicking a card zooms the camera into it in place,
+              growing the same card to fill the screen rather than opening a new page
             </li>
           </ul>
 
@@ -76,11 +76,27 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            37 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            38 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">38</span>
+                <b>Grid Walk: eight sections, zoom-in cards</b>
+                <span>
+                  Replaced Grid Walk&apos;s three page-cards (Results, Positions, About) with
+                  eight section cards &mdash; Results, Constructors, Points Evolution, Positions,
+                  Finish Frequency, Qualifying Frequency, Driver Podiums and Constructor
+                  Podiums &mdash; each showing the real heatmap, chart or grid from that section.
+                  Clicking one no longer navigates to a new page: the same card grows in place
+                  to fill the screen, like zooming into a photo, then shrinks back on Back.
+                  About moved to a link in the top bar since it stays its own page. Also
+                  restored the sphere&apos;s visible curvature, which had flattened out while
+                  fixing an earlier layout bug. Mocked up and iterated live with Rahul across
+                  several rounds before being wired to real data and shipped.
+                </span>
+              </li>
               <li>
                 <span className="seq">37</span>
                 <b>Grid Walk: a 3D home page</b>

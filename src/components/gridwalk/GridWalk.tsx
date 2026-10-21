@@ -3,8 +3,27 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./gridwalk.css";
-import { ResultsIcon, PositionsIcon, AboutIcon } from "@/components/nav-icons";
+import {
+  ResultsIcon,
+  ConstructorsIcon,
+  EvolutionIcon,
+  PositionsIcon,
+  FinishFreqIcon,
+  QualifyingFreqIcon,
+  DriverPodiumsIcon,
+  ConstructorPodiumsIcon,
+} from "@/components/nav-icons";
 import SeasonSelector from "@/components/SeasonSelector";
+import type { PointsGrid } from "@/lib/points-grid";
+import type { ConstructorPointsGrid } from "@/lib/constructor-points-grid";
+import type { FinishPositionSummary } from "@/lib/finish-positions";
+import type { QualifyingPositionSummary } from "@/lib/qualifying-positions";
+import PointsHeatmap from "@/components/PointsHeatmap";
+import ConstructorPointsHeatmap from "@/components/ConstructorPointsHeatmap";
+import DriverPointsEvolutionChart from "@/components/DriverPointsEvolutionChart";
+import FinishPositionsGrid from "@/components/FinishPositionsGrid";
+import QualifyingPositionsGrid from "@/components/QualifyingPositionsGrid";
+import PodiumBars from "@/components/PodiumBars";
 
 export interface GridWalkStat {
   label: string;
@@ -23,32 +42,48 @@ export interface GridWalkProps {
   podiumLeader: GridWalkStat | null;
   topDrivers: GridWalkMiniStat[];
   topPodiumDrivers: GridWalkMiniStat[];
+  pointsGrid: PointsGrid;
+  constructorGrid: ConstructorPointsGrid;
+  finishSummary: FinishPositionSummary;
+  qualifyingSummary: QualifyingPositionSummary;
 }
 
-type PinDef = {
+type SectionDef = {
+  id: string;
   x: number;
   y: number;
-  href: string;
+  eyebrow: string;
+  tabColor: string;
   title: string;
   desc: string;
   icon: React.ReactNode;
+  stat: string;
+  statLabel: string;
   miniStats?: GridWalkMiniStat[];
+  renderFull: () => React.ReactNode;
 };
 
 const SPHERE_R = 760;
 const YAW_K = 0.062;
 const PITCH_K = 0.05;
-const ZOOM = 2.0;
-const BOUND_YAW = 52;
-const BOUND_PITCH = 27;
+const ZOOM = 1.3;
+const BOUND_YAW = 58;
+const BOUND_PITCH = 30;
 const DRAG_THRESHOLD = 6; // px of movement before a pointerdown counts as a drag, not a click
 const TRAVEL_EASE = 0.12; // per-frame lerp factor for the "jump to" camera travel
+const DIVE_MS = 700;
+const DIVE_EASE = "cubic-bezier(.22,.7,.2,1)";
+// How long to let the camera travel toward a dived-into card before
+// measuring its rect and growing it — long enough for TRAVEL_EASE to
+// converge (see 3d-mockup-exploration memory), short enough to still feel
+// like one continuous motion.
+const DIVE_SETTLE_MS = 500;
 
 function clamp(v: number, b: number) {
   return Math.max(-b, Math.min(b, v));
 }
 
-// "Inside a sphere" CSS-3D navigation: every pin sits on the sphere's
+// "Inside a sphere" CSS-3D navigation: every card sits on the sphere's
 // surface via translateZ(-SPHERE_R) (negative — the camera is at the
 // centre looking out, so content recedes into the screen rather than
 // popping toward the viewer), and dragging rotates the whole rig the
@@ -56,6 +91,16 @@ function clamp(v: number, b: number) {
 // right here took real derivation — see memory "3d-mockup-exploration"
 // before touching either the translateZ sign or the drag-direction math,
 // since flipping one silently flips the other's apparent effect too.
+//
+// Diving into a card doesn't navigate to a new page: a fixed overlay,
+// rendered outside the 3D rig so it's never subject to its rotation, is
+// snapped (via getBoundingClientRect) onto the clicked card's on-screen
+// rect and then grown with a plain 2D CSS transition to near-fullscreen —
+// a FLIP technique that reads as the card itself zooming in, like a very
+// large photo, rather than a different element opening. Growing the
+// card's own DOM node in place (while still inside the rotated/perspective
+// rig) was tried first and produces severe skew at large sizes once the
+// card is magnified — see "grid-walk-8-section-redesign" memory.
 export default function GridWalk({
   season,
   driverLeader,
@@ -63,12 +108,19 @@ export default function GridWalk({
   podiumLeader,
   topDrivers,
   topPodiumDrivers,
+  pointsGrid,
+  constructorGrid,
+  finishSummary,
+  qualifyingSummary,
 }: GridWalkProps) {
   const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
   const rigRef = useRef<HTMLDivElement>(null);
   const distortRef = useRef<HTMLDivElement>(null);
   const dispRef = useRef<SVGFEDisplacementMapElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const restRectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
 
   const camYaw = useRef(0);
   const camPitch = useRef(0);
@@ -86,43 +138,145 @@ export default function GridWalk({
   const shownMy = useRef(50);
   const targetMx = useRef(50);
   const targetMy = useRef(50);
-  // Set by the "jump to" bar; the animate loop eases the camera toward it
-  // and clears it once close, so a drag can always interrupt a travel.
+  // Set by the "jump to" bar and by diving into a card; the animate loop
+  // eases the camera toward it and clears it once close, so a drag can
+  // always interrupt a travel.
   const travelTarget = useRef<{ yaw: number; pitch: number } | null>(null);
 
-  const [hoveredHref, setHoveredHref] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overlayShown, setOverlayShown] = useState(false);
+  const diving = activeId !== null;
 
-  // x/y are yaw/pitch degrees on the sphere, not pixels — keep them well
-  // apart (a few hundredths of a degree per screen pixel at this distance
-  // means pin positions need real angular separation, not small offsets).
-  const pins: PinDef[] = [
+  const sections: SectionDef[] = [
     {
-      x: -40,
-      y: -8,
-      href: "/results",
+      id: "results",
+      x: -42,
+      y: 13,
+      eyebrow: "/results",
+      tabColor: "#ff8000",
       title: "Results",
       desc: "Points per Grand Prix, heatmapped across the season.",
       icon: <ResultsIcon size={20} />,
+      stat: driverLeader?.value.split(" — ")[1] ?? "—",
+      statLabel: driverLeader?.value.split(" — ")[0] ?? "Leading driver",
       miniStats: topDrivers,
+      renderFull: () => <PointsHeatmap grid={pointsGrid} />,
     },
     {
-      x: 0,
-      y: 16,
-      href: "/positions",
+      id: "constructors",
+      x: -14,
+      y: 13,
+      eyebrow: "/results",
+      tabColor: "#ff8000",
+      title: "Constructors",
+      desc: "Team points per race, same grid.",
+      icon: <ConstructorsIcon size={20} />,
+      stat: constructorLeader?.value.split(" — ")[1] ?? "—",
+      statLabel: constructorLeader?.value.split(" — ")[0] ?? "Leading team",
+      renderFull: () => <ConstructorPointsHeatmap grid={constructorGrid} />,
+    },
+    {
+      id: "evolution",
+      x: 14,
+      y: 13,
+      eyebrow: "/results",
+      tabColor: "#66d9ef",
+      title: "Points Evolution",
+      desc: "Cumulative driver points race by race.",
+      icon: <EvolutionIcon size={20} />,
+      stat: `${pointsGrid.rows.length}`,
+      statLabel: "drivers tracked",
+      renderFull: () => <DriverPointsEvolutionChart grid={pointsGrid} />,
+    },
+    {
+      id: "positions",
+      x: 42,
+      y: 13,
+      eyebrow: "/positions",
+      tabColor: "#3671c6",
       title: "Positions",
       desc: "Finishing and qualifying positions, driver by driver.",
       icon: <PositionsIcon size={20} />,
-      miniStats: topPodiumDrivers,
+      stat: `${finishSummary.maxPosition}`,
+      statLabel: "grid slots tracked",
+      renderFull: () => <PointsHeatmap grid={pointsGrid} mode="position" />,
     },
     {
-      x: 40,
-      y: -6,
-      href: "/about",
-      title: "About",
-      desc: "Who built this, how, and who it's built on.",
-      icon: <AboutIcon size={20} />,
+      id: "finishfreq",
+      x: -42,
+      y: -15,
+      eyebrow: "/positions",
+      tabColor: "#3671c6",
+      title: "Finish Frequency",
+      desc: "How often each driver finishes in each position band.",
+      icon: <FinishFreqIcon size={20} />,
+      stat: `${finishSummary.drivers.length}`,
+      statLabel: "drivers tracked",
+      renderFull: () => <FinishPositionsGrid summary={finishSummary} />,
+    },
+    {
+      id: "qualifreq",
+      x: -14,
+      y: -15,
+      eyebrow: "/positions",
+      tabColor: "#00d2be",
+      title: "Qualifying Frequency",
+      desc: "How often each driver qualifies in each position band.",
+      icon: <QualifyingFreqIcon size={20} />,
+      stat: `${qualifyingSummary.maxPosition}`,
+      statLabel: "grid slots tracked",
+      renderFull: () => <QualifyingPositionsGrid summary={qualifyingSummary} />,
+    },
+    {
+      id: "podiumsD",
+      x: 14,
+      y: -15,
+      eyebrow: "/positions",
+      tabColor: "#ff8000",
+      title: "Driver Podiums",
+      desc: "Podium finishes, driver by driver.",
+      icon: <DriverPodiumsIcon size={20} />,
+      stat: podiumLeader?.value.split(" — ")[1] ?? "—",
+      statLabel: podiumLeader?.value.split(" — ")[0] ?? "Most podiums",
+      miniStats: topPodiumDrivers,
+      renderFull: () => (
+        <PodiumBars
+          drivers={finishSummary.driverPodiums.map((d) => ({
+            label: d.code,
+            team: d.constructorName,
+            color: d.color,
+            podiums: d.podiums,
+          }))}
+          teams={[]}
+        />
+      ),
+    },
+    {
+      id: "podiumsT",
+      x: 42,
+      y: -15,
+      eyebrow: "/positions",
+      tabColor: "#f92672",
+      title: "Constructor Podiums",
+      desc: "Podium finishes, team by team.",
+      icon: <ConstructorPodiumsIcon size={20} />,
+      stat: `${finishSummary.teamPodiums.length}`,
+      statLabel: "teams on the podium",
+      renderFull: () => (
+        <PodiumBars
+          drivers={[]}
+          teams={finishSummary.teamPodiums.map((t) => ({
+            label: t.constructorName,
+            color: t.color,
+            podiums: t.podiums,
+          }))}
+        />
+      ),
     },
   ];
+
+  const activeSection = sections.find((s) => s.id === activeId) ?? null;
 
   function travelTo(yaw: number, pitch: number) {
     travelTarget.current = { yaw: clamp(yaw, BOUND_YAW), pitch: clamp(pitch, BOUND_PITCH) };
@@ -144,6 +298,7 @@ export default function GridWalk({
     }
 
     function onPointerDown(e: PointerEvent) {
+      if (diving) return;
       dragging.current = true;
       dragMoved.current = false;
       travelTarget.current = null;
@@ -156,7 +311,7 @@ export default function GridWalk({
       wrap!.classList.add("dragging");
       // Deliberately no setPointerCapture here: capturing the pointer on
       // wrap retargets the browser's synthesized click event to wrap too,
-      // so a pin's own onClick never fires. The drag already keeps working
+      // so a card's own onClick never fires. The drag already keeps working
       // outside wrap's bounds because pointermove/pointerup are bound on
       // window below, not on wrap, so capture buys nothing here.
     }
@@ -196,6 +351,10 @@ export default function GridWalk({
 
     let raf = 0;
     function animate() {
+      // Gated on drag only (not on "diving"): a dive sets a travel target
+      // to centre the clicked card, and that travel still needs to run
+      // during the dive, or the card never actually lands in the middle of
+      // the screen before the overlay measures it.
       if (!dragging.current) {
         if (travelTarget.current) {
           camYaw.current += (travelTarget.current.yaw - camYaw.current) * TRAVEL_EASE;
@@ -241,12 +400,13 @@ export default function GridWalk({
       wrap.removeEventListener("wheel", onWheel);
       cancelAnimationFrame(raf);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diving]);
 
-  // x/y here are the pin's own yaw/pitch degrees on the sphere — unlike
+  // x/y here are each card's own yaw/pitch degrees on the sphere — unlike
   // the YAW_K/PITCH_K constants above, which only convert a drag's pixel
   // delta into a camera-rotation degree, placement needs real angular
-  // separation (a few degrees of yaw at this translateZ puts two pins
+  // separation (a few degrees of yaw at this translateZ puts two cards
   // almost exactly on top of each other on screen).
   function placeStyle(yawDeg: number, pitchDeg: number, extraZ = 0): React.CSSProperties {
     return {
@@ -254,15 +414,64 @@ export default function GridWalk({
     };
   }
 
-  function handlePinClick(href: string) {
-    if (dragMoved.current) return; // a drag release, not a click
-    router.push(href);
+  function diveInto(section: SectionDef) {
+    if (dragMoved.current || diving) return;
+    setActiveId(section.id);
+    travelTo(section.x, section.y);
+
+    window.setTimeout(() => {
+      const el = cardRefs.current[section.id];
+      const overlay = overlayRef.current;
+      if (!el || !overlay) return;
+      const rect = el.getBoundingClientRect();
+      restRectRef.current = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+
+      overlay.style.transition = "none";
+      overlay.style.left = `${rect.left}px`;
+      overlay.style.top = `${rect.top}px`;
+      overlay.style.width = `${rect.width}px`;
+      overlay.style.height = `${rect.height}px`;
+      setOverlayShown(true);
+      // Force layout so the browser registers the start rect before the
+      // transition below is applied — otherwise it would animate from
+      // whatever the overlay's previous (or default) box was instead.
+      void overlay.offsetHeight;
+
+      const targetW = Math.min(window.innerWidth * 0.92, 1100);
+      const targetH = Math.min(window.innerHeight * 0.82, 700);
+      const targetL = (window.innerWidth - targetW) / 2;
+      const targetT = (window.innerHeight - targetH) / 2;
+
+      overlay.style.transition = `left ${DIVE_MS}ms ${DIVE_EASE}, top ${DIVE_MS}ms ${DIVE_EASE}, width ${DIVE_MS}ms ${DIVE_EASE}, height ${DIVE_MS}ms ${DIVE_EASE}`;
+      overlay.style.left = `${targetL}px`;
+      overlay.style.top = `${targetT}px`;
+      overlay.style.width = `${targetW}px`;
+      overlay.style.height = `${targetH}px`;
+    }, DIVE_SETTLE_MS);
+  }
+
+  function diveOut() {
+    const overlay = overlayRef.current;
+    const rect = restRectRef.current;
+    if (!overlay || !rect) return;
+
+    overlay.style.transition = `left ${DIVE_MS}ms ${DIVE_EASE}, top ${DIVE_MS}ms ${DIVE_EASE}, width ${DIVE_MS}ms ${DIVE_EASE}, height ${DIVE_MS}ms ${DIVE_EASE}`;
+    overlay.style.left = `${rect.left}px`;
+    overlay.style.top = `${rect.top}px`;
+    overlay.style.width = `${rect.width}px`;
+    overlay.style.height = `${rect.height}px`;
+
+    window.setTimeout(() => {
+      setOverlayShown(false);
+      setActiveId(null);
+      restRectRef.current = null;
+    }, DIVE_MS + 40);
   }
 
   const stats: { x: number; y: number; stat: GridWalkStat | null }[] = [
-    { x: -20, y: 22, stat: driverLeader },
-    { x: 20, y: 22, stat: constructorLeader },
-    { x: 0, y: -20, stat: podiumLeader },
+    { x: -28, y: 25, stat: driverLeader },
+    { x: 28, y: 25, stat: constructorLeader },
+    { x: 0, y: -26, stat: podiumLeader },
   ];
 
   return (
@@ -279,43 +488,61 @@ export default function GridWalk({
 
       <div className="gw-stage">
         <div className="gw-rig" ref={rigRef}>
-          <div className="gw-headline" style={placeStyle(0, 0)}>
+          <div className={"gw-headline" + (diving ? " gw-hide" : "")} style={placeStyle(0, 0)}>
             <h1>F1 Results Tracker</h1>
-            <p>{season} season — drag to look around, click a card to open it.</p>
+            <p>{season} season — drag to look around, click a card to dive in.</p>
           </div>
 
-          {pins.map((pin) => (
+          {sections.map((section) => (
             <div
-              key={pin.href}
-              className="gw-pin"
-              style={placeStyle(pin.x, pin.y)}
-              onClick={() => handlePinClick(pin.href)}
-              onPointerEnter={() => setHoveredHref(pin.href)}
-              onPointerLeave={() => setHoveredHref((cur) => (cur === pin.href ? null : cur))}
+              key={section.id}
+              ref={(el) => {
+                cardRefs.current[section.id] = el;
+              }}
+              className={
+                "gw-card" +
+                (section.id === activeId ? " gw-card-active" : "") +
+                (diving && section.id !== activeId ? " gw-faded" : "")
+              }
+              style={placeStyle(section.x, section.y)}
+              onClick={() => diveInto(section)}
+              onPointerEnter={() => setHoveredId(section.id)}
+              onPointerLeave={() => setHoveredId((cur) => (cur === section.id ? null : cur))}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") router.push(pin.href);
+                if (e.key === "Enter" || e.key === " ") diveInto(section);
               }}
             >
-              <span className="gw-pin-icon">{pin.icon}</span>
-              <h2>{pin.title}</h2>
-              <p>{pin.desc}</p>
+              <span className="gw-card-tab" style={{ background: section.tabColor }} />
+              <div className="gw-card-eyebrow">
+                <span className="gw-card-eyebrow-dot" />
+                {section.eyebrow}
+              </div>
+              <span className="gw-card-icon">{section.icon}</span>
+              <h2>{section.title}</h2>
+              <p>{section.desc}</p>
+              <div className="gw-card-stat">
+                <b>{section.stat}</b> · {section.statLabel}
+              </div>
             </div>
           ))}
 
-          {pins.map(
-            (pin) =>
-              pin.miniStats &&
-              pin.miniStats.length > 0 &&
-              pin.miniStats.map((mini, i) => {
-                const spread = (i - (pin.miniStats!.length - 1) / 2) * 11;
+          {sections.map(
+            (section) =>
+              section.miniStats &&
+              section.miniStats.length > 0 &&
+              section.miniStats.map((mini, i) => {
+                // Small spread so the chips cluster tight around their own
+                // card — these are degrees of angular separation on the
+                // sphere, same units as section.x/section.y, not pixels.
+                const spread = (i - (section.miniStats!.length - 1) / 2) * 5;
                 return (
                   <div
-                    key={pin.href + mini.code}
-                    className={"gw-mini-chip" + (hoveredHref === pin.href ? " show" : "")}
-                    style={placeStyle(pin.x + spread, pin.y - 13 - (i % 2) * 7, -18)}
-                    aria-hidden={hoveredHref !== pin.href}
+                    key={section.id + mini.code}
+                    className={"gw-mini-chip" + (hoveredId === section.id && !diving ? " show" : "")}
+                    style={placeStyle(section.x + spread, section.y - 9 - (i % 2) * 5, -18)}
+                    aria-hidden={hoveredId !== section.id}
                   >
                     <span className="gw-mini-chip-code">{mini.code}</span> {mini.value}
                   </div>
@@ -326,7 +553,7 @@ export default function GridWalk({
           {stats.map(
             ({ x, y, stat }, i) =>
               stat && (
-                <div key={i} className="gw-chip" style={placeStyle(x, y, -40)}>
+                <div key={i} className={"gw-chip" + (diving ? " gw-hide" : "")} style={placeStyle(x, y, -40)}>
                   {stat.label}: {stat.value}
                 </div>
               )
@@ -334,7 +561,36 @@ export default function GridWalk({
         </div>
       </div>
 
-      <div className="gw-topbar">
+      <div
+        className={"gw-overlay" + (overlayShown ? " show" : "")}
+        ref={overlayRef}
+      >
+        {activeSection && (
+          <div className="gw-overlay-inner">
+            <div className="gw-overlay-eyebrow">
+              <span className="gw-card-eyebrow-dot" />
+              {activeSection.eyebrow}
+            </div>
+            <h2>{activeSection.title}</h2>
+            <p className="gw-overlay-sub">{activeSection.desc}</p>
+            <div className="gw-overlay-body">{activeSection.renderFull()}</div>
+          </div>
+        )}
+      </div>
+
+      <button
+        type="button"
+        className={"gw-back-btn" + (diving ? " show" : "")}
+        onClick={diveOut}
+        aria-label="Back to Grid Walk"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        Back
+      </button>
+
+      <div className={"gw-topbar" + (diving ? " gw-hide" : "")}>
         <div className="gw-brand">
           <span className="gw-brand-mark" aria-hidden="true">
             <svg width="22" height="14" viewBox="0 0 22 14" fill="currentColor">
@@ -345,15 +601,25 @@ export default function GridWalk({
           </span>
           Grid Walk
         </div>
-        <SeasonSelector initialSeason={season} />
+        <div className="gw-topbar-right">
+          <button type="button" className="gw-about-link" onClick={() => router.push("/about")}>
+            About
+          </button>
+          <SeasonSelector initialSeason={season} />
+        </div>
       </div>
 
-      <div className="gw-jumpbar">
+      <div className={"gw-jumpbar" + (diving ? " gw-hide" : "")}>
         <span className="gw-jumpbar-label">Jump to</span>
         <div className="gw-jumpbar-pills">
-          {pins.map((pin) => (
-            <button key={pin.href} type="button" className="gw-jump-pill" onClick={() => travelTo(pin.x, pin.y)}>
-              {pin.title}
+          {sections.map((section) => (
+            <button
+              key={section.id}
+              type="button"
+              className="gw-jump-pill"
+              onClick={() => travelTo(section.x, section.y)}
+            >
+              {section.title}
             </button>
           ))}
           <button type="button" className="gw-jump-pill gw-jump-reset" onClick={() => travelTo(0, 0)}>
