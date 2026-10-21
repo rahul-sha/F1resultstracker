@@ -1428,6 +1428,19 @@ html::-webkit-scrollbar {
   opacity: 1;
   transform: scale(1);
 }
+.evo-bubble {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .evo-bubble {
+    transition-property: opacity;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-out;
+  }
+}
+.evo-bubble-shown {
+  opacity: 1;
+}
 
 /* Results page: Driver/Constructors evolution charts sit side by side on
    a wide screen instead of each taking the full page width; narrower than

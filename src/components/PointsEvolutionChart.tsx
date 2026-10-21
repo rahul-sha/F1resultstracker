@@ -7,13 +7,14 @@ import { useTooltip, useDragPan, Tooltip } from "./PointsHeatmap";
 export interface EvolutionSeriesInput {
   id: string;
   label: string;
+  code: string;
   color: string;
   pointsByRound: (number | null)[];
 }
 
 const CHART_HEIGHT = 220;
 const ROUND_WIDTH = 36;
-const PAD_LEFT = 40;
+const PAD_LEFT = 20;
 const PAD_TOP = 14;
 const PAD_BOTTOM = 10;
 const FLAG_ROW_HEIGHT = 24;
@@ -24,17 +25,21 @@ const REVEAL_STAGGER_CAP_MS = 700;
 const REVEAL_DURATION_MS = 2200;
 const AREA_OPACITY = 0.14;
 
-function computeTicks(maxValue: number): { ticks: number[]; axisMax: number } {
-  const safeMax = Math.max(maxValue, 1);
-  const rawStep = safeMax / 5;
-  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
-  const residual = rawStep / magnitude;
-  const niceResidual = residual > 5 ? 10 : residual > 2 ? 5 : residual > 1 ? 2 : 1;
-  const step = niceResidual * magnitude;
-  const axisMax = Math.ceil(safeMax / step) * step;
-  const ticks: number[] = [];
-  for (let v = 0; v <= axisMax + 1e-6; v += step) ticks.push(Math.round(v));
-  return { ticks, axisMax };
+// The end-of-line totals column, outside the horizontal scroller so it
+// keeps showing the latest standings even when the plot itself is
+// scrolled back to an earlier round.
+const BUBBLE_COL_WIDTH = 104;
+const BUBBLE_WIDTH = 92;
+const BUBBLE_HEIGHT = 22;
+const BUBBLE_FILL_OPACITY = 0.16;
+// Minimum vertical distance between two bubbles' centres before one has
+// to be nudged off its line's real value to avoid overlapping the next.
+const BUBBLE_MIN_SPACING = BUBBLE_HEIGHT + 2;
+
+function computeAxisMax(maxValue: number): number {
+  // Headroom only — ticks/gridlines are gone now that the scale itself
+  // is hidden, so there's no "nice number" to round to any more.
+  return Math.max(1, maxValue) * 1.08;
 }
 
 // Fires once, the first time the chart scrolls into view, so the draw-in
@@ -94,7 +99,7 @@ export default function PointsEvolutionChart({
   );
 
   const maxCumulative = Math.max(1, ...series.map((s) => s.cumulative[s.cumulative.length - 1] ?? 0));
-  const { ticks, axisMax } = computeTicks(maxCumulative);
+  const axisMax = computeAxisMax(maxCumulative);
 
   const plotHeight = CHART_HEIGHT - PAD_TOP - PAD_BOTTOM;
   const plotWidth = Math.max(1, columns.length - 1) * ROUND_WIDTH + PAD_LEFT;
@@ -108,46 +113,66 @@ export default function PointsEvolutionChart({
     (a, b) => (a.cumulative[a.cumulative.length - 1] ?? 0) - (b.cumulative[b.cumulative.length - 1] ?? 0)
   );
 
+  // End-of-line totals, nudged apart just enough to stay legible when two
+  // drivers are close in points — top (highest value) down, each bubble
+  // pushed below the one above it rather than letting them overlap. A full
+  // driver field (20+ cars) can't all fit a 220px-tall column at a legible
+  // spacing, so only as many bubbles as actually fit get one; the rest keep
+  // their line and dot, with the exact value still available on hover.
+  const bubbleMinY = PAD_TOP;
+  const bubbleMaxY = CHART_HEIGHT - BUBBLE_HEIGHT / 2;
+  const maxBubbles = Math.max(1, Math.floor((bubbleMaxY - bubbleMinY) / BUBBLE_MIN_SPACING) + 1);
+  const bubbles = useMemo(() => {
+    const byValueDesc = [...series].sort(
+      (a, b) => (b.cumulative[b.cumulative.length - 1] ?? 0) - (a.cumulative[a.cumulative.length - 1] ?? 0)
+    );
+    type Bubble = { id: string; code: string; color: string; value: number; lineY: number; bubbleY: number };
+    const picked = byValueDesc.slice(0, maxBubbles);
+
+    // Pass 1 (top-down): push each bubble below the one above it.
+    const pass1 = picked.reduce<Bubble[]>((acc, s) => {
+      const value = s.cumulative[s.cumulative.length - 1] ?? 0;
+      const lineY = y(value);
+      const prevY = acc.length > 0 ? acc[acc.length - 1].bubbleY : -Infinity;
+      const bubbleY = Math.max(lineY, prevY + BUBBLE_MIN_SPACING);
+      return [...acc, { id: s.id, code: s.code, color: s.color, value, lineY, bubbleY }];
+    }, []);
+
+    // Pass 2 (bottom-up): pass 1 can push the last bubble past the bottom
+    // of the chart when several series cluster together; pull everything
+    // back up from the bottom so the whole stack fits inside the chart,
+    // still spaced apart, instead of letting the overflow collide.
+    const result = [...pass1];
+    for (let i = result.length - 1; i >= 0; i--) {
+      const ceiling = i === result.length - 1 ? bubbleMaxY : result[i + 1].bubbleY - BUBBLE_MIN_SPACING;
+      result[i] = { ...result[i], bubbleY: Math.min(result[i].bubbleY, ceiling) };
+    }
+    return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- y() is a pure function of axisMax, already a dep
+  }, [series, axisMax, maxBubbles, bubbleMaxY]);
+
   return (
     <div className="table-card">
       <div className="flex" ref={revealRef}>
-        <svg width={PAD_LEFT} height={CHART_HEIGHT + FLAG_ROW_HEIGHT} className="shrink-0">
-          {ticks.map((tick) => (
-            <text
-              key={tick}
-              x={PAD_LEFT - 8}
-              y={y(tick)}
-              dy="0.32em"
-              textAnchor="end"
-              fontSize={10}
-              fill="var(--text-muted)"
-            >
-              {tick}
-            </text>
-          ))}
-        </svg>
-
         <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
           <svg width={plotWidth} height={CHART_HEIGHT}>
-            {ticks.map((tick) => (
-              <line
-                key={tick}
-                x1={0}
-                x2={plotWidth}
-                y1={y(tick)}
-                y2={y(tick)}
-                stroke={tick === 0 ? "var(--baseline)" : "var(--gridline)"}
-                strokeWidth={tick === 0 ? 1.5 : 1}
-              />
-            ))}
+            <line
+              x1={0}
+              x2={plotWidth}
+              y1={y(0)}
+              y2={y(0)}
+              stroke="var(--baseline)"
+              strokeWidth={1}
+              strokeDasharray="2 3"
+            />
 
             {drawOrder.map((s, idx) => {
               const lineD = s.cumulative
                 .map((value, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(value)}`)
                 .join(" ");
               const baseline = y(0);
-              const lastX = x(s.cumulative.length - 1);
-              const areaD = `${lineD} L ${lastX} ${baseline} L ${x(0)} ${baseline} Z`;
+              const lastPointX = x(s.cumulative.length - 1);
+              const areaD = `${lineD} L ${lastPointX} ${baseline} L ${x(0)} ${baseline} Z`;
               const delay = Math.min(idx * REVEAL_STAGGER_MS, REVEAL_STAGGER_CAP_MS);
               return (
                 <g key={s.id}>
@@ -254,6 +279,63 @@ export default function PointsEvolutionChart({
             )}
           </div>
         </div>
+
+        <svg width={BUBBLE_COL_WIDTH} height={CHART_HEIGHT} className="shrink-0">
+          {bubbles.map((b, idx) => {
+            const nudged = Math.abs(b.bubbleY - b.lineY) > 0.5;
+            const delay = Math.min(idx * REVEAL_STAGGER_MS, REVEAL_STAGGER_CAP_MS) + REVEAL_DURATION_MS;
+            return (
+              <g
+                key={b.id}
+                className={"evo-bubble" + (revealed ? " evo-bubble-shown" : "")}
+                style={{ transitionDelay: `${delay}ms` }}
+              >
+                {nudged && (
+                  <line
+                    x1={2}
+                    y1={b.lineY}
+                    x2={10}
+                    y2={b.bubbleY}
+                    stroke="var(--text-muted)"
+                    strokeWidth={1}
+                    strokeDasharray="1.5 2"
+                  />
+                )}
+                <rect
+                  x={10}
+                  y={b.bubbleY - BUBBLE_HEIGHT / 2}
+                  width={BUBBLE_WIDTH}
+                  height={BUBBLE_HEIGHT}
+                  rx={BUBBLE_HEIGHT / 2}
+                  fill={b.color}
+                  fillOpacity={BUBBLE_FILL_OPACITY}
+                />
+                <circle cx={22} cy={b.bubbleY} r={3.5} fill={b.color} />
+                <text
+                  x={31}
+                  y={b.bubbleY}
+                  dy="0.32em"
+                  fontSize={11}
+                  fontWeight={700}
+                  fill="var(--text-secondary)"
+                >
+                  {b.code}
+                </text>
+                <text
+                  x={92}
+                  y={b.bubbleY}
+                  dy="0.32em"
+                  textAnchor="end"
+                  fontSize={11}
+                  fontWeight={700}
+                  fill="var(--text-primary)"
+                >
+                  {b.value}
+                </text>
+              </g>
+            );
+          })}
+        </svg>
       </div>
       <Tooltip tooltip={tooltip} />
     </div>

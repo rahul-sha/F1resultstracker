@@ -20,8 +20,13 @@ language.
   chart and a Constructors Points Evolution chart sit side by side, each
   plotting cumulative points as a line per driver or team across the
   season, with each round's flag along the x-axis and a hover tooltip for
-  the exact total. The lines draw themselves in, round by round, the
-  first time the chart scrolls into view.
+  the exact total. There's no numeric y-axis; instead, each line ends in
+  a small pill showing that driver or team's live points total, nudged
+  apart with a thin leader line whenever two are close enough to overlap,
+  and only as many as the chart's height can fit cleanly get one (the
+  rest still have their line, dot and hover tooltip). The lines draw
+  themselves in, round by round, the first time the chart scrolls into
+  view.
 - **Positions** (`/positions`) — where each driver finished each race
   (not points), with a median-finish summary, followed by how often each
   driver finished in each position across the season (with a DNF count),
