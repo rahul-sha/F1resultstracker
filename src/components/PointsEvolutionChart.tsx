@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { PointsGridColumn } from "@/lib/points-grid";
 import { useTooltip, useDragPan, Tooltip } from "./PointsHeatmap";
 
@@ -19,9 +19,10 @@ const PAD_BOTTOM = 10;
 const FLAG_ROW_HEIGHT = 24;
 // Staggers each line's draw-in slightly, like cars peeling off the grid,
 // capped so a 20+ driver field doesn't drag the reveal out too long.
-const REVEAL_STAGGER_MS = 35;
-const REVEAL_STAGGER_CAP_MS = 380;
-const REVEAL_DURATION_MS = 1000;
+const REVEAL_STAGGER_MS = 60;
+const REVEAL_STAGGER_CAP_MS = 700;
+const REVEAL_DURATION_MS = 2200;
+const AREA_OPACITY = 0.14;
 
 function computeTicks(maxValue: number): { ticks: number[]; axisMax: number } {
   const safeMax = Math.max(maxValue, 1);
@@ -141,23 +142,43 @@ export default function PointsEvolutionChart({
             ))}
 
             {drawOrder.map((s, idx) => {
-              const d = s.cumulative
+              const lineD = s.cumulative
                 .map((value, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(value)}`)
                 .join(" ");
+              const baseline = y(0);
+              const lastX = x(s.cumulative.length - 1);
+              const areaD = `${lineD} L ${lastX} ${baseline} L ${x(0)} ${baseline} Z`;
               const delay = Math.min(idx * REVEAL_STAGGER_MS, REVEAL_STAGGER_CAP_MS);
               return (
-                <path
-                  key={s.id}
-                  d={d}
-                  fill="none"
-                  stroke={s.color}
-                  strokeWidth={3}
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                  pathLength={1}
-                  className={"evo-line" + (revealed ? " evo-line-shown" : "")}
-                  style={{ transitionDuration: `${REVEAL_DURATION_MS}ms`, transitionDelay: `${delay}ms` }}
-                />
+                <g key={s.id}>
+                  {/* Material 3 tonal fill — a soft wash of the line's own
+                      colour under it, the same "tonal container" idea used
+                      for surfaces elsewhere in the app, not just a bare
+                      stroke on a blank plot. */}
+                  <path
+                    d={areaD}
+                    fill={s.color}
+                    stroke="none"
+                    className={"evo-area" + (revealed ? " evo-area-shown" : "")}
+                    style={
+                      {
+                        transitionDelay: `${delay}ms`,
+                        "--evo-area-opacity": AREA_OPACITY,
+                      } as CSSProperties
+                    }
+                  />
+                  <path
+                    d={lineD}
+                    fill="none"
+                    stroke={s.color}
+                    strokeWidth={3}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    pathLength={1}
+                    className={"evo-line" + (revealed ? " evo-line-shown" : "")}
+                    style={{ transitionDuration: `${REVEAL_DURATION_MS}ms`, transitionDelay: `${delay}ms` }}
+                  />
+                </g>
               );
             })}
 
