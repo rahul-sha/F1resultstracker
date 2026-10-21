@@ -74,7 +74,12 @@
 .gw-stage {
   position: absolute;
   inset: 0;
-  perspective: 1000px;
+  /* A shorter perspective exaggerates how much the edge cards tilt away
+     from the camera, which is what makes the sphere read as curved rather
+     than flat — see "grid-walk-8-section-redesign" memory: this had
+     drifted back up while fixing an unrelated layout bug and Rahul called
+     out the missing curvature. */
+  perspective: 650px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,10 +97,15 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%) translateZ(-420px);
   text-align: center;
   pointer-events: none;
   white-space: nowrap;
+  transition: opacity 0.25s ease;
+}
+
+.gw-hide {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .gw-headline h1 {
@@ -112,48 +122,96 @@
   color: var(--text-secondary);
 }
 
-.gw-pin {
+.gw-card {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 220px;
-  padding: 1rem 1.1rem;
-  border-radius: 16px;
+  width: 190px;
+  height: 206px;
+  padding: 1rem 1.05rem 0.9rem;
+  border-radius: 14px;
   background: color-mix(in srgb, var(--surface-2) 88%, transparent);
   border: 1px solid var(--border-hairline);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   backdrop-filter: blur(6px);
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  overflow: hidden;
+  transition: border-color 0.15s ease, opacity 0.35s ease;
 }
 
-.gw-pin:hover {
+.gw-card:hover {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--border-hairline));
 }
 
-.gw-pin:focus-visible {
+.gw-card:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.gw-pin-icon {
+/* The dived-into card itself fades out in place — the overlay (a separate
+   element outside the 3D rig) is what actually grows to fill the screen,
+   so this one just needs to get out of the way. */
+.gw-card-active,
+.gw-faded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gw-card-tab {
+  position: absolute;
+  top: -7px;
+  left: 16px;
+  width: 24px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.gw-card-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.35rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.gw-card-eyebrow-dot {
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.gw-card-icon {
   color: var(--accent);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
   display: inline-flex;
 }
 
-.gw-pin h2 {
-  margin: 0 0 0.25rem;
-  font-size: 0.95rem;
+.gw-card h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.gw-pin p {
-  margin: 0;
-  font-size: 0.78rem;
+.gw-card p {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.35;
+}
+
+.gw-card-stat {
+  font-size: 0.74rem;
+  color: var(--text-primary);
+}
+
+.gw-card-stat b {
+  font-size: 0.84rem;
+  color: var(--text-primary);
 }
 
 .gw-chip {
@@ -191,13 +249,124 @@
 }
 
 @media (max-width: 640px) {
-  .gw-pin {
-    width: 170px;
-    padding: 0.8rem 0.9rem;
+  .gw-card {
+    width: 150px;
+    height: 180px;
+    padding: 0.75rem 0.85rem;
+  }
+  .gw-card h2 {
+    font-size: 0.82rem;
+  }
+  .gw-card p {
+    font-size: 0.68rem;
   }
   .gw-headline h1 {
     font-size: 1.4rem;
   }
+}
+
+/* The fixed overlay a dive grows into. It lives outside .gw-rig, so it's
+   never subject to the sphere's rotation/perspective — the FLIP technique
+   this relies on (snap onto the clicked card's rect, then transition plain
+   left/top/width/height) only works cleanly on an element with no 3D
+   transform of its own. See the component's top comment. */
+.gw-overlay {
+  position: fixed;
+  z-index: 40;
+  display: none;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.gw-overlay.show {
+  display: block;
+}
+
+.gw-overlay-inner {
+  position: absolute;
+  inset: 0;
+  padding: 1.4rem 1.5rem 1.6rem;
+  overflow: auto;
+}
+
+.gw-overlay-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 0.2rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  color: var(--on-accent-container);
+}
+
+.gw-overlay-inner h2 {
+  margin: 0 0 0.15rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.gw-overlay-sub {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.gw-back-btn {
+  position: fixed;
+  top: calc(1rem + env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem 0.5rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-hairline);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.25s ease, transform 0.25s ease, border-color 0.15s ease;
+}
+
+.gw-back-btn.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.gw-back-btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border-hairline));
+}
+
+.gw-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.gw-about-link {
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(166, 226, 46, 0.35);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2) 90%);
+  color: var(--on-accent-container);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.gw-about-link:hover {
+  color: var(--text-primary);
 }
 
 .gw-mini-chip {
@@ -238,6 +407,7 @@
   justify-content: space-between;
   padding: 1rem 1.25rem;
   pointer-events: none;
+  transition: opacity 0.25s ease;
 }
 
 .gw-topbar > * {
@@ -271,6 +441,7 @@
   gap: 0.75rem;
   padding: 0.75rem 1.25rem;
   background: linear-gradient(to top, color-mix(in srgb, var(--page-plane) 85%, transparent), transparent);
+  transition: opacity 0.25s ease;
 }
 
 .gw-jumpbar-label {

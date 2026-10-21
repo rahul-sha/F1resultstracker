@@ -12,13 +12,18 @@ language.
 - **Home / Grid Walk** (`/`) — the site's entry point: a drag-navigable
   3D scene rather than a page of links. The whole view sits "inside" a
   sphere; click and drag to look around (the content follows the cursor
-  direction), and click a card to open Results, Positions or About. A
-  cursor-reactive distortion effect ripples a faint ring pattern in the
-  background, over the same drifting glow used site-wide. The cards show
-  live numbers for the selected season (leading driver, leading team,
-  most podiums) pulled from the same data the heatmap pages use — nothing
-  about Results, Positions or About itself changed; this is a new front
-  door in front of them.
+  direction). Eight cards sit on the sphere, one per data section —
+  Results, Constructors, Points Evolution, Positions, Finish Frequency,
+  Qualifying Frequency, Driver Podiums and Constructor Podiums — each
+  showing a live preview for the selected season. Clicking a card doesn't
+  open a new page: the same card grows to fill the screen in place,
+  revealing the real heatmap, chart, grid or podium bars for that
+  section, like zooming into a photo; a Back button shrinks it back down.
+  About stays its own page, linked from the top bar. A cursor-reactive
+  distortion effect ripples a faint ring pattern in the background, over
+  the same drifting glow used site-wide. Results and Positions keep their
+  own full pages too — Grid Walk's cards reuse the exact same data and
+  components rather than duplicating them.
 - **Results** (`/results`) — every driver's points for each round of a
   season, shaded by magnitude, with a season points total bar per driver,
   and a matching per-race heatmap for Constructors underneath. Pole
