@@ -18,16 +18,17 @@ language.
   dragging on desktop, or normal touch scrolling on phones — there's no
   separate scrollbar. Underneath both heatmaps sit a Driver Points
   Evolution chart and, in its own section below, a Constructors Points
-  Evolution chart, each plotting cumulative points as a line per driver
-  or team across the season, with each round's flag along the x-axis and
-  a hover tooltip for the exact total. There's no numeric y-axis; instead,
-  every line ends in its own small pill showing that driver or team's
-  live points total, with a thin leader line back to the line whenever
-  rank order and value don't line up exactly — the chart grows tall
-  enough that the whole field gets a pill, nobody's cropped out. The
-  first time a chart scrolls into view, the whole thing draws itself in
-  as one steady wipe moving left to right, race by race, rather than
-  each line animating on its own.
+  Evolution chart, each plotting cumulative points as a smoothly curved
+  line per driver or team across the season, with each round's flag
+  along the x-axis and a hover tooltip for the exact total. There's no
+  numeric y-axis; instead, every line ends in its own small pill showing
+  that driver or team's live points total, with a thin leader line back
+  to the line whenever rank order and value don't line up exactly — the
+  chart grows tall enough that the whole field gets a pill, nobody's
+  cropped out. The plot's width stretches to fill the space next to that
+  points column rather than using a fixed size, falling back to a
+  horizontal scroll only once there isn't room to space every round out
+  legibly.
 - **Positions** (`/positions`) — where each driver finished each race
   (not points), with a median-finish summary, followed by how often each
   driver finished in each position across the season (with a DNF count),

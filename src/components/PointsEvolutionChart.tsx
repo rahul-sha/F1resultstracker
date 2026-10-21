@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { PointsGridColumn } from "@/lib/points-grid";
 import { useTooltip, useDragPan, Tooltip } from "./PointsHeatmap";
 
@@ -12,21 +12,20 @@ export interface EvolutionSeriesInput {
   pointsByRound: (number | null)[];
 }
 
-const ROUND_WIDTH = 36;
 const PAD_LEFT = 20;
 const PAD_TOP = 14;
 const PAD_BOTTOM = 14;
 const FLAG_ROW_HEIGHT = 24;
 const AREA_OPACITY = 0.14;
 
-// The scroll-triggered reveal is a single wipe (a clip-path rect growing
-// left to right) that every driver/team shares, rather than each line
-// animating on its own — so it reads as one chart being plotted race by
-// race, not several lines fading in out of sync. Scales gently with the
-// season length so a long season doesn't feel rushed.
-function sweepDurationMs(roundCount: number) {
-  return Math.min(6000, Math.max(3000, roundCount * 170));
-}
+// The plot's width stretches to fill whatever space is actually available
+// next to the bubble column (see useAvailableWidth below) rather than
+// using a fixed per-round pixel width — that fixed width is what left a
+// big empty gap between the plotted lines and the points column on a wide
+// screen. Below this floor (many rounds on a narrow phone), spacing stays
+// at the floor and the plot scrolls horizontally instead of cramming.
+const MIN_ROUND_WIDTH = 22;
+const FALLBACK_ROUND_WIDTH = 36;
 
 // The end-of-line totals column, outside the horizontal scroller so it
 // keeps showing the latest standings even when the plot itself is
@@ -45,35 +44,44 @@ function computeAxisMax(maxValue: number): number {
   return Math.max(1, maxValue) * 1.08;
 }
 
-// Fires once, the first time the chart scrolls into view, so the draw-in
-// plays on arrival rather than replaying on every scroll past it; skipped
-// (revealed immediately, no animation) for prefers-reduced-motion.
-function useRevealOnScroll<T extends HTMLElement>() {
+// Measures the row's own rendered width so the plot can be sized to fill
+// it exactly, instead of a fixed pixel-per-round width that leaves a gap
+// on a wide screen or overflows a narrow one.
+function useAvailableWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);
-  const [revealed, setRevealed] = useState(false);
+  const [width, setWidth] = useState<number | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRevealed(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setRevealed(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
+    const update = () => setWidth(el.clientWidth);
+    update();
+    const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
-  return { ref, revealed };
+  return { ref, width };
+}
+
+// A smooth curve through the given points (Catmull-Rom converted to
+// cubic Bezier segments) instead of straight point-to-point lines.
+function smoothPath(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i - 1] ?? points[i];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2] ?? p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.x} ${p2.y}`;
+  }
+  return d;
 }
 
 export default function PointsEvolutionChart({
@@ -86,9 +94,7 @@ export default function PointsEvolutionChart({
   const { tooltip, show, hide } = useTooltip();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const dragPan = useDragPan(scrollerRef);
-  const { ref: revealRef, revealed } = useRevealOnScroll<HTMLDivElement>();
-  const clipId = `evo-clip-${useId().replace(/:/g, "")}`;
-  const duration = sweepDurationMs(columns.length);
+  const { ref: rowRef, width: rowWidth } = useAvailableWidth<HTMLDivElement>();
 
   const series = useMemo(
     () =>
@@ -113,9 +119,14 @@ export default function PointsEvolutionChart({
     PAD_TOP + PAD_BOTTOM + BUBBLE_HEIGHT + Math.max(0, series.length - 1) * BUBBLE_ROW_SPACING
   );
   const plotHeight = chartHeight - PAD_TOP - PAD_BOTTOM;
-  const plotWidth = Math.max(1, columns.length - 1) * ROUND_WIDTH + PAD_LEFT;
 
-  const x = (roundIndex: number) => PAD_LEFT / 2 + roundIndex * ROUND_WIDTH;
+  const roundCount = Math.max(1, columns.length - 1);
+  const availableForPlot = rowWidth != null ? Math.max(0, rowWidth - BUBBLE_COL_WIDTH) : null;
+  const idealRoundWidth = availableForPlot != null ? (availableForPlot - PAD_LEFT) / roundCount : FALLBACK_ROUND_WIDTH;
+  const roundWidth = Math.max(MIN_ROUND_WIDTH, idealRoundWidth);
+  const plotWidth = roundCount * roundWidth + PAD_LEFT;
+
+  const x = (roundIndex: number) => PAD_LEFT / 2 + roundIndex * roundWidth;
   const y = (value: number) => PAD_TOP + plotHeight - (value / axisMax) * plotHeight;
 
   // Draw the strongest season so far on top, so a tight leading battle
@@ -149,27 +160,9 @@ export default function PointsEvolutionChart({
 
   return (
     <div className="table-card">
-      <div className="flex" ref={revealRef}>
-        <div className="overflow-x-auto min-w-0 flex-1" ref={scrollerRef} {...dragPan}>
+      <div className="flex" ref={rowRef}>
+        <div className="overflow-x-auto min-w-0" ref={scrollerRef} {...dragPan}>
           <svg width={plotWidth} height={chartHeight}>
-            <defs>
-              <clipPath id={clipId}>
-                <rect
-                  x={0}
-                  y={-20}
-                  width={plotWidth}
-                  height={chartHeight + 40}
-                  className={"evo-sweep-rect" + (revealed ? " evo-sweep-rect-shown" : "")}
-                  style={
-                    {
-                      "--evo-sweep-width": `${plotWidth}px`,
-                      transitionDuration: `${duration}ms`,
-                    } as CSSProperties
-                  }
-                />
-              </clipPath>
-            </defs>
-
             <line
               x1={0}
               x2={plotWidth}
@@ -180,67 +173,42 @@ export default function PointsEvolutionChart({
               strokeDasharray="2 3"
             />
 
-            {/* Everything below is revealed together by one left-to-right
-                wipe, so the whole chart reads as being plotted race by
-                race rather than several lines animating independently. */}
-            <g clipPath={`url(#${clipId})`}>
-              {drawOrder.map((s) => {
-                const lineD = s.cumulative
-                  .map((value, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(value)}`)
-                  .join(" ");
-                const baseline = y(0);
-                const lastPointX = x(s.cumulative.length - 1);
-                const areaD = `${lineD} L ${lastPointX} ${baseline} L ${x(0)} ${baseline} Z`;
-                return (
-                  <g key={s.id}>
-                    {/* Material 3 tonal fill — a soft wash of the line's own
-                        colour under it, the same "tonal container" idea used
-                        for surfaces elsewhere in the app, not just a bare
-                        stroke on a blank plot. */}
-                    <path d={areaD} fill={s.color} fillOpacity={AREA_OPACITY} stroke="none" />
-                    <path
-                      d={lineD}
-                      fill="none"
-                      stroke={s.color}
-                      strokeWidth={3}
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                    />
-                  </g>
-                );
-              })}
-
-              {drawOrder.map((s) =>
-                s.cumulative.map((value, i) => (
-                  <circle
-                    key={`${s.id}-${i}-dot`}
-                    cx={x(i)}
-                    cy={y(value)}
-                    r={i === s.cumulative.length - 1 ? 4.5 : 2.5}
-                    fill={s.color}
+            {drawOrder.map((s) => {
+              const points = s.cumulative.map((value, i) => ({ x: x(i), y: y(value) }));
+              const lineD = smoothPath(points);
+              const baseline = y(0);
+              const lastPointX = x(s.cumulative.length - 1);
+              const areaD = `${lineD} L ${lastPointX} ${baseline} L ${x(0)} ${baseline} Z`;
+              return (
+                <g key={s.id}>
+                  {/* Material 3 tonal fill — a soft wash of the line's own
+                      colour under it, the same "tonal container" idea used
+                      for surfaces elsewhere in the app, not just a bare
+                      stroke on a blank plot. */}
+                  <path d={areaD} fill={s.color} fillOpacity={AREA_OPACITY} stroke="none" />
+                  <path
+                    d={lineD}
+                    fill="none"
+                    stroke={s.color}
+                    strokeWidth={3}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
                   />
-                ))
-              )}
-            </g>
+                </g>
+              );
+            })}
 
-            {/* The moving leading edge of the wipe — a brief visual cue
-                that the line is being drawn, not just appearing. */}
-            <line
-              x1={0}
-              x2={0}
-              y1={-10}
-              y2={chartHeight + 10}
-              stroke="var(--text-primary)"
-              strokeOpacity={0.3}
-              strokeWidth={2}
-              className={"evo-sweep-edge" + (revealed ? " evo-sweep-edge-shown" : "")}
-              style={
-                {
-                  "--evo-sweep-width": `${plotWidth}px`,
-                  transitionDuration: `${duration}ms`,
-                } as CSSProperties
-              }
-            />
+            {drawOrder.map((s) =>
+              s.cumulative.map((value, i) => (
+                <circle
+                  key={`${s.id}-${i}-dot`}
+                  cx={x(i)}
+                  cy={y(value)}
+                  r={i === s.cumulative.length - 1 ? 4.5 : 2.5}
+                  fill={s.color}
+                />
+              ))
+            )}
 
             {drawOrder.map((s) =>
               s.cumulative.map((value, i) => (
@@ -295,15 +263,10 @@ export default function PointsEvolutionChart({
         </div>
 
         <svg width={BUBBLE_COL_WIDTH} height={chartHeight} className="shrink-0">
-          {bubbles.map((b, idx) => {
+          {bubbles.map((b) => {
             const nudged = Math.abs(b.bubbleY - b.lineY) > 0.5;
-            const delay = duration + Math.min(idx * 20, 400);
             return (
-              <g
-                key={b.id}
-                className={"evo-bubble" + (revealed ? " evo-bubble-shown" : "")}
-                style={{ transitionDelay: `${delay}ms` }}
-              >
+              <g key={b.id}>
                 {nudged && (
                   <line
                     x1={2}

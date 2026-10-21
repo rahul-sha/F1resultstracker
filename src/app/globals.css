@@ -1371,56 +1371,5 @@ html::-webkit-scrollbar {
   }
 }
 
-/* Points Evolution charts (Results page): the whole chart — every line,
-   tonal fill and dot together — is revealed by a single clip-path wipe
-   growing left to right, the first time it scrolls into view, rather than
-   each line animating on its own. That keeps every driver/team in exact
-   sync with the "current round" the wipe has reached, so it reads as one
-   chart being plotted race by race instead of several lines fading in. */
-.evo-sweep-rect {
-  width: 0;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .evo-sweep-rect {
-    transition-property: width;
-    /* Linear, not an "emphasized decelerate" easing curve — that curve is
-       heavily front-loaded (~70% of the motion lands in the first 5% of
-       the duration), which reads as a near-instant jump rather than a
-       steady left-to-right pace. A constant speed is what actually looks
-       like the graph being plotted race by race. */
-    transition-timing-function: linear;
-  }
-}
-.evo-sweep-rect-shown {
-  width: var(--evo-sweep-width, 100%);
-}
-/* The wipe's moving leading edge — a brief highlight line travelling with
-   it as a visual cue that the line is actively being drawn, not just
-   appearing. Mounted only while the sweep is in progress
-   (PointsEvolutionChart.tsx), so it disappears cleanly once it arrives
-   rather than needing a second, separately-timed fade-out transition. */
-.evo-sweep-edge {
-  transform: translateX(0);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .evo-sweep-edge {
-    transition-property: transform;
-    transition-timing-function: linear;
-  }
-}
-.evo-sweep-edge-shown {
-  transform: translateX(var(--evo-sweep-width, 0));
-}
-.evo-bubble {
-  opacity: 0;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .evo-bubble {
-    transition-property: opacity;
-    transition-duration: 0.3s;
-    transition-timing-function: ease-out;
-  }
-}
-.evo-bubble-shown {
-  opacity: 1;
-}
+/* Points Evolution charts (Results page) render statically — no
+   scroll-triggered reveal animation. (PointsEvolutionChart.tsx) */

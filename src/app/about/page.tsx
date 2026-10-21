@@ -61,9 +61,9 @@ export default function AboutPage() {
             </li>
             <li>
               Added cumulative Driver and Constructors Points Evolution charts to the Results
-              page, each full width with its own points-total pill beside every line instead of
-              a numeric y-axis, and the whole chart draws itself in, race by race, left to right,
-              the first time it scrolls into view
+              page, each full width with smoothly curved lines, a points-total pill beside every
+              driver and team instead of a numeric y-axis, and the plot&apos;s width scaling to
+              fit its container rather than a fixed size
             </li>
           </ul>
 
@@ -78,13 +78,15 @@ export default function AboutPage() {
             <ul className="timeline">
               <li>
                 <span className="seq">36</span>
-                <b>Evolution charts: full width, full field, real sweep</b>
+                <b>Evolution charts: full width, full field, curved lines</b>
                 <span>
                   Fixed a mobile layout bug on both evolution charts, split them back into
                   separate full-width sections, grew the chart height so every driver and team
-                  gets its own points pill instead of cropping the field, and replaced the
-                  per-line fade-in with a single steady left-to-right sweep across the whole
-                  chart.
+                  gets its own points pill instead of cropping the field, made the plot&apos;s
+                  width responsive instead of fixed (which was leaving a gap next to the points
+                  column),
+                  and switched to smoothly curved lines instead of straight segments. Dropped the
+                  scroll-triggered draw-in animation entirely in favour of a static chart.
                 </span>
               </li>
               <li>
