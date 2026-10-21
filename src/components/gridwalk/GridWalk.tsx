@@ -309,12 +309,18 @@ export default function GridWalk({
               pin.miniStats &&
               pin.miniStats.length > 0 &&
               pin.miniStats.map((mini, i) => {
-                const spread = (i - (pin.miniStats!.length - 1) / 2) * 11;
+                // Small spread so the chips cluster tight around their own
+                // card — these are degrees of angular separation on the
+                // sphere, same units as pin.x/pin.y, not pixels. The
+                // original 11°/13° offsets were close to the 40° gap
+                // between cards, so chips landed near a neighbouring card
+                // (or off past it) instead of hugging the hovered one.
+                const spread = (i - (pin.miniStats!.length - 1) / 2) * 5;
                 return (
                   <div
                     key={pin.href + mini.code}
                     className={"gw-mini-chip" + (hoveredHref === pin.href ? " show" : "")}
-                    style={placeStyle(pin.x + spread, pin.y - 13 - (i % 2) * 7, -18)}
+                    style={placeStyle(pin.x + spread, pin.y - 9 - (i % 2) * 5, -18)}
                     aria-hidden={hoveredHref !== pin.href}
                   >
                     <span className="gw-mini-chip-code">{mini.code}</span> {mini.value}
