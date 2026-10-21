@@ -71,10 +71,13 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
   const targetMx = useRef(50);
   const targetMy = useRef(50);
 
+  // x/y are yaw/pitch degrees on the sphere, not pixels — keep them well
+  // apart (a few hundredths of a degree per screen pixel at this distance
+  // means pin positions need real angular separation, not small offsets).
   const pins: PinDef[] = [
-    { x: -32, y: -8, href: "/results", title: "Results", desc: "Points per Grand Prix, heatmapped across the season.", icon: <ResultsIcon size={20} /> },
-    { x: 0, y: 14, href: "/positions", title: "Positions", desc: "Finishing and qualifying positions, driver by driver.", icon: <PositionsIcon size={20} /> },
-    { x: 32, y: -6, href: "/about", title: "About", desc: "Who built this, how, and who it's built on.", icon: <AboutIcon size={20} /> },
+    { x: -40, y: -8, href: "/results", title: "Results", desc: "Points per Grand Prix, heatmapped across the season.", icon: <ResultsIcon size={20} /> },
+    { x: 0, y: 16, href: "/positions", title: "Positions", desc: "Finishing and qualifying positions, driver by driver.", icon: <PositionsIcon size={20} /> },
+    { x: 40, y: -6, href: "/about", title: "About", desc: "Who built this, how, and who it's built on.", icon: <AboutIcon size={20} /> },
   ];
 
   useEffect(() => {
@@ -176,11 +179,14 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
     };
   }, []);
 
-  function placeStyle(x: number, y: number, extraZ = 0): React.CSSProperties {
-    const yaw = x * YAW_K;
-    const pitch = y * PITCH_K;
+  // x/y here are the pin's own yaw/pitch degrees on the sphere — unlike
+  // the YAW_K/PITCH_K constants above, which only convert a drag's pixel
+  // delta into a camera-rotation degree, placement needs real angular
+  // separation (a few degrees of yaw at this translateZ puts two pins
+  // almost exactly on top of each other on screen).
+  function placeStyle(yawDeg: number, pitchDeg: number, extraZ = 0): React.CSSProperties {
     return {
-      transform: `translate(-50%, -50%) rotateY(${yaw}deg) rotateX(${-pitch}deg) translateZ(${-(SPHERE_R + extraZ)}px)`,
+      transform: `translate(-50%, -50%) rotateY(${yawDeg}deg) rotateX(${-pitchDeg}deg) translateZ(${-(SPHERE_R + extraZ)}px)`,
     };
   }
 
@@ -190,9 +196,9 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
   }
 
   const stats: { x: number; y: number; stat: GridWalkStat | null }[] = [
-    { x: -14, y: 30, stat: driverLeader },
-    { x: 14, y: 32, stat: constructorLeader },
-    { x: 0, y: -26, stat: podiumLeader },
+    { x: -20, y: 22, stat: driverLeader },
+    { x: 20, y: 22, stat: constructorLeader },
+    { x: 0, y: -20, stat: podiumLeader },
   ];
 
   return (
