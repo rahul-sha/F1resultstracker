@@ -63,17 +63,30 @@ export default function AboutPage() {
               Added cumulative Driver and Constructors Points Evolution charts to the Results
               page, side by side, with a race-by-race draw-in animation on scroll
             </li>
+            <li>
+              Dropped the numeric y-axis on those charts in favour of a small points-total pill
+              beside each line, automatically spaced apart so they stay legible on a full field
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            34 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            35 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">35</span>
+                <b>No-axis evolution charts, points bubbles</b>
+                <span>
+                  Replaced the numeric y-axis on both evolution charts with a small points-total
+                  pill at the end of each line, nudged apart with a leader line when two drivers
+                  are close.
+                </span>
+              </li>
               <li>
                 <span className="seq">34</span>
                 <b>Constructors evolution chart, scroll animation</b>
