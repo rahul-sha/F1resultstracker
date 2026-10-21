@@ -16,7 +16,10 @@ language.
   next to the points value. A thin underline beneath a round's flag chip
   marks a sprint weekend. Tables that overflow pan by clicking and
   dragging on desktop, or normal touch scrolling on phones — there's no
-  separate scrollbar.
+  separate scrollbar. Underneath both heatmaps, a Driver Points Evolution
+  chart plots each driver's cumulative points as a line across the
+  season, with each round's flag along the x-axis and a hover tooltip for
+  the exact total.
 - **Positions** (`/positions`) — where each driver finished each race
   (not points), with a median-finish summary, followed by how often each
   driver finished in each position across the season (with a DNF count),

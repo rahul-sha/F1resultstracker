@@ -34,7 +34,7 @@ type TooltipState = { x: number; y: number; content: React.ReactNode } | null;
 export function useTooltip() {
   const [tooltip, setTooltip] = useState<TooltipState>(null);
 
-  function show(e: React.MouseEvent<HTMLElement>, content: React.ReactNode) {
+  function show(e: React.MouseEvent<Element>, content: React.ReactNode) {
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltip({ x: rect.left + rect.width / 2, y: rect.top, content });
   }
