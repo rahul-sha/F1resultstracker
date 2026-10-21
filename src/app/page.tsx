@@ -2,10 +2,15 @@ import { buildPointsGrid } from "@/lib/points-grid";
 import { buildConstructorPointsGrid } from "@/lib/constructor-points-grid";
 import { buildFinishPositionSummary } from "@/lib/finish-positions";
 import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
-import GridWalk, { type GridWalkStat } from "@/components/gridwalk/GridWalk";
+import GridWalk, { type GridWalkMiniStat, type GridWalkStat } from "@/components/gridwalk/GridWalk";
 
-export default async function Home() {
-  const season = (await resolvePersistedSeason()) ?? currentSeason();
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ season?: string }>;
+}) {
+  const params = await searchParams;
+  const season = Number(params.season) || (await resolvePersistedSeason()) || currentSeason();
 
   const [pointsGrid, constructorGrid, finishSummary] = await Promise.all([
     buildPointsGrid(season),
@@ -33,12 +38,23 @@ export default async function Home() {
       }
     : null;
 
+  const topDrivers: GridWalkMiniStat[] = pointsGrid.rows
+    .slice(0, 4)
+    .map((row) => ({ code: row.code, value: `${row.seasonPoints} pts` }));
+
+  const topPodiumDrivers: GridWalkMiniStat[] = finishSummary.driverPodiums.slice(0, 4).map((row) => ({
+    code: row.code,
+    value: `${row.podiums[1] + row.podiums[2] + row.podiums[3]} podiums`,
+  }));
+
   return (
     <GridWalk
       season={season}
       driverLeader={driverLeader}
       constructorLeader={constructorLeader}
       podiumLeader={podiumLeader}
+      topDrivers={topDrivers}
+      topPodiumDrivers={topPodiumDrivers}
     />
   );
 }

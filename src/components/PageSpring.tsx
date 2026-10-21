@@ -21,6 +21,7 @@ const MAX_PULL = 110;
 export default function PageSpring() {
   const pathname = usePathname();
   const router = useRouter();
+  const onHome = pathname === "/";
   const indicatorRef = useRef<HTMLDivElement | null>(null);
   const chipRef = useRef<HTMLSpanElement | null>(null);
   const pull = useRef(0);
@@ -29,6 +30,11 @@ export default function PageSpring() {
   const decayTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    // Grid Walk's home page has nothing to scroll and no next page in
+    // NAV_ORDER — without this, a wheel/touch gesture over it can still
+    // read as "pulled past the bottom" and show the spring indicator.
+    if (onHome) return;
+
     function nextPath() {
       const idx = NAV_ORDER.indexOf(pathname);
       if (idx === -1) return null;
@@ -128,7 +134,7 @@ export default function PageSpring() {
       clearDecay();
       setPull(0);
     };
-  }, [pathname, router]);
+  }, [pathname, router, onHome]);
 
   return (
     <div className="page-spring-indicator" ref={indicatorRef} aria-hidden="true">
