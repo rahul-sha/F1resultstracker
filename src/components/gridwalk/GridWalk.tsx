@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./gridwalk.css";
 import { ResultsIcon, PositionsIcon, AboutIcon } from "@/components/nav-icons";
+import SeasonSelector from "@/components/SeasonSelector";
 
 export interface GridWalkStat {
   label: string;
+  value: string;
+}
+
+export interface GridWalkMiniStat {
+  code: string;
   value: string;
 }
 
@@ -15,6 +21,8 @@ export interface GridWalkProps {
   driverLeader: GridWalkStat | null;
   constructorLeader: GridWalkStat | null;
   podiumLeader: GridWalkStat | null;
+  topDrivers: GridWalkMiniStat[];
+  topPodiumDrivers: GridWalkMiniStat[];
 }
 
 type PinDef = {
@@ -24,7 +32,7 @@ type PinDef = {
   title: string;
   desc: string;
   icon: React.ReactNode;
-  rotate?: number;
+  miniStats?: GridWalkMiniStat[];
 };
 
 const SPHERE_R = 760;
@@ -34,6 +42,7 @@ const ZOOM = 2.0;
 const BOUND_YAW = 52;
 const BOUND_PITCH = 27;
 const DRAG_THRESHOLD = 6; // px of movement before a pointerdown counts as a drag, not a click
+const TRAVEL_EASE = 0.12; // per-frame lerp factor for the "jump to" camera travel
 
 function clamp(v: number, b: number) {
   return Math.max(-b, Math.min(b, v));
@@ -47,7 +56,14 @@ function clamp(v: number, b: number) {
 // right here took real derivation — see memory "3d-mockup-exploration"
 // before touching either the translateZ sign or the drag-direction math,
 // since flipping one silently flips the other's apparent effect too.
-export default function GridWalk({ season, driverLeader, constructorLeader, podiumLeader }: GridWalkProps) {
+export default function GridWalk({
+  season,
+  driverLeader,
+  constructorLeader,
+  podiumLeader,
+  topDrivers,
+  topPodiumDrivers,
+}: GridWalkProps) {
   const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
   const rigRef = useRef<HTMLDivElement>(null);
@@ -70,15 +86,49 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
   const shownMy = useRef(50);
   const targetMx = useRef(50);
   const targetMy = useRef(50);
+  // Set by the "jump to" bar; the animate loop eases the camera toward it
+  // and clears it once close, so a drag can always interrupt a travel.
+  const travelTarget = useRef<{ yaw: number; pitch: number } | null>(null);
+
+  const [hoveredHref, setHoveredHref] = useState<string | null>(null);
 
   // x/y are yaw/pitch degrees on the sphere, not pixels — keep them well
   // apart (a few hundredths of a degree per screen pixel at this distance
   // means pin positions need real angular separation, not small offsets).
   const pins: PinDef[] = [
-    { x: -40, y: -8, href: "/results", title: "Results", desc: "Points per Grand Prix, heatmapped across the season.", icon: <ResultsIcon size={20} /> },
-    { x: 0, y: 16, href: "/positions", title: "Positions", desc: "Finishing and qualifying positions, driver by driver.", icon: <PositionsIcon size={20} /> },
-    { x: 40, y: -6, href: "/about", title: "About", desc: "Who built this, how, and who it's built on.", icon: <AboutIcon size={20} /> },
+    {
+      x: -40,
+      y: -8,
+      href: "/results",
+      title: "Results",
+      desc: "Points per Grand Prix, heatmapped across the season.",
+      icon: <ResultsIcon size={20} />,
+      miniStats: topDrivers,
+    },
+    {
+      x: 0,
+      y: 16,
+      href: "/positions",
+      title: "Positions",
+      desc: "Finishing and qualifying positions, driver by driver.",
+      icon: <PositionsIcon size={20} />,
+      miniStats: topPodiumDrivers,
+    },
+    {
+      x: 40,
+      y: -6,
+      href: "/about",
+      title: "About",
+      desc: "Who built this, how, and who it's built on.",
+      icon: <AboutIcon size={20} />,
+    },
   ];
+
+  function travelTo(yaw: number, pitch: number) {
+    travelTarget.current = { yaw: clamp(yaw, BOUND_YAW), pitch: clamp(pitch, BOUND_PITCH) };
+    vYaw.current = 0;
+    vPitch.current = 0;
+  }
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -96,6 +146,7 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
     function onPointerDown(e: PointerEvent) {
       dragging.current = true;
       dragMoved.current = false;
+      travelTarget.current = null;
       startX.current = e.clientX;
       startY.current = e.clientY;
       startYaw.current = camYaw.current;
@@ -103,7 +154,11 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
       vYaw.current = 0;
       vPitch.current = 0;
       wrap!.classList.add("dragging");
-      wrap!.setPointerCapture(e.pointerId);
+      // Deliberately no setPointerCapture here: capturing the pointer on
+      // wrap retargets the browser's synthesized click event to wrap too,
+      // so a pin's own onClick never fires. The drag already keeps working
+      // outside wrap's bounds because pointermove/pointerup are bound on
+      // window below, not on wrap, so capture buys nothing here.
     }
 
     function onPointerMove(e: PointerEvent) {
@@ -125,14 +180,9 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
       applyCamera();
     }
 
-    function onPointerUp(e: PointerEvent) {
+    function onPointerUp() {
       dragging.current = false;
       wrap!.classList.remove("dragging");
-      try {
-        wrap!.releasePointerCapture(e.pointerId);
-      } catch {
-        // already released
-      }
     }
 
     function onWheel(e: WheelEvent) {
@@ -147,11 +197,25 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
     let raf = 0;
     function animate() {
       if (!dragging.current) {
-        camYaw.current = clamp(camYaw.current + vYaw.current, BOUND_YAW);
-        camPitch.current = clamp(camPitch.current + vPitch.current, BOUND_PITCH);
-        vYaw.current *= 0.92;
-        vPitch.current *= 0.92;
-        if (Math.abs(vYaw.current) > 0.001 || Math.abs(vPitch.current) > 0.001) applyCamera();
+        if (travelTarget.current) {
+          camYaw.current += (travelTarget.current.yaw - camYaw.current) * TRAVEL_EASE;
+          camPitch.current += (travelTarget.current.pitch - camPitch.current) * TRAVEL_EASE;
+          if (
+            Math.abs(travelTarget.current.yaw - camYaw.current) < 0.05 &&
+            Math.abs(travelTarget.current.pitch - camPitch.current) < 0.05
+          ) {
+            camYaw.current = travelTarget.current.yaw;
+            camPitch.current = travelTarget.current.pitch;
+            travelTarget.current = null;
+          }
+          applyCamera();
+        } else {
+          camYaw.current = clamp(camYaw.current + vYaw.current, BOUND_YAW);
+          camPitch.current = clamp(camPitch.current + vPitch.current, BOUND_PITCH);
+          vYaw.current *= 0.92;
+          vPitch.current *= 0.92;
+          if (Math.abs(vYaw.current) > 0.001 || Math.abs(vPitch.current) > 0.001) applyCamera();
+        }
       }
 
       if (distortLayer) {
@@ -224,8 +288,10 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
             <div
               key={pin.href}
               className="gw-pin"
-              style={placeStyle(pin.x, pin.y, pin.rotate ?? 0)}
+              style={placeStyle(pin.x, pin.y)}
               onClick={() => handlePinClick(pin.href)}
+              onPointerEnter={() => setHoveredHref(pin.href)}
+              onPointerLeave={() => setHoveredHref((cur) => (cur === pin.href ? null : cur))}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
@@ -238,6 +304,25 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
             </div>
           ))}
 
+          {pins.map(
+            (pin) =>
+              pin.miniStats &&
+              pin.miniStats.length > 0 &&
+              pin.miniStats.map((mini, i) => {
+                const spread = (i - (pin.miniStats!.length - 1) / 2) * 11;
+                return (
+                  <div
+                    key={pin.href + mini.code}
+                    className={"gw-mini-chip" + (hoveredHref === pin.href ? " show" : "")}
+                    style={placeStyle(pin.x + spread, pin.y - 13 - (i % 2) * 7, -18)}
+                    aria-hidden={hoveredHref !== pin.href}
+                  >
+                    <span className="gw-mini-chip-code">{mini.code}</span> {mini.value}
+                  </div>
+                );
+              })
+          )}
+
           {stats.map(
             ({ x, y, stat }, i) =>
               stat && (
@@ -249,7 +334,34 @@ export default function GridWalk({ season, driverLeader, constructorLeader, podi
         </div>
       </div>
 
-      <div className="gw-hint">Click and drag to look around</div>
+      <div className="gw-topbar">
+        <div className="gw-brand">
+          <span className="gw-brand-mark" aria-hidden="true">
+            <svg width="22" height="14" viewBox="0 0 22 14" fill="currentColor">
+              <path d="M0 14L6 0h4L4 14H0z" />
+              <path d="M7 14L13 0h4L11 14H7z" />
+              <path d="M14 14L20 0h2L16 14h-2z" />
+            </svg>
+          </span>
+          Grid Walk
+        </div>
+        <SeasonSelector initialSeason={season} />
+      </div>
+
+      <div className="gw-jumpbar">
+        <span className="gw-jumpbar-label">Jump to</span>
+        <div className="gw-jumpbar-pills">
+          {pins.map((pin) => (
+            <button key={pin.href} type="button" className="gw-jump-pill" onClick={() => travelTo(pin.x, pin.y)}>
+              {pin.title}
+            </button>
+          ))}
+          <button type="button" className="gw-jump-pill gw-jump-reset" onClick={() => travelTo(0, 0)}>
+            <span className="gw-reset-dot" aria-hidden="true" />
+            Reset view
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
