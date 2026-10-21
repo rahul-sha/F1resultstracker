@@ -61,11 +61,9 @@ export default function AboutPage() {
             </li>
             <li>
               Added cumulative Driver and Constructors Points Evolution charts to the Results
-              page, side by side, with a race-by-race draw-in animation on scroll
-            </li>
-            <li>
-              Dropped the numeric y-axis on those charts in favour of a small points-total pill
-              beside each line, automatically spaced apart so they stay legible on a full field
+              page, each full width with smoothly curved lines, a points-total pill beside every
+              driver and team instead of a numeric y-axis, and the plot&apos;s width scaling to
+              fit its container rather than a fixed size
             </li>
           </ul>
 
@@ -73,11 +71,24 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            35 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            36 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">36</span>
+                <b>Evolution charts: full width, full field, curved lines</b>
+                <span>
+                  Fixed a mobile layout bug on both evolution charts, split them back into
+                  separate full-width sections, grew the chart height so every driver and team
+                  gets its own points pill instead of cropping the field, made the plot&apos;s
+                  width responsive instead of fixed (which was leaving a gap next to the points
+                  column),
+                  and switched to smoothly curved lines instead of straight segments. Dropped the
+                  scroll-triggered draw-in animation entirely in favour of a static chart.
+                </span>
+              </li>
               <li>
                 <span className="seq">35</span>
                 <b>No-axis evolution charts, points bubbles</b>

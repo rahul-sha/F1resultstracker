@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { PointsGridColumn } from "@/lib/points-grid";
 import { useTooltip, useDragPan, Tooltip } from "./PointsHeatmap";
 
@@ -12,65 +12,76 @@ export interface EvolutionSeriesInput {
   pointsByRound: (number | null)[];
 }
 
-const CHART_HEIGHT = 220;
-const ROUND_WIDTH = 36;
 const PAD_LEFT = 20;
 const PAD_TOP = 14;
-const PAD_BOTTOM = 10;
+const PAD_BOTTOM = 14;
 const FLAG_ROW_HEIGHT = 24;
-// Staggers each line's draw-in slightly, like cars peeling off the grid,
-// capped so a 20+ driver field doesn't drag the reveal out too long.
-const REVEAL_STAGGER_MS = 60;
-const REVEAL_STAGGER_CAP_MS = 700;
-const REVEAL_DURATION_MS = 2200;
 const AREA_OPACITY = 0.14;
+
+// The plot's width stretches to fill whatever space is actually available
+// next to the bubble column (see useAvailableWidth below) rather than
+// using a fixed per-round pixel width — that fixed width is what left a
+// big empty gap between the plotted lines and the points column on a wide
+// screen. Below this floor (many rounds on a narrow phone), spacing stays
+// at the floor and the plot scrolls horizontally instead of cramming.
+const MIN_ROUND_WIDTH = 22;
+const FALLBACK_ROUND_WIDTH = 36;
 
 // The end-of-line totals column, outside the horizontal scroller so it
 // keeps showing the latest standings even when the plot itself is
-// scrolled back to an earlier round.
+// scrolled back to an earlier round. Every series gets a row — the chart
+// grows tall enough to fit all of them (see chartHeight below) rather
+// than cropping the field to whatever a fixed height could show.
 const BUBBLE_COL_WIDTH = 104;
 const BUBBLE_WIDTH = 92;
 const BUBBLE_HEIGHT = 22;
 const BUBBLE_FILL_OPACITY = 0.16;
-// Minimum vertical distance between two bubbles' centres before one has
-// to be nudged off its line's real value to avoid overlapping the next.
-const BUBBLE_MIN_SPACING = BUBBLE_HEIGHT + 2;
+const BUBBLE_ROW_SPACING = 26;
+const MIN_CHART_HEIGHT = 160;
 
 function computeAxisMax(maxValue: number): number {
-  // Headroom only — ticks/gridlines are gone now that the scale itself
-  // is hidden, so there's no "nice number" to round to any more.
+  // Headroom only — there's no numeric y-axis to round a "nice number" to.
   return Math.max(1, maxValue) * 1.08;
 }
 
-// Fires once, the first time the chart scrolls into view, so the draw-in
-// plays on arrival rather than replaying on every scroll past it; skipped
-// (revealed immediately, no animation) for prefers-reduced-motion.
-function useRevealOnScroll<T extends HTMLElement>() {
+// Measures the row's own rendered width so the plot can be sized to fill
+// it exactly, instead of a fixed pixel-per-round width that leaves a gap
+// on a wide screen or overflows a narrow one.
+function useAvailableWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);
-  const [revealed, setRevealed] = useState(false);
+  const [width, setWidth] = useState<number | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setRevealed(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setRevealed(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
+    const update = () => setWidth(el.clientWidth);
+    update();
+    const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
-  return { ref, revealed };
+  return { ref, width };
+}
+
+// A smooth curve through the given points (Catmull-Rom converted to
+// cubic Bezier segments) instead of straight point-to-point lines.
+function smoothPath(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i - 1] ?? points[i];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2] ?? p2;
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.x} ${p2.y}`;
+  }
+  return d;
 }
 
 export default function PointsEvolutionChart({
@@ -83,7 +94,7 @@ export default function PointsEvolutionChart({
   const { tooltip, show, hide } = useTooltip();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const dragPan = useDragPan(scrollerRef);
-  const { ref: revealRef, revealed } = useRevealOnScroll<HTMLDivElement>();
+  const { ref: rowRef, width: rowWidth } = useAvailableWidth<HTMLDivElement>();
 
   const series = useMemo(
     () =>
@@ -101,10 +112,21 @@ export default function PointsEvolutionChart({
   const maxCumulative = Math.max(1, ...series.map((s) => s.cumulative[s.cumulative.length - 1] ?? 0));
   const axisMax = computeAxisMax(maxCumulative);
 
-  const plotHeight = CHART_HEIGHT - PAD_TOP - PAD_BOTTOM;
-  const plotWidth = Math.max(1, columns.length - 1) * ROUND_WIDTH + PAD_LEFT;
+  // Tall enough for every series to get its own, clearly separate bubble
+  // row — the whole field, not just whoever fits a fixed height.
+  const chartHeight = Math.max(
+    MIN_CHART_HEIGHT,
+    PAD_TOP + PAD_BOTTOM + BUBBLE_HEIGHT + Math.max(0, series.length - 1) * BUBBLE_ROW_SPACING
+  );
+  const plotHeight = chartHeight - PAD_TOP - PAD_BOTTOM;
 
-  const x = (roundIndex: number) => PAD_LEFT / 2 + roundIndex * ROUND_WIDTH;
+  const roundCount = Math.max(1, columns.length - 1);
+  const availableForPlot = rowWidth != null ? Math.max(0, rowWidth - BUBBLE_COL_WIDTH) : null;
+  const idealRoundWidth = availableForPlot != null ? (availableForPlot - PAD_LEFT) / roundCount : FALLBACK_ROUND_WIDTH;
+  const roundWidth = Math.max(MIN_ROUND_WIDTH, idealRoundWidth);
+  const plotWidth = roundCount * roundWidth + PAD_LEFT;
+
+  const x = (roundIndex: number) => PAD_LEFT / 2 + roundIndex * roundWidth;
   const y = (value: number) => PAD_TOP + plotHeight - (value / axisMax) * plotHeight;
 
   // Draw the strongest season so far on top, so a tight leading battle
@@ -113,49 +135,34 @@ export default function PointsEvolutionChart({
     (a, b) => (a.cumulative[a.cumulative.length - 1] ?? 0) - (b.cumulative[b.cumulative.length - 1] ?? 0)
   );
 
-  // End-of-line totals, nudged apart just enough to stay legible when two
-  // drivers are close in points — top (highest value) down, each bubble
-  // pushed below the one above it rather than letting them overlap. A full
-  // driver field (20+ cars) can't all fit a 220px-tall column at a legible
-  // spacing, so only as many bubbles as actually fit get one; the rest keep
-  // their line and dot, with the exact value still available on hover.
-  const bubbleMinY = PAD_TOP;
-  const bubbleMaxY = CHART_HEIGHT - BUBBLE_HEIGHT / 2;
-  const maxBubbles = Math.max(1, Math.floor((bubbleMaxY - bubbleMinY) / BUBBLE_MIN_SPACING) + 1);
+  // End-of-line totals, one evenly-spaced row per series ranked by value —
+  // every driver/team gets a bubble, with a dotted leader line back to
+  // where its line actually ends whenever rank order and value spacing
+  // don't line up exactly (common once the field is bunched together).
+  const bubbleTopY = PAD_TOP + BUBBLE_HEIGHT / 2;
   const bubbles = useMemo(() => {
     const byValueDesc = [...series].sort(
       (a, b) => (b.cumulative[b.cumulative.length - 1] ?? 0) - (a.cumulative[a.cumulative.length - 1] ?? 0)
     );
-    type Bubble = { id: string; code: string; color: string; value: number; lineY: number; bubbleY: number };
-    const picked = byValueDesc.slice(0, maxBubbles);
-
-    // Pass 1 (top-down): push each bubble below the one above it.
-    const pass1 = picked.reduce<Bubble[]>((acc, s) => {
+    return byValueDesc.map((s, idx) => {
       const value = s.cumulative[s.cumulative.length - 1] ?? 0;
-      const lineY = y(value);
-      const prevY = acc.length > 0 ? acc[acc.length - 1].bubbleY : -Infinity;
-      const bubbleY = Math.max(lineY, prevY + BUBBLE_MIN_SPACING);
-      return [...acc, { id: s.id, code: s.code, color: s.color, value, lineY, bubbleY }];
-    }, []);
-
-    // Pass 2 (bottom-up): pass 1 can push the last bubble past the bottom
-    // of the chart when several series cluster together; pull everything
-    // back up from the bottom so the whole stack fits inside the chart,
-    // still spaced apart, instead of letting the overflow collide.
-    const result = [...pass1];
-    for (let i = result.length - 1; i >= 0; i--) {
-      const ceiling = i === result.length - 1 ? bubbleMaxY : result[i + 1].bubbleY - BUBBLE_MIN_SPACING;
-      result[i] = { ...result[i], bubbleY: Math.min(result[i].bubbleY, ceiling) };
-    }
-    return result;
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- y() is a pure function of axisMax, already a dep
-  }, [series, axisMax, maxBubbles, bubbleMaxY]);
+      return {
+        id: s.id,
+        code: s.code,
+        color: s.color,
+        value,
+        lineY: y(value),
+        bubbleY: bubbleTopY + idx * BUBBLE_ROW_SPACING,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- y() is a pure function of axisMax/chartHeight, already deps
+  }, [series, axisMax, chartHeight, bubbleTopY]);
 
   return (
     <div className="table-card">
-      <div className="flex" ref={revealRef}>
-        <div className="overflow-x-auto" ref={scrollerRef} {...dragPan}>
-          <svg width={plotWidth} height={CHART_HEIGHT}>
+      <div className="flex" ref={rowRef}>
+        <div className="overflow-x-auto min-w-0" ref={scrollerRef} {...dragPan}>
+          <svg width={plotWidth} height={chartHeight}>
             <line
               x1={0}
               x2={plotWidth}
@@ -166,32 +173,19 @@ export default function PointsEvolutionChart({
               strokeDasharray="2 3"
             />
 
-            {drawOrder.map((s, idx) => {
-              const lineD = s.cumulative
-                .map((value, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(value)}`)
-                .join(" ");
+            {drawOrder.map((s) => {
+              const points = s.cumulative.map((value, i) => ({ x: x(i), y: y(value) }));
+              const lineD = smoothPath(points);
               const baseline = y(0);
               const lastPointX = x(s.cumulative.length - 1);
               const areaD = `${lineD} L ${lastPointX} ${baseline} L ${x(0)} ${baseline} Z`;
-              const delay = Math.min(idx * REVEAL_STAGGER_MS, REVEAL_STAGGER_CAP_MS);
               return (
                 <g key={s.id}>
                   {/* Material 3 tonal fill — a soft wash of the line's own
                       colour under it, the same "tonal container" idea used
                       for surfaces elsewhere in the app, not just a bare
                       stroke on a blank plot. */}
-                  <path
-                    d={areaD}
-                    fill={s.color}
-                    stroke="none"
-                    className={"evo-area" + (revealed ? " evo-area-shown" : "")}
-                    style={
-                      {
-                        transitionDelay: `${delay}ms`,
-                        "--evo-area-opacity": AREA_OPACITY,
-                      } as CSSProperties
-                    }
-                  />
+                  <path d={areaD} fill={s.color} fillOpacity={AREA_OPACITY} stroke="none" />
                   <path
                     d={lineD}
                     fill="none"
@@ -199,9 +193,6 @@ export default function PointsEvolutionChart({
                     strokeWidth={3}
                     strokeLinejoin="round"
                     strokeLinecap="round"
-                    pathLength={1}
-                    className={"evo-line" + (revealed ? " evo-line-shown" : "")}
-                    style={{ transitionDuration: `${REVEAL_DURATION_MS}ms`, transitionDelay: `${delay}ms` }}
                   />
                 </g>
               );
@@ -210,7 +201,19 @@ export default function PointsEvolutionChart({
             {drawOrder.map((s) =>
               s.cumulative.map((value, i) => (
                 <circle
-                  key={`${s.id}-${i}`}
+                  key={`${s.id}-${i}-dot`}
+                  cx={x(i)}
+                  cy={y(value)}
+                  r={i === s.cumulative.length - 1 ? 4.5 : 2.5}
+                  fill={s.color}
+                />
+              ))
+            )}
+
+            {drawOrder.map((s) =>
+              s.cumulative.map((value, i) => (
+                <circle
+                  key={`${s.id}-${i}-hit`}
                   cx={x(i)}
                   cy={y(value)}
                   r={6}
@@ -235,27 +238,6 @@ export default function PointsEvolutionChart({
                 />
               ))
             )}
-            {drawOrder.map((s, sIdx) => {
-              const n = s.cumulative.length;
-              const driverDelay = Math.min(sIdx * REVEAL_STAGGER_MS, REVEAL_STAGGER_CAP_MS);
-              return s.cumulative.map((value, i) => {
-                // Pops in as the line sweeps past its x position, not all at
-                // once — so the dots read as the line "catching up" to each
-                // round rather than scattering onto the chart pre-formed.
-                const dotDelay = driverDelay + (n > 1 ? (i / (n - 1)) * REVEAL_DURATION_MS : 0);
-                return (
-                  <circle
-                    key={`${s.id}-${i}-dot`}
-                    cx={x(i)}
-                    cy={y(value)}
-                    r={i === n - 1 ? 4.5 : 2.5}
-                    fill={s.color}
-                    className={"evo-dot" + (revealed ? " evo-dot-shown" : "")}
-                    style={{ transitionDelay: `${dotDelay}ms`, pointerEvents: "none" }}
-                  />
-                );
-              });
-            })}
           </svg>
 
           <div style={{ position: "relative", width: plotWidth, height: FLAG_ROW_HEIGHT }}>
@@ -280,16 +262,11 @@ export default function PointsEvolutionChart({
           </div>
         </div>
 
-        <svg width={BUBBLE_COL_WIDTH} height={CHART_HEIGHT} className="shrink-0">
-          {bubbles.map((b, idx) => {
+        <svg width={BUBBLE_COL_WIDTH} height={chartHeight} className="shrink-0">
+          {bubbles.map((b) => {
             const nudged = Math.abs(b.bubbleY - b.lineY) > 0.5;
-            const delay = Math.min(idx * REVEAL_STAGGER_MS, REVEAL_STAGGER_CAP_MS) + REVEAL_DURATION_MS;
             return (
-              <g
-                key={b.id}
-                className={"evo-bubble" + (revealed ? " evo-bubble-shown" : "")}
-                style={{ transitionDelay: `${delay}ms` }}
-              >
+              <g key={b.id}>
                 {nudged && (
                   <line
                     x1={2}
