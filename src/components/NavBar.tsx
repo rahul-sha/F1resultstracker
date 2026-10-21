@@ -6,9 +6,10 @@ import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 import AccentToggle from "./AccentToggle";
 import SeasonSelector from "./SeasonSelector";
-import { ResultsIcon, PositionsIcon, AboutIcon, MenuIcon, CloseIcon } from "./nav-icons";
+import { HomeIcon, ResultsIcon, PositionsIcon, AboutIcon, MenuIcon, CloseIcon } from "./nav-icons";
 
 const NAV_TABS = [
+  { label: "Home", href: "/", icon: <HomeIcon /> },
   { label: "Results", href: "/results", icon: <ResultsIcon /> },
   { label: "Positions", href: "/positions", icon: <PositionsIcon /> },
   { label: "About", href: "/about", icon: <AboutIcon /> },
@@ -23,6 +24,7 @@ export default function NavBar({ initialSeason }: { initialSeason: number }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
+  const onHome = pathname === "/";
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -34,6 +36,11 @@ export default function NavBar({ initialSeason }: { initialSeason: number }) {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [menuOpen]);
+
+  // Grid Walk's drag-navigation on "/" is the nav for that page — the
+  // fixed bottom bar would compete with a full-bleed drag surface, and
+  // every Grid Walk pin already links into Results/Positions/About.
+  if (onHome) return null;
 
   return (
     <nav className="navbar" ref={navRef}>

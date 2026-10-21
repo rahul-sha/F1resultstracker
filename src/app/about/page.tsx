@@ -65,17 +65,34 @@ export default function AboutPage() {
               driver and team instead of a numeric y-axis, and the plot&apos;s width scaling to
               fit its container rather than a fixed size
             </li>
+            <li>
+              Replaced the homepage with Grid Walk: a drag-navigable 3D scene where the
+              Results, Positions and About pages are cards on the inside of a sphere, with a
+              cursor-reactive background and live standings pulled into each card
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            36 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            37 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">37</span>
+                <b>Grid Walk: a 3D home page</b>
+                <span>
+                  Replaced the plain redirect-to-Results homepage with a drag-navigable 3D
+                  scene: cards for Results, Positions and About sit on the inside of a sphere,
+                  with inertia, a cursor-reactive ripple background, and live leader stats for
+                  the selected season. Results, Positions and About are unchanged underneath —
+                  this only adds a new front door. Mocked up and iterated live with Rahul before
+                  being wired to real data and shipped.
+                </span>
+              </li>
               <li>
                 <span className="seq">36</span>
                 <b>Evolution charts: full width, full field, curved lines</b>
