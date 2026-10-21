@@ -23,11 +23,11 @@ export default function AboutPage() {
         <section id="about-project" data-rail-label="About this project" className="about table-card">
           <h2 className="mb-2.5 text-sm font-semibold">About this project</h2>
           <p>
-            This is a personal F1 results tracker built by Rahul, with Claude (Anthropic&apos;s AI
-            coding assistant) doing the actual design and development work — writing the code,
+            This is a personal F1 results tracker built by one person, with Claude (Anthropic&apos;s
+            AI coding assistant) doing the actual design and development work — writing the code,
             mocking up and iterating on the design, fixing bugs, and wiring up the data pipeline.
-            Rahul directs the project: he sets what to build, reviews every design before it goes
-            live, and gives the feedback that shapes it.
+            That person directs the project: setting what to build, reviewing every design before
+            it goes live, and giving the feedback that shapes it.
           </p>
           <p>
             <strong>Why this page exists:</strong> it felt right to be upfront about that division
@@ -64,270 +64,137 @@ export default function AboutPage() {
           <p>
             <strong>How this has progressed:</strong>
           </p>
+          <p className="timeline-count">
+            32 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            folded into the ones around them rather than listed separately.
+          </p>
           <div className="timeline-inset">
             <ul className="timeline">
               <li>
-                <b>Results &amp; theme toggle</b>
-                <span>The first version: the race-by-race results table and a light/dark theme switch.</span>
+                <span className="seq">32</span>
+                <b>Real bio, timeline tidy-up</b>
+                <span>Added the real About me bio, compacted this timeline, and tinted the credit icons.</span>
               </li>
               <li>
-                <b>Flags, hover details &amp; more themes</b>
-                <span>Country flags, hover-to-see-detail cards, and the Coffee and Ember colour themes.</span>
+                <span className="seq">31</span>
+                <b>Share button on every graphic</b>
+                <span>
+                  A share icon beside each heatmap, grid and chart turns it into a PNG right in the
+                  browser &mdash; save it, copy it, or open the native share sheet on phone and Mac.
+                </span>
               </li>
               <li>
-                <b>Season snapshots</b>
-                <span>Older seasons&apos; data got saved into the repo itself, instead of only ever being fetched live.</span>
+                <span className="seq">30</span>
+                <b>Sprint marker, header cards, section rail &amp; overscroll navigation</b>
+                <span>
+                  Fixed the sprint-race marker, gave page titles a matching glass card, added a
+                  scroll-aware section rail, and made reaching the page bottom spring to the next page.
+                </span>
               </li>
               <li>
+                <span className="seq">29</span>
+                <b>First automated test, fewer duplicate data requests</b>
+                <span>A Playwright test for Positions, and live-fetch calls now shared instead of duplicated.</span>
+              </li>
+              <li>
+                <span className="seq">28</span>
+                <b>Agent skills added</b>
+                <span>frontend-design, webapp-testing and vercel-react-best-practices, reviewed and installed.</span>
+              </li>
+              <li>
+                <span className="seq">26</span>
+                <b>Qualifying frequency heatmap</b>
+                <span>Ranked by average qualifying position rather than the standings; backfilled for 2020&ndash;2026.</span>
+              </li>
+              <li>
+                <span className="seq">22</span>
+                <b>Glassmorphism</b>
+                <span>The nav bar and table cards got a blurred, translucent glass look.</span>
+              </li>
+              <li>
+                <span className="seq">21</span>
+                <b>Dracula light mode, a drifting background</b>
+                <span>Dracula gained a light variant; the background glow now drifts instead of sitting still.</span>
+              </li>
+              <li>
+                <span className="seq">20</span>
+                <b>A soft background glow</b>
+                <span>Added a theme-coloured gradient behind every page instead of a flat colour.</span>
+              </li>
+              <li>
+                <span className="seq">19</span>
+                <b>Drag-to-pan tables, a Dracula theme</b>
+                <span>Overflowing tables now pan by click-and-drag; added a fourth colour palette.</span>
+              </li>
+              <li>
+                <span className="seq">17</span>
+                <b>One nav bar, same design everywhere</b>
+                <span>The separate desktop bar and mobile dock merged into a single bar at every size.</span>
+              </li>
+              <li>
+                <span className="seq">14</span>
+                <b>Bottom dock nav on mobile, nav icons on desktop</b>
+                <span>Narrow screens got a floating bottom dock; the desktop bar gained matching icons.</span>
+              </li>
+              <li>
+                <span className="seq">13</span>
+                <b>Centred layout, global season selector</b>
+                <span>Pages centre on wide screens; the season you pick now persists across pages.</span>
+              </li>
+              <li>
+                <span className="seq">12</span>
+                <b>Positions merged with Finish Positions</b>
+                <span>One page now; pole and fastest lap marked with a superscript on Results too.</span>
+              </li>
+              <li>
+                <span className="seq">11</span>
+                <b>Security review</b>
+                <span>Found and fixed a script-injection bug in the data-snapshot job; added security headers.</span>
+              </li>
+              <li>
+                <span className="seq">9</span>
+                <b>Polish pass across the heatmap pages</b>
+                <span>Simplified DNF counts to match how the data source reports them from 2023 onward.</span>
+              </li>
+              <li>
+                <span className="seq">8</span>
+                <b>Constructors section &amp; page cleanup</b>
+                <span>Added Constructors to Results; retired the separate Standings page.</span>
+              </li>
+              <li>
+                <span className="seq">7</span>
+                <b>Positions &amp; Finish Positions pages</b>
+                <span>Per-race finishes, a finish-frequency grid, and podium counts for drivers and teams.</span>
+              </li>
+              <li>
+                <span className="seq">6</span>
+                <b>Live-data resilience</b>
+                <span>The current season falls back to its last saved snapshot if the live API has downtime.</span>
+              </li>
+              <li>
+                <span className="seq">5</span>
+                <b>Pinned points column &amp; data fixes</b>
+                <span>The points total stays on screen while scrolling; corrected team-change data.</span>
+              </li>
+              <li>
+                <span className="seq">4</span>
                 <b>Material 3 restyle</b>
                 <span>The whole look moved to tonal surfaces, pill shapes and a floating top bar.</span>
               </li>
               <li>
-                <b>Pinned points column &amp; data fixes</b>
-                <span>The points total stays on screen while scrolling, and team-change data corrections like Lawson/Racing Bulls.</span>
+                <span className="seq">3</span>
+                <b>Season snapshots</b>
+                <span>Older seasons&apos; data saved into the repo instead of only ever fetched live.</span>
               </li>
               <li>
-                <b>Live-data resilience</b>
-                <span>The current season now falls back to its last saved snapshot if the live F1 data API has downtime.</span>
+                <span className="seq">2</span>
+                <b>Flags, hover details &amp; more themes</b>
+                <span>Country flags, hover-to-see-detail cards, and the Coffee and Ember colour themes.</span>
               </li>
               <li>
-                <b>Positions &amp; Finish Positions pages</b>
-                <span>
-                  Where each driver finished every race, sprint results shown inline, a per-position
-                  finish-frequency grid with a DNF count, and a podium count for drivers and teams.
-                </span>
-              </li>
-              <li>
-                <b>Constructors section &amp; page cleanup</b>
-                <span>
-                  Clearer colour contrast on the Positions heatmap, Finish Positions restyled to match
-                  the rest of the site, a Constructors section added to Results, and the separate
-                  Standings page retired now that Results covers both.
-                </span>
-              </li>
-              <li>
-                <b>Polish pass across all three heatmap pages</b>
-                <span>
-                  Fixed constructor names wrapping onto two lines, DNF-cell contrast in dark themes,
-                  the median-finish figure (now shown to two decimal places, with its bar scaled
-                  against the real grid size), and the season selector&apos;s width changing with
-                  the page it&apos;s on. Simplified the DNF count after checking that the data source
-                  no longer reports a retirement&apos;s cause from the 2023 season onward. Swapped the
-                  scroll-direction chevrons for a themed scrollbar sitting under the race headers.
-                </span>
-              </li>
-              <li>
-                <b>Further fixes to the heatmaps</b>
-                <span>
-                  Removed a boxy border that was meant to highlight a driver&apos;s most frequent
-                  finish on Finish Positions &mdash; the brightest shade already does that job.
-                  Fixed the Teams podium bar so its length is proportional to the podium count
-                  rather than two different totals both hitting the same width cap. Results now
-                  shows a score of 1 or 2 points with a faint tint distinct from scoring nothing,
-                  rather than both looking identical.
-                </span>
-              </li>
-              <li>
-                <b>Security review</b>
-                <span>
-                  Checked the site over for common security issues. Found and fixed one real
-                  one: the automated data-snapshot job built a command from its input text
-                  directly, which a malicious input could have hijacked to run its own commands.
-                  Everything else &mdash; secrets, dependencies, data handling, the site&apos;s
-                  one use of raw HTML &mdash; checked out safe. Added a few standard browser
-                  security headers while at it.
-                </span>
-              </li>
-              <li>
-                <b>Positions merged with Finish Positions</b>
-                <span>
-                  The separate Finish Positions page is gone &mdash; its finish-frequency grid
-                  and podium counts now sit underneath the per-race grid on Positions. Results
-                  also marks pole position and fastest lap with a small superscript next to the
-                  points value, the same treatment as the sprint-result superscript. Removed the
-                  hover tooltip from the Constructors heatmap on Results.
-                </span>
-              </li>
-              <li>
-                <b>Centred layout, global season selector</b>
-                <span>
-                  Results and Positions no longer hug the left edge with empty space on the
-                  right on wide screens. The season selector moved out of each page and into
-                  the top nav bar, and the season you pick now stays selected as you move
-                  between pages instead of resetting.
-                </span>
-              </li>
-              <li>
-                <b>Bottom dock nav on mobile, nav icons on desktop</b>
-                <span>
-                  On narrow screens the top bar is now a floating bottom dock with Results and
-                  Positions as the two main tabs, the season selector and an About shortcut
-                  built in, and a hamburger that opens a sheet for the theme and light/dark
-                  toggles. The desktop top bar gained matching icons next to its nav labels, and
-                  the race-header scrollbar on Results and Positions was narrowed so it no longer
-                  spans the full width of the table.
-                </span>
-              </li>
-              <li>
-                <b>Mobile heatmap fixes</b>
-                <span>
-                  Fixed the coloured cells painting past the table card&apos;s rounded corners on
-                  phones. Shrunk the points/positions cells and race-header chips on narrow
-                  screens so more races fit on screen before you need to scroll.
-                </span>
-              </li>
-              <li>
-                <b>Positions scroll fix &amp; tighter phone margins</b>
-                <span>
-                  Fixed the Positions page&apos;s finish-frequency grid overlapping its own DNFs
-                  column &mdash; it now scrolls horizontally like every other table on the site.
-                  Reduced the page&apos;s left/right margin on phones from a fixed amount to 5%
-                  of the screen width, so it no longer feels cramped.
-                </span>
-              </li>
-              <li>
-                <b>One nav bar, same design everywhere</b>
-                <span>
-                  Replaced the separate desktop top bar and mobile dock with a single floating
-                  bar used at every screen size: Results, Positions and About sit in a
-                  horizontally scrollable strip and the season selector stays pinned beside them.
-                  The hamburger menu grows the bar itself into a panel holding the theme and
-                  palette toggles, instead of opening a separate sheet.
-                </span>
-              </li>
-              <li>
-                <b>Nav bar polish</b>
-                <span>
-                  On phones every tab is now icon-only, including the active one, so the bar
-                  stays the same width from page to page instead of shifting with the active
-                  label. Fixed the season menu rendering invisibly behind the page. On wide
-                  screens the bar now sits at the top (its hamburger panel opens downward to
-                  match), and the About page&apos;s content now matches the width of Results and
-                  Positions instead of reading narrower.
-                </span>
-              </li>
-              <li>
-                <b>Drag-to-pan tables &amp; a Dracula theme</b>
-                <span>
-                  Removed the themed scrollbar under the race headers — a table that overflows
-                  now pans by clicking and dragging on desktop, or the normal touch scroll on
-                  phones. Shrunk the gap between the nav bar and the page content on wide
-                  screens, and added icons to the Theme and Palette toggles. Added a fourth
-                  colour palette, Dracula.
-                </span>
-              </li>
-              <li>
-                <b>Consistent cell sizes and a background glow</b>
-                <span>
-                  Fixed the Positions page&apos;s finish-frequency grid shrinking its own
-                  cells on narrow screens so they now match Results&apos; size exactly. Brought
-                  back the Results and Positions page headings at the same size as the site&apos;s
-                  other section headings. Fixed the season pill in the nav bar showing a stale
-                  year after following a nav link to another page rather than a season link.
-                  Evened out the padding below the Theme/Palette row in the nav bar&apos;s
-                  hamburger panel. Added a soft theme-coloured gradient behind every page instead
-                  of a single flat background colour.
-                </span>
-              </li>
-              <li>
-                <b>Rounded corners back, a moving gradient, and a Dracula light mode</b>
-                <span>
-                  Brought the rounded corner back on the heatmap tables — it reads better than the
-                  squared-off edge did, even with the odd bleeding cell on some phones. The
-                  background glow now drifts slowly instead of sitting still. Dracula previously
-                  only had a dark variant; it now has a proper light one too, and the appearance
-                  menu correctly restores the chosen palette after a page reload (a Dracula-shaped
-                  gap in the restore logic meant it fell back to the default palette before). Also
-                  matched the season selector&apos;s height to the other nav bar buttons.
-                </span>
-              </li>
-              <li>
-                <b>Faster background, glassmorphism, and tooltip/cursor fixes</b>
-                <span>
-                  Sped up the drifting background glow by a fifth. Gave the nav bar and every
-                  table card a blurred, translucent glass look so the background shows through
-                  them. Added a thin dashed line after 10th place on the finish-frequency grid,
-                  marking where points stop being awarded. Removed the question-mark cursor from
-                  heatmap cells, and fixed the hover tooltip staying stuck in place — rather than
-                  following the cell — if you scrolled while hovering. Also removed the page-switch
-                  entrance animation, which read as jumpy rather than smooth.
-                </span>
-              </li>
-              <li>
-                <b>A proper glass effect, and tighter phone margins</b>
-                <span>
-                  The glass treatment from the previous update read as plain transparency rather
-                  than blur, so it now has a stronger blur, lower opacity, and a faint highlight,
-                  which visibly softens what&apos;s behind the nav bar and table cards. The
-                  race-header flags no longer sit in their own solid boxed chip &mdash; they now
-                  sit flush on the table like everything else. Phone-screen side margins are now a
-                  small fixed 10px rather than a percentage of the screen width, which still left
-                  a visible gutter on narrow phones, so more of the table fits without scrolling.
-                </span>
-              </li>
-              <li>
-                <b>Glass effect scoped down, icon-only season picker</b>
-                <span>
-                  The glass look now stays only on the nav bar and this About page &mdash; every
-                  table card is back to a solid surface. The season picker no longer spells out
-                  &ldquo;season&rdquo;; it&apos;s just a small calendar icon next to the year, so it
-                  takes up less space.
-                </span>
-              </li>
-              <li>
-                <b>Nav bar opacity, and the real fix for phone-screen margins</b>
-                <span>
-                  The nav bar and About card now read solid enough on their own on browsers where
-                  the blur effect doesn&apos;t render. Tracked down why the phone-margin fix kept
-                  looking like it did nothing across several rounds of tuning: every page&apos;s own
-                  content wrapper had a fixed padding stacking on top of the nav bar&apos;s, so the
-                  real total margin barely moved. Fixed both layers together, and dropped the nav
-                  bar&apos;s blur entirely on phones, where it wasn&apos;t rendering at all.
-                </span>
-              </li>
-              <li>
-                <b>Qualifying frequency heatmap</b>
-                <span>
-                  Added a Qualifying frequency section to the Positions page, in the same heatmap
-                  style as Finish frequency &mdash; how often each driver has qualified in each grid
-                  position, with a marker at the Q3 cutoff. Ranked by average qualifying position
-                  rather than the championship standings, so it shows who qualifies well
-                  independent of how the race itself went. Backfilled real qualifying data for every
-                  season from 2020 to 2026.
-                </span>
-              </li>
-              <li>
-                <b>Podium bar scaling fix</b>
-                <span>
-                  Fixed the podium-finishes bar chart on phones: bars with very different totals
-                  were rendering at the same width once the longest one ran out of room, making the
-                  scale look broken. Bars are now proportional to their total at any screen size.
-                </span>
-              </li>
-              <li>
-                <b>Sprint marker, header cards, section rail &amp; overscroll navigation</b>
-                <span>
-                  Five fixes from one round of feedback: the sprint-race marker above the race
-                  grids is now a visible underline instead of a faint ring, so it actually matches
-                  its own caption; the page title and subtitle on Results, Positions and About sit
-                  in their own fixed-size glass card (matching the nav bar&apos;s blur) instead of
-                  floating text, so every page&apos;s content starts at the same height regardless
-                  of how long that page&apos;s subtitle runs; a thin rail down the left edge now
-                  shows and highlights the sections on the page as you scroll, which also made the
-                  browser&apos;s own scrollbar redundant so it&apos;s hidden; and reaching the
-                  bottom of a page and continuing to scroll springs forward to the next page in
-                  nav order, with a high enough threshold that a normal over-scroll does nothing.
-                </span>
-              </li>
-              <li>
-                <b>Share button on every graphic</b>
-                <span>
-                  A small share icon now sits beside each heatmap, grid and chart. It turns that
-                  one graphic into a PNG right in the browser &mdash; no server or image hosting
-                  involved &mdash; and lets you save it, copy it to the clipboard for pasting
-                  into Reddit, X or Discord, or, on phone and Mac, open the native share sheet
-                  directly.
-                </span>
+                <span className="seq">1</span>
+                <b>Results &amp; theme toggle</b>
+                <span>The first version: the race-by-race results table and a light/dark theme switch.</span>
               </li>
             </ul>
           </div>
@@ -388,18 +255,12 @@ export default function AboutPage() {
         <aside className="about-side">
           <section id="about-me" data-rail-label="About me" className="about table-card">
             <h2 className="mb-2.5 text-sm font-semibold">About me</h2>
-            <p className="about-tag">Placeholder — to be finalised later</p>
             <p>
-              <strong>Rahul</strong> is the person behind this site — an F1 fan who wanted a
-              cleaner way to follow race results and standings than what was out there, and ended
-              up building one. By day, just someone who likes tinkering with side projects; by
-              race weekend, fully invested in the midfield battle as much as the win. Directs
-              every design and feature decision on this site, with Claude doing the actual
-              implementation.
-            </p>
-            <p style={{ color: "var(--text-muted)", fontSize: 12.5 }}>
-              (Made up as a stand-in — swap in a real bio, links, or whatever you&apos;d like said
-              here whenever you get to it.)
+              This site is built and run by one person — an F1 fan who wanted a cleaner way to
+              follow race results and standings than what was out there, and ended up building
+              one. By day, just someone who likes tinkering with side projects; by race weekend,
+              fully invested in the midfield battle as much as the win. Directs every design and
+              feature decision on this site, with Claude doing the actual implementation.
             </p>
           </section>
 
