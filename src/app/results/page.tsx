@@ -5,6 +5,7 @@ import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
 import PointsHeatmap from "@/components/PointsHeatmap";
 import ConstructorPointsHeatmap from "@/components/ConstructorPointsHeatmap";
 import DriverPointsEvolutionChart from "@/components/DriverPointsEvolutionChart";
+import ConstructorPointsEvolutionChart from "@/components/ConstructorPointsEvolutionChart";
 import ShareButton from "@/components/ShareButton";
 
 export const metadata = { title: "Results | F1 Results Tracker" };
@@ -26,24 +27,6 @@ async function PointsGridSection({ season }: { season: number }) {
       <p className="graphic-caption">
         Hover a race header for details; underlined races include a sprint.
       </p>
-
-      <section id="results-evolution" data-rail-label="Points evolution" className="mt-8">
-        <div className="flex items-start justify-between gap-4">
-          <div className="section-header">
-            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-              Driver Points Evolution
-            </h2>
-            <p className="text-sm">Cumulative points scored by each driver across the season.</p>
-          </div>
-          <ShareButton
-            targetId="results-evolution"
-            fileName={`f1-points-evolution-${season}`}
-            label="the Driver Points Evolution chart"
-          />
-        </div>
-        <DriverPointsEvolutionChart grid={grid} />
-        <p className="graphic-caption">Hover a point or flag for race detail.</p>
-      </section>
     </>
   );
 }
@@ -60,6 +43,62 @@ async function ConstructorPointsGridSection({ season }: { season: number }) {
   }
 
   return <ConstructorPointsHeatmap grid={grid} />;
+}
+
+// buildPointsGrid/buildConstructorPointsGrid's underlying fetches are all
+// wrapped in React's cache() (ergast.ts), so re-calling them here for the
+// same season costs no extra network requests — the schedule/standings/
+// results already fetched for the heatmap sections above are reused.
+async function EvolutionSection({ season }: { season: number }) {
+  const [driverGrid, constructorGrid] = await Promise.all([
+    buildPointsGrid(season),
+    buildConstructorPointsGrid(season),
+  ]);
+
+  if (driverGrid.rows.length === 0 && constructorGrid.rows.length === 0) return null;
+
+  return (
+    <div className="evolution-row">
+      {driverGrid.rows.length > 0 && (
+        <div id="results-evolution-drivers" data-rail-label="Points evolution">
+          <div className="flex items-start justify-between gap-4">
+            <div className="section-header">
+              <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+                Driver Points Evolution
+              </h2>
+              <p className="text-sm">Cumulative points scored by each driver across the season.</p>
+            </div>
+            <ShareButton
+              targetId="results-evolution-drivers"
+              fileName={`f1-points-evolution-${season}`}
+              label="the Driver Points Evolution chart"
+            />
+          </div>
+          <DriverPointsEvolutionChart grid={driverGrid} />
+          <p className="graphic-caption">Hover a point or flag for race detail.</p>
+        </div>
+      )}
+      {constructorGrid.rows.length > 0 && (
+        <div id="results-evolution-constructors">
+          <div className="flex items-start justify-between gap-4">
+            <div className="section-header">
+              <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+                Constructors Points Evolution
+              </h2>
+              <p className="text-sm">Cumulative points scored by each team across the season.</p>
+            </div>
+            <ShareButton
+              targetId="results-evolution-constructors"
+              fileName={`f1-constructors-evolution-${season}`}
+              label="the Constructors Points Evolution chart"
+            />
+          </div>
+          <ConstructorPointsEvolutionChart grid={constructorGrid} />
+          <p className="graphic-caption">Hover a point or flag for race detail.</p>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default async function ResultsPage({
@@ -109,6 +148,12 @@ export default async function ResultsPage({
             <ConstructorPointsGridSection season={season} />
           </Suspense>
         </section>
+
+        <div className="mt-8">
+          <Suspense fallback={<p className="text-sm">Loading…</p>}>
+            <EvolutionSection season={season} />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

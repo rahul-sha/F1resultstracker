@@ -17,9 +17,11 @@ language.
   marks a sprint weekend. Tables that overflow pan by clicking and
   dragging on desktop, or normal touch scrolling on phones — there's no
   separate scrollbar. Underneath both heatmaps, a Driver Points Evolution
-  chart plots each driver's cumulative points as a line across the
+  chart and a Constructors Points Evolution chart sit side by side, each
+  plotting cumulative points as a line per driver or team across the
   season, with each round's flag along the x-axis and a hover tooltip for
-  the exact total.
+  the exact total. The lines draw themselves in, round by round, the
+  first time the chart scrolls into view.
 - **Positions** (`/positions`) — where each driver finished each race
   (not points), with a median-finish summary, followed by how often each
   driver finished in each position across the season (with a DNF count),

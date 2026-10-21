@@ -1370,3 +1370,54 @@ html::-webkit-scrollbar {
     transition: none;
   }
 }
+
+/* Points Evolution charts (Results page): each line draws itself in,
+   left to right, the first time the chart scrolls into view — stroke-
+   dasharray/dashoffset over a normalized pathLength="1" so the reveal
+   fraction tracks x-position regardless of each line's actual length.
+   Staggered slightly per driver (PointsEvolutionChart.tsx) for a
+   cars-off-the-grid feel rather than every line snapping in at once. */
+.evo-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .evo-line {
+    transition-property: stroke-dashoffset;
+    transition-timing-function: cubic-bezier(0.3, 0.7, 0.4, 1);
+  }
+}
+.evo-line-shown {
+  stroke-dashoffset: 0;
+}
+.evo-dot {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .evo-dot {
+    transition-property: opacity;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
+  }
+}
+.evo-dot-shown {
+  opacity: 1;
+}
+
+/* Results page: Driver/Constructors evolution charts sit side by side on
+   a wide screen instead of each taking the full page width; narrower than
+   ~900px there isn't room for two useful chart widths, so they stack. */
+.evolution-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.evolution-row > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+@media (max-width: 900px) {
+  .evolution-row {
+    flex-direction: column;
+  }
+}
