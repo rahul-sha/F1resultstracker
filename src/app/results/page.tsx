@@ -45,59 +45,58 @@ async function ConstructorPointsGridSection({ season }: { season: number }) {
   return <ConstructorPointsHeatmap grid={grid} />;
 }
 
-// buildPointsGrid/buildConstructorPointsGrid's underlying fetches are all
-// wrapped in React's cache() (ergast.ts), so re-calling them here for the
-// same season costs no extra network requests — the schedule/standings/
-// results already fetched for the heatmap sections above are reused.
-async function EvolutionSection({ season }: { season: number }) {
-  const [driverGrid, constructorGrid] = await Promise.all([
-    buildPointsGrid(season),
-    buildConstructorPointsGrid(season),
-  ]);
-
-  if (driverGrid.rows.length === 0 && constructorGrid.rows.length === 0) return null;
+// buildPointsGrid's underlying fetches are all wrapped in React's cache()
+// (ergast.ts), so re-calling it here for the same season costs no extra
+// network requests — the schedule/standings/results already fetched for
+// the heatmap section above are reused.
+async function DriverEvolutionSection({ season }: { season: number }) {
+  const grid = await buildPointsGrid(season);
+  if (grid.rows.length === 0) return null;
 
   return (
-    <div className="evolution-row">
-      {driverGrid.rows.length > 0 && (
-        <div id="results-evolution-drivers" data-rail-label="Points evolution">
-          <div className="flex items-start justify-between gap-4">
-            <div className="section-header">
-              <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-                Driver Points Evolution
-              </h2>
-              <p className="text-sm">Cumulative points scored by each driver across the season.</p>
-            </div>
-            <ShareButton
-              targetId="results-evolution-drivers"
-              fileName={`f1-points-evolution-${season}`}
-              label="the Driver Points Evolution chart"
-            />
-          </div>
-          <DriverPointsEvolutionChart grid={driverGrid} />
-          <p className="graphic-caption">Hover a point or flag for race detail.</p>
+    <>
+      <div className="flex items-start justify-between gap-4">
+        <div className="section-header">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+            Driver Points Evolution
+          </h2>
+          <p className="text-sm">Cumulative points scored by each driver across the season.</p>
         </div>
-      )}
-      {constructorGrid.rows.length > 0 && (
-        <div id="results-evolution-constructors">
-          <div className="flex items-start justify-between gap-4">
-            <div className="section-header">
-              <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-                Constructors Points Evolution
-              </h2>
-              <p className="text-sm">Cumulative points scored by each team across the season.</p>
-            </div>
-            <ShareButton
-              targetId="results-evolution-constructors"
-              fileName={`f1-constructors-evolution-${season}`}
-              label="the Constructors Points Evolution chart"
-            />
-          </div>
-          <ConstructorPointsEvolutionChart grid={constructorGrid} />
-          <p className="graphic-caption">Hover a point or flag for race detail.</p>
+        <ShareButton
+          targetId="results-evolution-drivers"
+          fileName={`f1-points-evolution-${season}`}
+          label="the Driver Points Evolution chart"
+        />
+      </div>
+      <DriverPointsEvolutionChart grid={grid} />
+      <p className="graphic-caption">Hover a point or flag for race detail.</p>
+    </>
+  );
+}
+
+// Same cache()-backed reuse as above, for the constructor standings data.
+async function ConstructorEvolutionSection({ season }: { season: number }) {
+  const grid = await buildConstructorPointsGrid(season);
+  if (grid.rows.length === 0) return null;
+
+  return (
+    <>
+      <div className="flex items-start justify-between gap-4">
+        <div className="section-header">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+            Constructors Points Evolution
+          </h2>
+          <p className="text-sm">Cumulative points scored by each team across the season.</p>
         </div>
-      )}
-    </div>
+        <ShareButton
+          targetId="results-evolution-constructors"
+          fileName={`f1-constructors-evolution-${season}`}
+          label="the Constructors Points Evolution chart"
+        />
+      </div>
+      <ConstructorPointsEvolutionChart grid={grid} />
+      <p className="graphic-caption">Hover a point or flag for race detail.</p>
+    </>
   );
 }
 
@@ -149,9 +148,15 @@ export default async function ResultsPage({
           </Suspense>
         </section>
 
-        <div className="mt-8">
+        <div id="results-evolution-drivers" data-rail-label="Points evolution" className="mt-8">
           <Suspense fallback={<p className="text-sm">Loading…</p>}>
-            <EvolutionSection season={season} />
+            <DriverEvolutionSection season={season} />
+          </Suspense>
+        </div>
+
+        <div id="results-evolution-constructors" className="mt-8">
+          <Suspense fallback={<p className="text-sm">Loading…</p>}>
+            <ConstructorEvolutionSection season={season} />
           </Suspense>
         </div>
       </div>

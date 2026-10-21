@@ -61,11 +61,9 @@ export default function AboutPage() {
             </li>
             <li>
               Added cumulative Driver and Constructors Points Evolution charts to the Results
-              page, side by side, with a race-by-race draw-in animation on scroll
-            </li>
-            <li>
-              Dropped the numeric y-axis on those charts in favour of a small points-total pill
-              beside each line, automatically spaced apart so they stay legible on a full field
+              page, each full width with its own points-total pill beside every line instead of
+              a numeric y-axis, and the whole chart draws itself in, race by race, left to right,
+              the first time it scrolls into view
             </li>
           </ul>
 
@@ -73,11 +71,22 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            35 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            36 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">36</span>
+                <b>Evolution charts: full width, full field, real sweep</b>
+                <span>
+                  Fixed a mobile layout bug on both evolution charts, split them back into
+                  separate full-width sections, grew the chart height so every driver and team
+                  gets its own points pill instead of cropping the field, and replaced the
+                  per-line fade-in with a single steady left-to-right sweep across the whole
+                  chart.
+                </span>
+              </li>
               <li>
                 <span className="seq">35</span>
                 <b>No-axis evolution charts, points bubbles</b>

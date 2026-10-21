@@ -1371,62 +1371,45 @@ html::-webkit-scrollbar {
   }
 }
 
-/* Points Evolution charts (Results page): each line draws itself in,
-   left to right, the first time the chart scrolls into view — stroke-
-   dasharray/dashoffset over a normalized pathLength="1" so the reveal
-   fraction tracks x-position regardless of each line's actual length.
-   Staggered slightly per driver (PointsEvolutionChart.tsx) for a
-   cars-off-the-grid feel rather than every line snapping in at once. */
-.evo-line {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
+/* Points Evolution charts (Results page): the whole chart — every line,
+   tonal fill and dot together — is revealed by a single clip-path wipe
+   growing left to right, the first time it scrolls into view, rather than
+   each line animating on its own. That keeps every driver/team in exact
+   sync with the "current round" the wipe has reached, so it reads as one
+   chart being plotted race by race instead of several lines fading in. */
+.evo-sweep-rect {
+  width: 0;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .evo-line {
-    transition-property: stroke-dashoffset;
-    /* M3's "emphasized decelerate" curve — a line drawing in should settle
-       smoothly, not bounce, or the dash mask visibly retracts partway. */
-    transition-timing-function: cubic-bezier(0.05, 0.7, 0.1, 1);
+  .evo-sweep-rect {
+    transition-property: width;
+    /* Linear, not an "emphasized decelerate" easing curve — that curve is
+       heavily front-loaded (~70% of the motion lands in the first 5% of
+       the duration), which reads as a near-instant jump rather than a
+       steady left-to-right pace. A constant speed is what actually looks
+       like the graph being plotted race by race. */
+    transition-timing-function: linear;
   }
 }
-.evo-line-shown {
-  stroke-dashoffset: 0;
+.evo-sweep-rect-shown {
+  width: var(--evo-sweep-width, 100%);
 }
-/* Tonal fill under each line — Material 3's actual signature (a tinted
-   container, not just a stroke on a blank plot), faded in alongside the
-   line rather than clipped to it, so it doesn't fight the dash reveal. */
-.evo-area {
-  opacity: 0;
+/* The wipe's moving leading edge — a brief highlight line travelling with
+   it as a visual cue that the line is actively being drawn, not just
+   appearing. Mounted only while the sweep is in progress
+   (PointsEvolutionChart.tsx), so it disappears cleanly once it arrives
+   rather than needing a second, separately-timed fade-out transition. */
+.evo-sweep-edge {
+  transform: translateX(0);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .evo-area {
-    transition-property: opacity;
-    transition-duration: 1.1s;
-    transition-timing-function: ease-out;
+  .evo-sweep-edge {
+    transition-property: transform;
+    transition-timing-function: linear;
   }
 }
-.evo-area-shown {
-  opacity: var(--evo-area-opacity, 0.14);
-}
-.evo-dot {
-  opacity: 0;
-  transform: scale(0.4);
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .evo-dot {
-    transition-property: opacity, transform;
-    transition-duration: 0.45s;
-    /* A slight overshoot on the pop-in — Material 3 Expressive's bouncier,
-       more tactile motion, reserved for this small discrete "arrival"
-       rather than the continuous line draw above. */
-    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-}
-.evo-dot-shown {
-  opacity: 1;
-  transform: scale(1);
+.evo-sweep-edge-shown {
+  transform: translateX(var(--evo-sweep-width, 0));
 }
 .evo-bubble {
   opacity: 0;
@@ -1440,22 +1423,4 @@ html::-webkit-scrollbar {
 }
 .evo-bubble-shown {
   opacity: 1;
-}
-
-/* Results page: Driver/Constructors evolution charts sit side by side on
-   a wide screen instead of each taking the full page width; narrower than
-   ~900px there isn't room for two useful chart widths, so they stack. */
-.evolution-row {
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-}
-.evolution-row > * {
-  flex: 1 1 0;
-  min-width: 0;
-}
-@media (max-width: 900px) {
-  .evolution-row {
-    flex-direction: column;
-  }
 }

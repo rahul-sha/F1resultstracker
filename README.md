@@ -16,17 +16,18 @@ language.
   next to the points value. A thin underline beneath a round's flag chip
   marks a sprint weekend. Tables that overflow pan by clicking and
   dragging on desktop, or normal touch scrolling on phones — there's no
-  separate scrollbar. Underneath both heatmaps, a Driver Points Evolution
-  chart and a Constructors Points Evolution chart sit side by side, each
-  plotting cumulative points as a line per driver or team across the
-  season, with each round's flag along the x-axis and a hover tooltip for
-  the exact total. There's no numeric y-axis; instead, each line ends in
-  a small pill showing that driver or team's live points total, nudged
-  apart with a thin leader line whenever two are close enough to overlap,
-  and only as many as the chart's height can fit cleanly get one (the
-  rest still have their line, dot and hover tooltip). The lines draw
-  themselves in, round by round, the first time the chart scrolls into
-  view.
+  separate scrollbar. Underneath both heatmaps sit a Driver Points
+  Evolution chart and, in its own section below, a Constructors Points
+  Evolution chart, each plotting cumulative points as a line per driver
+  or team across the season, with each round's flag along the x-axis and
+  a hover tooltip for the exact total. There's no numeric y-axis; instead,
+  every line ends in its own small pill showing that driver or team's
+  live points total, with a thin leader line back to the line whenever
+  rank order and value don't line up exactly — the chart grows tall
+  enough that the whole field gets a pill, nobody's cropped out. The
+  first time a chart scrolls into view, the whole thing draws itself in
+  as one steady wipe moving left to right, race by race, rather than
+  each line animating on its own.
 - **Positions** (`/positions`) — where each driver finished each race
   (not points), with a median-finish summary, followed by how often each
   driver finished in each position across the season (with a DNF count),
