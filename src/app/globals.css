@@ -1117,12 +1117,15 @@ body::after {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: var(--surface-3);
+  /* On the accent tint (same one used for .about-tag and the season pill)
+     rather than a flat surface colour, so the mark has enough contrast to
+     actually be scanned instead of blending into the credit row. */
+  background: var(--accent-container);
   display: flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  color: var(--accent);
+  color: var(--on-accent-container);
 }
 .credit-icon svg {
   width: 16px;
@@ -1160,26 +1163,36 @@ body::after {
 }
 .timeline li {
   position: relative;
-  padding: 0 0 16px 24px;
+  padding: 0 0 15px 28px;
 }
 .timeline li:last-child {
   padding-bottom: 12px;
 }
-.timeline li::before {
-  content: "";
+/* A round number per entry — its real position among every shipped round,
+   not a renumbered 1-2-3 — so skimming the rail answers "how far back
+   does this go" without reading every entry. Dropped (minor) rounds leave
+   gaps in the count on purpose; see about/page.tsx. */
+.timeline .seq {
   position: absolute;
-  left: 3px;
-  top: 4px;
-  width: 8px;
-  height: 8px;
+  left: 0;
+  top: -1px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   background: var(--accent);
+  color: var(--surface-1);
+  font-size: 8.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .timeline li::after {
   content: "";
   position: absolute;
-  left: 6.5px;
-  top: 14px;
+  left: 8px;
+  top: 18px;
   bottom: 0;
   width: 1px;
   background: var(--gridline);
@@ -1197,4 +1210,9 @@ body::after {
   color: var(--text-secondary);
   font-size: 12.5px;
   line-height: 1.5;
+}
+.timeline-count {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin: 0 0 10px;
 }
