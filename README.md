@@ -9,6 +9,16 @@ language.
 
 ## Pages
 
+- **Home / Grid Walk** (`/`) — the site's entry point: a drag-navigable
+  3D scene rather than a page of links. The whole view sits "inside" a
+  sphere; click and drag to look around (the content follows the cursor
+  direction), and click a card to open Results, Positions or About. A
+  cursor-reactive distortion effect ripples a faint ring pattern in the
+  background, over the same drifting glow used site-wide. The cards show
+  live numbers for the selected season (leading driver, leading team,
+  most podiums) pulled from the same data the heatmap pages use — nothing
+  about Results, Positions or About itself changed; this is a new front
+  door in front of them.
 - **Results** (`/results`) — every driver's points for each round of a
   season, shaded by magnitude, with a season points total bar per driver,
   and a matching per-race heatmap for Constructors underneath. Pole
@@ -72,16 +82,19 @@ the footer is still reached by scrolling normally.
 
 ## Navigation
 
-A single floating nav bar is used at every screen size — there's no
-separate desktop top bar and mobile dock, just one component. Results,
-Positions and About sit in a horizontally scrollable tab strip (hidden
-scrollbar; on narrow screens every tab, including the active one, is
-icon-only, so the bar stays a constant width across pages), the season
-selector stays pinned beside them, and a hamburger button grows the bar
-itself into a panel holding the theme and palette toggles. The bar sits
-at the bottom of the viewport on narrow screens and at the top on wider
-ones, with the hamburger panel opening in whichever direction (up or
-down) keeps it growing away from the screen edge the bar is pinned to.
+A single floating nav bar is used at every screen size on every page
+except the home page itself — there's no separate desktop top bar and
+mobile dock, just one component. Home, Results, Positions and About sit
+in a horizontally scrollable tab strip (hidden scrollbar; on narrow
+screens every tab, including the active one, is icon-only, so the bar
+stays a constant width across pages), the season selector stays pinned
+beside them, and a hamburger button grows the bar itself into a panel
+holding the theme and palette toggles. The bar sits at the bottom of the
+viewport on narrow screens and at the top on wider ones, with the
+hamburger panel opening in whichever direction (up or down) keeps it
+growing away from the screen edge the bar is pinned to. The home page
+hides this bar entirely — Grid Walk's drag-and-click cards are the
+navigation there, and a Home tab on every other page leads back to it.
 
 ## Getting started
 

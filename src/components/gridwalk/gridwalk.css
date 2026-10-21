@@ -1,0 +1,215 @@
+/* Grid Walk — the homepage's drag-navigable "inside a sphere" entry point.
+   Approved mockup: https://claude.ai/artifact/SHvgW42hZqafacxS6jMBvE
+   See project memory "3d-mockup-exploration" for the interaction history. */
+
+.gw-wrap {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: var(--page-plane);
+}
+
+.gw-wrap.dragging {
+  cursor: grabbing;
+}
+
+.gw-pulse-a,
+.gw-pulse-b {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.gw-pulse-a {
+  width: 60vmax;
+  height: 60vmax;
+  left: -10vmax;
+  top: -15vmax;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 28%, transparent), transparent 70%);
+  animation: gw-drift-a 22s ease-in-out infinite;
+}
+
+.gw-pulse-b {
+  width: 50vmax;
+  height: 50vmax;
+  right: -12vmax;
+  bottom: -10vmax;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%);
+  animation: gw-drift-b 26s ease-in-out infinite;
+}
+
+@keyframes gw-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6vmax, 4vmax) scale(1.08); }
+}
+
+@keyframes gw-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-5vmax, -5vmax) scale(1.1); }
+}
+
+.gw-distort {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  background-image: repeating-radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--accent) 55%, transparent) 0px,
+    color-mix(in srgb, var(--accent) 55%, transparent) 2px,
+    transparent 2px,
+    transparent 34px
+  );
+  opacity: 0.16;
+  filter: url(#gw-distortion-filter);
+  mask-image: radial-gradient(circle 420px at var(--mx, 50%) var(--my, 50%), black, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle 420px at var(--mx, 50%) var(--my, 50%), black, transparent 70%);
+}
+
+.gw-stage {
+  position: absolute;
+  inset: 0;
+  perspective: 1000px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gw-rig {
+  position: relative;
+  width: 1px;
+  height: 1px;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.gw-headline {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) translateZ(-420px);
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.gw-headline h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.gw-headline p {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.gw-pin {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220px;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  border: 1px solid var(--border-hairline);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.gw-pin:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border-hairline));
+}
+
+.gw-pin:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.gw-pin-icon {
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  display: inline-flex;
+}
+
+.gw-pin h2 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gw-pin p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.gw-chip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-container) 92%, transparent);
+  color: var(--on-accent-container);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.gw-quote {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: 180px;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-muted);
+  pointer-events: none;
+  text-align: center;
+}
+
+.gw-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 2rem;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gw-pulse-a,
+  .gw-pulse-b {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .gw-pin {
+    width: 170px;
+    padding: 0.8rem 0.9rem;
+  }
+  .gw-headline h1 {
+    font-size: 1.4rem;
+  }
+}
