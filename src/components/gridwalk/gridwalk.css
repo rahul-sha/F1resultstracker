@@ -148,12 +148,16 @@
   outline-offset: 2px;
 }
 
-/* The dived-into card itself fades out in place — the overlay (a separate
-   element outside the 3D rig) is what actually grows to fill the screen,
-   so this one just needs to get out of the way. */
-.gw-card-active,
 .gw-faded {
   opacity: 0;
+  pointer-events: none;
+}
+
+/* The dived-into card itself is hidden imperatively (inline style, see
+   GridWalk.tsx) at the exact instant the overlay takes its place — not
+   here — so this only blocks it from being clicked/hovered again while
+   that handoff is in progress. */
+.gw-card-inert {
   pointer-events: none;
 }
 

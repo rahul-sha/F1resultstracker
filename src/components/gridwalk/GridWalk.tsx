@@ -52,6 +52,7 @@ type SectionDef = {
   id: string;
   x: number;
   y: number;
+  z: number;
   eyebrow: string;
   tabColor: string;
   title: string;
@@ -74,10 +75,14 @@ const TRAVEL_EASE = 0.12; // per-frame lerp factor for the "jump to" camera trav
 const DIVE_MS = 700;
 const DIVE_EASE = "cubic-bezier(.22,.7,.2,1)";
 // How long to let the camera travel toward a dived-into card before
-// measuring its rect and growing it — long enough for TRAVEL_EASE to
-// converge (see 3d-mockup-exploration memory), short enough to still feel
-// like one continuous motion.
-const DIVE_SETTLE_MS = 500;
+// measuring its rect and growing it — needs to exceed how long
+// TRAVEL_EASE actually takes to converge (see 3d-mockup-exploration
+// memory: ~750ms+ for a large yaw/pitch offset at this ease factor), or
+// the overlay snaps onto a rect the card hasn't finished traveling to —
+// it then visibly jumps to the wrong spot right as it starts growing,
+// which reads as a second element appearing rather than the same card
+// continuing to zoom.
+const DIVE_SETTLE_MS = 820;
 
 function clamp(v: number, b: number) {
   return Math.max(-b, Math.min(b, v));
@@ -151,8 +156,9 @@ export default function GridWalk({
   const sections: SectionDef[] = [
     {
       id: "results",
-      x: -42,
-      y: 13,
+      x: -46,
+      y: 18,
+      z: 0,
       eyebrow: "/results",
       tabColor: "#ff8000",
       title: "Results",
@@ -165,8 +171,9 @@ export default function GridWalk({
     },
     {
       id: "constructors",
-      x: -14,
-      y: 13,
+      x: -20,
+      y: 6,
+      z: 15,
       eyebrow: "/results",
       tabColor: "#ff8000",
       title: "Constructors",
@@ -178,8 +185,9 @@ export default function GridWalk({
     },
     {
       id: "evolution",
-      x: 14,
-      y: 13,
+      x: 10,
+      y: 22,
+      z: -8,
       eyebrow: "/results",
       tabColor: "#66d9ef",
       title: "Points Evolution",
@@ -191,8 +199,9 @@ export default function GridWalk({
     },
     {
       id: "positions",
-      x: 42,
-      y: 13,
+      x: 38,
+      y: 9,
+      z: 10,
       eyebrow: "/positions",
       tabColor: "#3671c6",
       title: "Positions",
@@ -204,8 +213,9 @@ export default function GridWalk({
     },
     {
       id: "finishfreq",
-      x: -42,
-      y: -15,
+      x: -33,
+      y: -20,
+      z: 5,
       eyebrow: "/positions",
       tabColor: "#3671c6",
       title: "Finish Frequency",
@@ -217,8 +227,9 @@ export default function GridWalk({
     },
     {
       id: "qualifreq",
-      x: -14,
-      y: -15,
+      x: -2,
+      y: -9,
+      z: 20,
       eyebrow: "/positions",
       tabColor: "#00d2be",
       title: "Qualifying Frequency",
@@ -230,8 +241,9 @@ export default function GridWalk({
     },
     {
       id: "podiumsD",
-      x: 14,
-      y: -15,
+      x: 24,
+      y: -26,
+      z: -5,
       eyebrow: "/positions",
       tabColor: "#ff8000",
       title: "Driver Podiums",
@@ -254,8 +266,9 @@ export default function GridWalk({
     },
     {
       id: "podiumsT",
-      x: 42,
-      y: -15,
+      x: 48,
+      y: -6,
+      z: 12,
       eyebrow: "/positions",
       tabColor: "#f92672",
       title: "Constructor Podiums",
@@ -432,6 +445,14 @@ export default function GridWalk({
       overlay.style.width = `${rect.width}px`;
       overlay.style.height = `${rect.height}px`;
       setOverlayShown(true);
+      // The real card stays fully visible up to this exact instant (it
+      // isn't faded by React state — see the className below) so it
+      // visibly travels with the camera into place; only now, with the
+      // overlay sitting at the identical on-screen rect, do we swap which
+      // one is showing. That swap is invisible, so what the viewer sees is
+      // one continuous object that then grows — not a card disappearing
+      // and a different element opening in its place.
+      el.style.opacity = "0";
       // Force layout so the browser registers the start rect before the
       // transition below is applied — otherwise it would animate from
       // whatever the overlay's previous (or default) box was instead.
@@ -462,6 +483,12 @@ export default function GridWalk({
     overlay.style.height = `${rect.height}px`;
 
     window.setTimeout(() => {
+      // Swap back the instant before the overlay goes away, at the same
+      // rect it grew from, so this reverses as the same invisible swap.
+      if (activeId) {
+        const el = cardRefs.current[activeId];
+        if (el) el.style.opacity = "";
+      }
       setOverlayShown(false);
       setActiveId(null);
       restRectRef.current = null;
@@ -501,10 +528,15 @@ export default function GridWalk({
               }}
               className={
                 "gw-card" +
-                (section.id === activeId ? " gw-card-active" : "") +
+                // The active card is left alone here (no opacity change) so
+                // it stays fully visible while the camera travels toward it
+                // — diveInto hides it imperatively, later, at the exact
+                // instant the overlay is ready to take its place. "Inert"
+                // only blocks clicks/hover during that travel.
+                (section.id === activeId ? " gw-card-inert" : "") +
                 (diving && section.id !== activeId ? " gw-faded" : "")
               }
-              style={placeStyle(section.x, section.y)}
+              style={placeStyle(section.x, section.y, section.z)}
               onClick={() => diveInto(section)}
               onPointerEnter={() => setHoveredId(section.id)}
               onPointerLeave={() => setHoveredId((cur) => (cur === section.id ? null : cur))}
