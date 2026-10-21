@@ -4,6 +4,7 @@ import { buildConstructorPointsGrid } from "@/lib/constructor-points-grid";
 import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
 import PointsHeatmap from "@/components/PointsHeatmap";
 import ConstructorPointsHeatmap from "@/components/ConstructorPointsHeatmap";
+import DriverPointsEvolutionChart from "@/components/DriverPointsEvolutionChart";
 import ShareButton from "@/components/ShareButton";
 
 export const metadata = { title: "Results | F1 Results Tracker" };
@@ -19,7 +20,32 @@ async function PointsGridSection({ season }: { season: number }) {
     );
   }
 
-  return <PointsHeatmap grid={grid} />;
+  return (
+    <>
+      <PointsHeatmap grid={grid} />
+      <p className="graphic-caption">
+        Hover a race header for details; underlined races include a sprint.
+      </p>
+
+      <section id="results-evolution" data-rail-label="Points evolution" className="mt-8">
+        <div className="flex items-start justify-between gap-4">
+          <div className="section-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Driver Points Evolution
+            </h2>
+            <p className="text-sm">Cumulative points scored by each driver across the season.</p>
+          </div>
+          <ShareButton
+            targetId="results-evolution"
+            fileName={`f1-points-evolution-${season}`}
+            label="the Driver Points Evolution chart"
+          />
+        </div>
+        <DriverPointsEvolutionChart grid={grid} />
+        <p className="graphic-caption">Hover a point or flag for race detail.</p>
+      </section>
+    </>
+  );
 }
 
 async function ConstructorPointsGridSection({ season }: { season: number }) {
@@ -67,9 +93,6 @@ export default async function ResultsPage({
           >
             <PointsGridSection season={season} />
           </Suspense>
-          <p className="graphic-caption">
-            Hover a race header for details; underlined races include a sprint.
-          </p>
         </div>
 
         <section id="results-constructors" data-rail-label="Constructors" className="mt-8">

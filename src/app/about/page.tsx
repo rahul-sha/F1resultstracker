@@ -59,17 +59,29 @@ export default function AboutPage() {
               Added a share button to every graphic, so it can be saved, copied or shared
               straight from the page
             </li>
+            <li>
+              Added a cumulative Driver Points Evolution chart to the Results page, one line per
+              driver across the season
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            32 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            33 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">33</span>
+                <b>Driver Points Evolution chart</b>
+                <span>
+                  A cumulative points line chart under the Results heatmap, one line per driver
+                  with race flags along the x-axis.
+                </span>
+              </li>
               <li>
                 <span className="seq">32</span>
                 <b>Real bio, timeline tidy-up</b>
