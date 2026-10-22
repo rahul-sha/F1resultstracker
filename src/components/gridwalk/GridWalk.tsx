@@ -62,15 +62,6 @@ const DRAG_THRESHOLD = 6; // px of movement before a pointerdown counts as a dra
 const TRAVEL_EASE = 0.12; // per-frame lerp factor for the "jump to" camera travel
 const DIVE_MS = 700;
 const DIVE_EASE = "cubic-bezier(.22,.7,.2,1)";
-// How long to let the camera travel toward a dived-into card before
-// measuring its rect and growing it — needs to exceed how long
-// TRAVEL_EASE actually takes to converge (see 3d-mockup-exploration
-// memory: ~750ms+ for a large yaw/pitch offset at this ease factor), or
-// the dive snaps onto a rect the card hasn't finished traveling to — it
-// then visibly jumps to the wrong spot right as it starts growing, which
-// reads as a second element appearing rather than the same card
-// continuing to zoom.
-const DIVE_SETTLE_MS = 820;
 // A card's DOM is laid out at this size always — see the .gw-card rule's
 // comment. PREVIEW_SCALE is just what shrinks that natural size down to
 // a sphere-card-sized footprint at rest.
@@ -105,6 +96,19 @@ function clamp(v: number, b: number) {
 // "grid-walk-8-section-redesign" memory for why the earlier box-morph
 // overlay version read as "opening a new element" even after its own
 // pop/timing bugs were fixed.
+//
+// The FLIP itself starts in the same tick as the click — there is no
+// camera-travel-then-dive handoff. An earlier version rotated the camera
+// toward the clicked card first and only started the FLIP once that
+// settled, which Rahul (shown a Miro recording of zooming into a sticky
+// note) correctly read as two animations, not one. diveInto now snaps
+// the camera to the card's angle with no easing, purely so it's already
+// facing the right way if the user dives back out — it has no visible
+// effect, since the card is reparented out of the rig before the browser
+// ever paints that frame. The FLIP transform also needs transform-origin
+// pinned to the card's own top-left (see diveInto/diveOut) — with the
+// CSS default (centre), translate+scale doesn't land the box at a given
+// rect, which was a real, separate bug this surfaced.
 export default function GridWalk({
   season,
   driverLeader,
@@ -283,6 +287,24 @@ export default function GridWalk({
     vPitch.current = 0;
   }
 
+  // Snaps the camera straight to a card's angle, with no easing and no
+  // visible transition. Used only so the sphere is already facing the
+  // right way if the user dives back out — diveInto reparents the card
+  // out of the rig before the browser paints the next frame, so this has
+  // zero effect on the dive itself. Unlike travelTo, it doesn't animate,
+  // which is the point: an eased camera move is what made diving read as
+  // two animations instead of one.
+  function snapCameraTo(yaw: number, pitch: number) {
+    travelTarget.current = null;
+    vYaw.current = 0;
+    vPitch.current = 0;
+    camYaw.current = clamp(yaw, BOUND_YAW);
+    camPitch.current = clamp(pitch, BOUND_PITCH);
+    if (rigRef.current) {
+      rigRef.current.style.transform = `scale(${ZOOM}) rotateX(${camPitch.current}deg) rotateY(${-camYaw.current}deg)`;
+    }
+  }
+
   useEffect(() => {
     const wrap = wrapRef.current;
     const rig = rigRef.current;
@@ -444,59 +466,62 @@ export default function GridWalk({
   function diveInto(section: SectionDef) {
     if (dragMoved.current || diving) return;
     setActiveId(section.id);
-    travelTo(section.x, section.y);
 
-    window.setTimeout(() => {
-      const el = cardRefs.current[section.id];
-      if (!el || !rigRef.current) return;
+    const el = cardRefs.current[section.id];
+    if (!el || !rigRef.current) return;
 
-      // Measure the card at its current, still-on-the-sphere on-screen
-      // rect ("First"), then reparent it to <body> at its real natural
-      // size ("Last" — nothing about its own layout changes, only where
-      // it lives in the DOM) and immediately apply a transform that makes
-      // it visually occupy exactly the First rect ("Invert"), before a
-      // single frame paints. Playing that transform back to identity is
-      // the "Play" step below.
-      const firstRect = el.getBoundingClientRect();
-      restRectRef.current = { left: firstRect.left, top: firstRect.top, width: firstRect.width, height: firstRect.height };
+    // Measure the card at its current, still-on-the-sphere on-screen
+    // rect ("First"), then reparent it to <body> at its real natural
+    // size ("Last" — nothing about its own layout changes, only where
+    // it lives in the DOM) and immediately apply a transform that makes
+    // it visually occupy exactly the First rect ("Invert"), before a
+    // single frame paints. Playing that transform back to identity is
+    // the "Play" step below. This all happens synchronously, in the same
+    // tick as the click — the camera reorients in the background via
+    // snapCameraTo below, but nothing here waits on it.
+    const firstRect = el.getBoundingClientRect();
+    restRectRef.current = { left: firstRect.left, top: firstRect.top, width: firstRect.width, height: firstRect.height };
 
-      reparented.current = { el, originalParent: rigRef.current };
-      document.body.appendChild(el);
-      el.classList.add("gw-card-diving");
-      el.style.transition = "none";
-      el.style.position = "fixed";
-      el.style.margin = "0";
-      el.style.zIndex = "45";
-      el.style.left = "0";
-      el.style.top = "0";
+    snapCameraTo(section.x, section.y);
 
-      // Scale the card's own natural size to fit the viewport (never its
-      // width/height — those stay NATURAL_W/NATURAL_H always), then
-      // centre it. This is the only screen-size adaptation here, and it's
-      // still one uniform scale, so zooming back out to wherever the card
-      // sits at rest is one continuous transform the whole way, not two
-      // different kinds of animation stitched together.
-      const fitScale = Math.min(1, (window.innerWidth * 0.92) / NATURAL_W, (window.innerHeight * 0.9) / NATURAL_H);
-      const targetW = NATURAL_W * fitScale;
-      const targetH = NATURAL_H * fitScale;
-      const targetL = (window.innerWidth - targetW) / 2;
-      const targetT = (window.innerHeight - targetH) / 2;
+    reparented.current = { el, originalParent: rigRef.current };
+    document.body.appendChild(el);
+    el.style.transition = "none";
+    el.style.position = "fixed";
+    el.style.margin = "0";
+    el.style.zIndex = "45";
+    el.style.left = "0";
+    el.style.top = "0";
+    // translate+scale only places an element at a given rect when the
+    // transform originates from its top-left corner — the CSS default is
+    // the element's centre, which silently drifts the math by however far
+    // off-centre the card is. Pin it for the whole dive.
+    el.style.transformOrigin = "0 0";
 
-      const scale = firstRect.width / targetW;
-      const dx = firstRect.left + firstRect.width / 2 - (targetL + targetW / 2);
-      const dy = firstRect.top + firstRect.height / 2 - (targetT + targetH / 2);
-      el.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${scale.toFixed(4)})`;
-      // Force layout/paint before the "Play" step below, or the browser
-      // never registers this Invert transform as a starting point and the
-      // transition animates from whatever the element's previous
-      // transform was instead.
-      void el.offsetHeight;
+    // Scale the card's own natural size to fit the viewport (never its
+    // width/height — those stay NATURAL_W/NATURAL_H always), then
+    // centre it. This is the only screen-size adaptation here, and it's
+    // still one uniform scale, so zooming back out to wherever the card
+    // sits at rest is one continuous transform the whole way, not two
+    // different kinds of animation stitched together.
+    const fitScale = Math.min(1, (window.innerWidth * 0.92) / NATURAL_W, (window.innerHeight * 0.9) / NATURAL_H);
+    const targetW = NATURAL_W * fitScale;
+    const targetH = NATURAL_H * fitScale;
+    const targetL = (window.innerWidth - targetW) / 2;
+    const targetT = (window.innerHeight - targetH) / 2;
 
-      stageRef.current?.classList.add("gw-dive-dim");
+    const scale = firstRect.width / NATURAL_W;
+    el.style.transform = `translate(${firstRect.left.toFixed(1)}px, ${firstRect.top.toFixed(1)}px) scale(${scale.toFixed(4)})`;
+    // Force layout/paint before the "Play" step below, or the browser
+    // never registers this Invert transform as a starting point and the
+    // transition animates from whatever the element's previous
+    // transform was instead.
+    void el.offsetHeight;
 
-      el.style.transition = `transform ${DIVE_MS}ms ${DIVE_EASE}, border-color 0.15s ease`;
-      el.style.transform = `translate(${targetL.toFixed(1)}px, ${targetT.toFixed(1)}px) scale(${fitScale.toFixed(4)})`;
-    }, DIVE_SETTLE_MS);
+    stageRef.current?.classList.add("gw-dive-dim");
+
+    el.style.transition = `transform ${DIVE_MS}ms ${DIVE_EASE}, border-color 0.15s ease`;
+    el.style.transform = `translate(${targetL.toFixed(1)}px, ${targetT.toFixed(1)}px) scale(${fitScale.toFixed(4)})`;
   }
 
   function diveOut() {
@@ -507,13 +532,9 @@ export default function GridWalk({
 
     stageRef.current?.classList.remove("gw-dive-dim");
 
-    const current = el.getBoundingClientRect();
-    const scale = rect.width / current.width;
-    const dx = rect.left + rect.width / 2 - (current.left + current.width / 2);
-    const dy = rect.top + rect.height / 2 - (current.top + current.height / 2);
-
+    const scale = rect.width / NATURAL_W;
     el.style.transition = `transform ${DIVE_MS}ms ${DIVE_EASE}, border-color 0.15s ease`;
-    el.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${scale.toFixed(4)})`;
+    el.style.transform = `translate(${rect.left.toFixed(1)}px, ${rect.top.toFixed(1)}px) scale(${scale.toFixed(4)})`;
 
     window.setTimeout(() => {
       // Hand the card back to the rig at its usual sphere position. The
@@ -528,7 +549,7 @@ export default function GridWalk({
       el.style.left = "";
       el.style.top = "";
       el.style.zIndex = "";
-      el.classList.remove("gw-card-diving");
+      el.style.transformOrigin = "";
       if (section) el.style.transform = cardRestTransform(section);
       originalParent.appendChild(el);
       reparented.current = null;
@@ -573,7 +594,14 @@ export default function GridWalk({
                 // Applied for the whole dive (both the camera-travel wait
                 // and the grown view), so the active card can't be
                 // clicked/hovered again while that's in progress.
-                (section.id === activeId ? " gw-card-inert" : "") +
+                // Both classes last the whole dive. They're driven by
+                // activeId (React-rendered) rather than toggled
+                // imperatively in diveInto/diveOut, because an imperative
+                // classList.add right before diveInto's reparent gets
+                // wiped out by the re-render that setActiveId itself
+                // schedules moments later — React overwrites className
+                // wholesale on every render of this element.
+                (section.id === activeId ? " gw-card-inert gw-card-diving" : "") +
                 (diving && section.id !== activeId ? " gw-faded" : "")
               }
               style={cardPlaceStyle(section)}
