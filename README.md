@@ -15,15 +15,17 @@ language.
   direction). Eight cards sit on the sphere, one per data section —
   Results, Constructors, Points Evolution, Positions, Finish Frequency,
   Qualifying Frequency, Driver Podiums and Constructor Podiums — each
-  showing a live preview for the selected season. Clicking a card doesn't
-  open a new page: the same card grows to fill the screen in place,
-  revealing the real heatmap, chart, grid or podium bars for that
-  section, like zooming into a photo; a Back button shrinks it back down.
-  About stays its own page, linked from the top bar. A cursor-reactive
-  distortion effect ripples a faint ring pattern in the background, over
-  the same drifting glow used site-wide. Results and Positions keep their
-  own full pages too — Grid Walk's cards reuse the exact same data and
-  components rather than duplicating them.
+  one *is* its real heatmap, chart, grid or podium bars for the selected
+  season, just shown small. Clicking a card, or its pill in the "Jump to"
+  bar, doesn't open a new page or swap in a separate detail view: the
+  same card simply grows to fill the screen in place, like zooming into a
+  photo, with the background blurring behind it; a Back button shrinks it
+  back down to exactly where it started. About stays its own page, linked
+  from the top bar. A cursor-reactive distortion effect ripples a faint
+  ring pattern in the background, over the same drifting glow used
+  site-wide. Results and Positions keep their own full pages too — Grid
+  Walk's cards reuse the exact same data and components rather than
+  duplicating them.
 - **Results** (`/results`) — every driver's points for each round of a
   season, shaded by magnitude, with a season points total bar per driver,
   and a matching per-race heatmap for Constructors underneath. Pole

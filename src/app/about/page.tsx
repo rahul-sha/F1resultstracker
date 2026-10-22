@@ -76,11 +76,24 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            38 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            39 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">39</span>
+                <b>Grid Walk: true one-object zoom</b>
+                <span>
+                  Reworked how a Grid Walk card zooms in: each card&apos;s real content &mdash;
+                  the actual heatmap, chart or bars, not a separate mini preview &mdash; is always
+                  there, just shown small at rest; diving simply removes that scale, so it&apos;s
+                  one continuous object the whole time rather than a small card swapping for a
+                  different detail view. The &ldquo;Jump to&rdquo; bar&apos;s section buttons now
+                  dive straight into that section too, instead of only moving the camera there.
+                  Mocked up and approved before shipping.
+                </span>
+              </li>
               <li>
                 <span className="seq">38</span>
                 <b>Grid Walk: eight sections, zoom-in cards</b>
