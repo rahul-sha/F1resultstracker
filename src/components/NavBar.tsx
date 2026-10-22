@@ -6,12 +6,10 @@ import { usePathname } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 import AccentToggle from "./AccentToggle";
 import SeasonSelector from "./SeasonSelector";
-import { HomeIcon, ResultsIcon, PositionsIcon, AboutIcon, MenuIcon, CloseIcon } from "./nav-icons";
+import { HomeIcon, AboutIcon, MenuIcon, CloseIcon } from "./nav-icons";
 
 const NAV_TABS = [
   { label: "Home", href: "/", icon: <HomeIcon /> },
-  { label: "Results", href: "/results", icon: <ResultsIcon /> },
-  { label: "Positions", href: "/positions", icon: <PositionsIcon /> },
   { label: "About", href: "/about", icon: <AboutIcon /> },
 ];
 

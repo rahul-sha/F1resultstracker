@@ -78,17 +78,31 @@ export default function AboutPage() {
               Drew a live grid behind Grid Walk in the theme&rsquo;s own colours that bends and
               glows round the cursor, ripples on each press, and carries the odd telemetry pulse
             </li>
+            <li>
+              Retired the old Results and Positions pages once Grid Walk carried all of their
+              graphics, redirecting their links home
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            46 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            47 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">47</span>
+                <b>Old Results and Positions pages retired</b>
+                <span>
+                  With every graphic now living on Grid Walk&rsquo;s cards, the standalone Results
+                  and Positions pages are gone, along with the section rail and pull-to-next-page
+                  gesture that only served them. Old links to either page land on Grid Walk
+                  instead.
+                </span>
+              </li>
               <li>
                 <span className="seq">46</span>
                 <b>A live grid behind Grid Walk</b>

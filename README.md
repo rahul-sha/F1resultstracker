@@ -32,37 +32,9 @@ language.
   cursor or a finger, sends a ring outwards on each click or tap, drifts
   with the strip as you browse and zoom, and carries the odd accent
   "telemetry" streak along its lines (all motion switches off under
-  reduced-motion settings). Results and Positions keep their own full pages too —
-  Grid Walk's cards reuse the exact same data and components rather than
-  duplicating them.
-- **Results** (`/results`) — every driver's points for each round of a
-  season, shaded by magnitude, with a season points total bar per driver,
-  and a matching per-race heatmap for Constructors underneath. Pole
-  position and fastest lap are marked with a small "P"/"F" superscript
-  next to the points value. A thin underline beneath a round's flag chip
-  marks a sprint weekend. Tables that overflow pan by clicking and
-  dragging on desktop, or normal touch scrolling on phones — there's no
-  separate scrollbar. Underneath both heatmaps sit a Driver Points
-  Evolution chart and, in its own section below, a Constructors Points
-  Evolution chart, each plotting cumulative points as a smoothly curved
-  line per driver or team across the season, with each round's flag
-  along the x-axis and a hover tooltip for the exact total. There's no
-  numeric y-axis; instead, every line ends in its own small pill showing
-  that driver or team's live points total, with a thin leader line back
-  to the line whenever rank order and value don't line up exactly — the
-  chart grows tall enough that the whole field gets a pill, nobody's
-  cropped out. The plot's width stretches to fill the space next to that
-  points column rather than using a fixed size, falling back to a
-  horizontal scroll only once there isn't room to space every round out
-  legibly.
-- **Positions** (`/positions`) — where each driver finished each race
-  (not points), with a median-finish summary, followed by how often each
-  driver finished in each position across the season (with a DNF count),
-  a Qualifying frequency heatmap in the same style (ranked by average
-  qualifying position rather than the championship standings, so it shows
-  qualifying form on its own), and a podium-finishes count for drivers and
-  teams. Sprint weekends show the sprint result as a small superscript
-  next to the main race result.
+  reduced-motion settings). Grid Walk is now the only home for this data:
+  the old standalone Results and Positions pages were removed, and their
+  addresses redirect to the home page.
 - **About** (`/about`) — who built this and how, credits, and a progress
   timeline.
 
@@ -80,37 +52,14 @@ Pick a season from the selector, built into the nav bar at every screen
 size — shown as a calendar icon next to the year. The app defaults to
 the current calendar year. Only seasons 2020 onwards are supported.
 
-Every heatmap, grid and chart has a small share button beside its heading.
-It renders that one graphic as a PNG in the browser (no server or image
-hosting involved) and offers saving it, copying it to the clipboard for
-pasting into Reddit, X or Discord, or, on phone and Mac, opening the native
-share sheet directly.
-
-A thin rail down the left edge (900px and wider) lists the sections on
-the current page and highlights whichever one is in view as you scroll
-— a hint that there's more below, and a click-to-jump shortcut. With it
-in place the browser's own scrollbar is hidden, since it would just be
-a second copy of the same information. Scrolling past the very bottom
-of a page and continuing to pull springs forward to the next page in
-nav order (Results → Positions → About); a short, ordinary over-scroll
-does nothing, so this only fires on a deliberate, sustained pull, and
-the footer is still reached by scrolling normally.
-
 ## Navigation
 
-A single floating nav bar is used at every screen size on every page
-except the home page itself — there's no separate desktop top bar and
-mobile dock, just one component. Home, Results, Positions and About sit
-in a horizontally scrollable tab strip (hidden scrollbar; on narrow
-screens every tab, including the active one, is icon-only, so the bar
-stays a constant width across pages), the season selector stays pinned
-beside them, and a hamburger button grows the bar itself into a panel
-holding the theme and palette toggles. The bar sits at the bottom of the
-viewport on narrow screens and at the top on wider ones, with the
-hamburger panel opening in whichever direction (up or down) keeps it
-growing away from the screen edge the bar is pinned to. The home page
-hides this bar entirely — Grid Walk's drag-and-click cards are the
-navigation there, and a Home tab on every other page leads back to it.
+A single floating nav bar is used on the About page — Home and About
+tabs, the season selector beside them, and a hamburger button that grows
+the bar itself into a panel holding the theme and palette toggles. It sits
+at the bottom of the viewport on narrow screens and at the top on wider
+ones. The home page hides this bar entirely — Grid Walk's own top bar and
+jump bar are the navigation there.
 
 ## Getting started
 

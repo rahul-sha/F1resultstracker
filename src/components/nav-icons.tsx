@@ -6,22 +6,6 @@ export function HomeIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-export function ResultsIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 3v18M5 4h11l-2 3 2 3H5" />
-    </svg>
-  );
-}
-
-export function PositionsIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 20V10M12 20V4M20 20v14" />
-    </svg>
-  );
-}
-
 export function AboutIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
