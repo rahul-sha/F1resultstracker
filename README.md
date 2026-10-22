@@ -32,7 +32,9 @@ language.
   scrolls on the bars never move or zoom the cards underneath. Beside it, the logo is its own island of the same height that
   takes you back to the first card, and the zoom controls sit in a small
   pill in the bottom corner. On phones the controls stay at the top and
-  the jump tabs at the bottom. All of it sits over the same drifting glow
+  the jump tabs sit at the bottom in a matching nav-bar pill (solid
+  rather than blurred), with Fit after a divider; the open card's tab
+  rests at the left, and swiping the tabs browses the cards. All of it sits over the same drifting glow
   used site-wide. Behind the cards sits a live grid drawn in the active
   theme's colours: it bends and glows in the accent colour around the
   cursor or a finger, sends a ring outwards on each click or tap, drifts

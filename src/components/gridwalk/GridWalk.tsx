@@ -61,9 +61,14 @@ export default function GridWalk({
   const gridRef = useRef<HTMLCanvasElement>(null);
   const pillsRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
-  // Whether the top tab strip's current scroll was started by code rather
-  // than by hand, and the timer that waits for a scroll to come to rest.
+  // Whether each tab strip's current scroll (desktop top bar, phone bottom
+  // bar) was started by code rather than by hand, and the timer that waits
+  // for a scroll to come to rest.
   const tabsProgrammatic = useRef(false);
+  const pillsProgrammatic = useRef(false);
+  // The phone strip is moving by hand: "finger" while touched, "coasting"
+  // after release until it comes to rest. Code leaves it alone meanwhile.
+  const pillsHeld = useRef<"finger" | "coasting" | null>(null);
   const tabsSettle = useRef(0);
   // Set after a mouse drag of the tab strip, so the release doesn't also
   // count as a click on whichever tab was under the pointer.
@@ -275,36 +280,35 @@ export default function GridWalk({
     stripRef.current?.classList.remove("pending");
   });
 
-  // Keeps the active pill in view in the jump bar's own scroller (not
-  // scrollIntoView, which can also nudge the page).
+  // Both tab strips (the desktop top bar and the phone bottom bar) rest the
+  // open card's tab at their left edge. Only the visible one moves.
   useEffect(() => {
-    const bar = pillsRef.current;
-    const pill = bar?.children[focus] as HTMLElement | undefined;
-    if (!bar || !pill) return;
-    const left = pill.offsetLeft - bar.clientWidth / 2 + pill.offsetWidth / 2;
-    bar.scrollTo({ left, behavior: "smooth" });
+    for (const [ref, flag] of [
+      [tabsRef, tabsProgrammatic],
+      [pillsRef, pillsProgrammatic],
+    ] as const) {
+      const track = ref.current;
+      const tab = track?.children[focus] as HTMLElement | undefined;
+      if (!track || !tab || !track.offsetParent) continue;
+      if (ref === pillsRef && pillsHeld.current) continue;
+      const left = tab.offsetLeft - track.offsetLeft;
+      if (Math.abs(track.scrollLeft - left) < 1) continue;
+      flag.current = true;
+      track.scrollTo({ left, behavior: "smooth" });
+    }
   }, [focus]);
 
-  // Desktop top bar: the open card's tab rests at the left of the strip.
-  useEffect(() => {
-    const track = tabsRef.current;
-    const tab = track?.children[focus] as HTMLElement | undefined;
-    if (!track || !tab || !track.offsetParent) return;
-    const left = tab.offsetLeft - track.offsetLeft;
-    if (Math.abs(track.scrollLeft - left) < 1) return;
-    tabsProgrammatic.current = true;
-    track.scrollTo({ left, behavior: "smooth" });
-  }, [focus]);
-
-  // Scrolling the tab strip by hand also browses: once it comes to rest,
-  // the tab sitting at the left opens.
-  function onTabsScroll() {
+  // Scrolling or swiping a tab strip by hand also browses: once it comes to
+  // rest, the tab sitting at the left opens.
+  function settleStrip(track: HTMLElement | null, flag: { current: boolean }) {
     window.clearTimeout(tabsSettle.current);
     tabsSettle.current = window.setTimeout(() => {
-      const track = tabsRef.current;
       if (!track) return;
-      if (tabsProgrammatic.current) {
-        tabsProgrammatic.current = false;
+      if (track === pillsRef.current && pillsHeld.current) {
+        if (pillsHeld.current === "finger") return;
+        pillsHeld.current = null;
+      } else if (flag.current) {
+        flag.current = false;
         return;
       }
       let best = 0;
@@ -316,10 +320,10 @@ export default function GridWalk({
           best = i;
         }
       });
-      if (best !== focusRef.current) {
-        goTo(best);
-        dismissHint();
-      }
+      // Always aim the camera, even if the open card already matches: it
+      // may only be passing that card on its way somewhere else.
+      goTo(best);
+      dismissHint();
     }, 160);
   }
 
@@ -533,12 +537,13 @@ export default function GridWalk({
 
     // A mouse can't scroll an overflowing strip by itself, so holding and
     // dragging the top tab strip scrolls it; on release it snaps, and the
-    // tab that comes to rest at the left opens (see onTabsScroll).
+    // tab that comes to rest at the left opens (see settleStrip).
     const track = tabsRef.current;
     let tabDrag: { id: number; x: number; left: number; moved: boolean } | null = null;
     function onTrackDown(e: PointerEvent) {
       if (e.pointerType !== "mouse" || e.button !== 0 || !track) return;
       tabDrag = { id: e.pointerId, x: e.clientX, left: track.scrollLeft, moved: false };
+      tabsProgrammatic.current = false;
     }
     function onTrackMove(e: PointerEvent) {
       if (!tabDrag || e.pointerId !== tabDrag.id || !track) return;
@@ -688,7 +693,7 @@ export default function GridWalk({
             hidden, and the controls sit on their own as before. */}
         <div className="gw-navpill">
           <nav className="gw-toptabs" aria-label="Jump to">
-            <div className="gw-toptabs-track" ref={tabsRef} onScroll={onTabsScroll}>
+            <div className="gw-toptabs-track" ref={tabsRef} onScroll={() => settleStrip(tabsRef.current, tabsProgrammatic)}>
               {sections.map((section, i) => (
                 <button
                   key={section.id}
@@ -697,6 +702,8 @@ export default function GridWalk({
                   aria-current={i === focus ? "true" : undefined}
                   onClick={() => {
                     if (tabsDragged.current) return;
+                    window.clearTimeout(tabsSettle.current);
+                    tabsProgrammatic.current = true;
                     goTo(i);
                     dismissHint();
                   }}
@@ -762,7 +769,27 @@ export default function GridWalk({
 
       <div className="gw-jumpbar">
         <span className="gw-jumpbar-label">Jump to</span>
-        <div className="gw-jumpbar-pills" ref={pillsRef}>
+        <div
+          className="gw-jumpbar-pills"
+          ref={pillsRef}
+          onScroll={() => settleStrip(pillsRef.current, pillsProgrammatic)}
+          // A finger on the strip takes over from any glide still running,
+          // and the strip settles only once it's lifted. Touch events, as
+          // pointer events are cancelled as soon as the strip starts to pan.
+          onTouchStart={() => {
+            pillsProgrammatic.current = false;
+            pillsHeld.current = "finger";
+          }}
+          onTouchEnd={(e) => {
+            if (e.touches.length) return;
+            pillsHeld.current = "coasting";
+            settleStrip(pillsRef.current, pillsProgrammatic);
+          }}
+          onTouchCancel={() => {
+            pillsHeld.current = "coasting";
+            settleStrip(pillsRef.current, pillsProgrammatic);
+          }}
+        >
           {sections.map((section, i) => (
             <button
               key={section.id}
@@ -770,6 +797,11 @@ export default function GridWalk({
               className={"gw-jump-pill" + (i === focus ? " active" : "")}
               aria-current={i === focus ? "true" : undefined}
               onClick={() => {
+                // A tap wins over a settle still pending from a swipe, and
+                // the browser nudging the tapped tab into view isn't a swipe.
+                window.clearTimeout(tabsSettle.current);
+                pillsProgrammatic.current = true;
+                pillsHeld.current = null;
                 goTo(i);
                 dismissHint();
               }}
@@ -778,6 +810,7 @@ export default function GridWalk({
             </button>
           ))}
         </div>
+        <span className="gw-jumpbar-divider" aria-hidden="true" />
         <div className="gw-zoomctl">
           <button type="button" className="gw-zoom-btn icon" aria-label="Zoom out" onClick={() => zoomCentre(0.8)}>
             −
