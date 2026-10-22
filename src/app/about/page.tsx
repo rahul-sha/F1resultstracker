@@ -1,3 +1,5 @@
+import HomeLogo from "@/components/HomeLogo";
+
 export const metadata = { title: "About | Grid Walk" };
 
 function CreditIcon({ children, title }: { children: React.ReactNode; title?: string }) {
@@ -11,6 +13,7 @@ function CreditIcon({ children, title }: { children: React.ReactNode; title?: st
 export default function AboutPage() {
   return (
     <div className="px-[10px] py-6 sm:p-6">
+      <HomeLogo />
       <div className="about-page-wrap">
       <div className="page-header">
         <h1 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
@@ -92,11 +95,21 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            49 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            50 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">50</span>
+                <b>A quieter About page, and no more Auto theme</b>
+                <span>
+                  The About page dropped its nav bar entirely: just the Grid Walk logo, as a glass
+                  island at the top left on desktop and the bottom on phones, taking you back home.
+                  The theme button now simply flips between Light and Dark, starting from whatever
+                  your device shows.
+                </span>
+              </li>
               <li>
                 <span className="seq">49</span>
                 <b>Top bar fixes and button feedback</b>

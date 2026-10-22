@@ -3,25 +3,24 @@
 import { useEffect, useState } from "react";
 import { ThemeIcon } from "./nav-icons";
 
-type Theme = "system" | "light" | "dark";
+type Theme = "light" | "dark";
 
 const STORAGE_KEY = "f1-theme";
-const ORDER: Theme[] = ["system", "light", "dark"];
-const LABEL: Record<Theme, string> = { system: "Auto", light: "Light", dark: "Dark" };
+const ORDER: Theme[] = ["light", "dark"];
+const LABEL: Record<Theme, string> = { light: "Light", dark: "Dark" };
 
 function applyTheme(theme: Theme) {
-  const root = document.documentElement;
-  if (theme === "system") {
-    root.removeAttribute("data-theme");
-  } else {
-    root.setAttribute("data-theme", theme);
-  }
+  document.documentElement.setAttribute("data-theme", theme);
 }
 
+// There's no "Auto" option: with nothing stored yet, the toggle starts
+// from whatever the device is showing (the CSS follows the system theme
+// until the first click), and each click flips between Light and Dark.
 function readStoredTheme(): Theme {
-  if (typeof window === "undefined") return "system";
+  if (typeof window === "undefined") return "light";
   const stored = window.localStorage.getItem(STORAGE_KEY) as Theme | null;
-  return stored && ORDER.includes(stored) ? stored : "system";
+  if (stored && ORDER.includes(stored)) return stored;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export default function ThemeToggle({ iconOnly = false }: { iconOnly?: boolean }) {

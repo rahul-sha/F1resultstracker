@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import NavBar from "@/components/NavBar";
-import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
 
 export const metadata: Metadata = {
   title: "Grid Walk",
   description: "Formula 1 race results, points and standings tracker",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const initialSeason = (await resolvePersistedSeason()) ?? currentSeason();
-
   return (
     <html lang="en" className="h-full antialiased">
       <head>
@@ -29,7 +25,6 @@ export default async function RootLayout({
       <body className="min-h-full">
         <div className="page-shell flex min-h-screen flex-col gap-6 p-4">
           <main className="min-w-0 flex-1 navbar-spacer">{children}</main>
-          <NavBar initialSeason={initialSeason} />
         </div>
       </body>
     </html>
