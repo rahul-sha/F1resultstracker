@@ -1279,99 +1279,13 @@ body::after {
   margin: 0 0 10px;
 }
 
-/* The page's own scroll bar is redundant once the section rail shows the
-   same "how far down the page am I" information — scrolling itself is
-   unaffected, only the visible track is hidden. */
+/* The page's own scroll bar is hidden for a cleaner look — scrolling
+   itself is unaffected, only the visible track is hidden. */
 html {
   scrollbar-width: none;
 }
 html::-webkit-scrollbar {
   display: none;
-}
-
-/* Section rail: a thin tick per section, down the left edge, that lights
-   up for whichever section is in view — a hint that there's more below.
-   Hidden below 900px, where there isn't room for it beside the content. */
-.section-rail {
-  position: fixed;
-  left: max(10px, env(safe-area-inset-left, 0px));
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  z-index: 15;
-}
-.section-rail-tick {
-  width: 3px;
-  height: 20px;
-  border-radius: 2px;
-  border: none;
-  padding: 0;
-  background: var(--border-hairline);
-  cursor: pointer;
-  transition: background 0.25s ease, width 0.25s ease, height 0.25s ease;
-}
-.section-rail-tick:hover {
-  background: var(--text-muted);
-}
-.section-rail-tick.active {
-  background: var(--accent);
-  width: 4px;
-  height: 28px;
-}
-@media (max-width: 900px) {
-  .section-rail {
-    display: none;
-  }
-}
-
-/* Overscroll-to-next-page indicator: a soft glow that grows from the
-   bottom edge while the pull builds, so the gesture is visible before it
-   fires rather than feeling like a sudden jump. */
-.page-spring-indicator {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 0;
-  z-index: 35;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  overflow: hidden;
-  pointer-events: none;
-  background: linear-gradient(to top, color-mix(in srgb, var(--accent) 16%, transparent), transparent);
-  transition: height 0.12s linear;
-}
-.page-spring-chip {
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-container);
-  color: var(--on-accent-container);
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.12s linear, transform 0.12s linear;
-}
-.page-spring-chip.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-.page-spring-chip svg {
-  width: 16px;
-  height: 16px;
-}
-@media (prefers-reduced-motion: reduce) {
-  .page-spring-indicator,
-  .page-spring-chip {
-    transition: none;
-  }
 }
 
 /* Points Evolution charts (Results page) render statically — no
