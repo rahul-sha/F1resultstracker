@@ -92,11 +92,21 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            48 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            49 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">49</span>
+                <b>Top bar fixes and button feedback</b>
+                <span>
+                  Scrolling or dragging the top tab strip now works in both directions, so you
+                  can always get back from the last card, and presses, drags or scrolls on the
+                  bars no longer move or zoom the cards underneath. The theme and palette buttons
+                  now spin their icon and send out an accent ring on every click.
+                </span>
+              </li>
               <li>
                 <span className="seq">48</span>
                 <b>One nav bar at the top</b>

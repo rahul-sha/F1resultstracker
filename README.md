@@ -27,8 +27,9 @@ language.
   they never flash up full size on load. On desktop a single glass nav bar
   across the top holds the jump tabs plus About, the icon-only theme and
   palette toggles, and the season switcher; the open card's tab rests at
-  the left of the tab strip, and scrolling the strip itself browses the
-  cards. Beside it, the logo is its own island of the same height that
+  the left of the tab strip, and scrolling the mouse wheel over it or
+  dragging it browses the cards in either direction. Presses, drags and
+  scrolls on the bars never move or zoom the cards underneath. Beside it, the logo is its own island of the same height that
   takes you back to the first card, and the zoom controls sit in a small
   pill in the bottom corner. On phones the controls stay at the top and
   the jump tabs at the bottom. All of it sits over the same drifting glow
@@ -95,7 +96,9 @@ Four colour palettes — Monokai (default), Coffee, Ember and Dracula — each
 togglable from the nav bar's hamburger menu and persisted in `localStorage`.
 All four have both a light and a dark variant. All colour in the UI, including the heatmap
 shading, comes from theme CSS custom properties (see `src/app/globals.css`),
-so nothing is hardcoded to a single palette.
+so nothing is hardcoded to a single palette. The icon-only theme and
+palette buttons spin their icon and send out an accent ring on each
+click, so every change has visible feedback.
 
 ## Tech stack
 
