@@ -140,9 +140,15 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  /* width/height are set per card in JSX (GridWalk.tsx's cardPlaceStyle) —
-     each section keeps its own natural proportions instead of every card
-     being forced into one square-ish box. */
+  /* Sized by its own content (see .gw-card-inner below), not a fixed
+     design-time box — each section keeps its own natural proportions,
+     wider or taller than the viewport if its content genuinely is.
+     GridWalk.tsx measures that natural size via offsetWidth/offsetHeight
+     (layout-only, unaffected by the scale() this rule's transform
+     carries) to compute the card's rest-preview scale and its dive
+     zoom's full-size target. */
+  width: max-content;
+  height: max-content;
   border-radius: 14px;
   background: color-mix(in srgb, var(--surface-2) 90%, transparent);
   border: 1px solid var(--border-hairline);
@@ -188,9 +194,7 @@
 }
 
 .gw-card-inner {
-  position: absolute;
-  inset: 0;
-  overflow: auto;
+  position: relative;
   padding: 1.5rem 1.6rem 1.8rem;
 }
 
@@ -255,10 +259,11 @@
   }
 }
 
-/* No mobile size override needed for .gw-card: the dive's fitScale
-   (computed in GridWalk.tsx from the viewport, per card, off that card's
-   own w/h) already shrinks any card's natural size to fit any screen, at
-   rest and fully dived alike. */
+/* No mobile size override needed for .gw-card: at rest it's always shown
+   via previewScale regardless of viewport, and a dive now zooms to the
+   card's own natural size, which can be wider or taller than the
+   viewport by design — panning (not shrinking to fit) is how the user
+   reaches the rest of it. */
 
 .gw-back-btn {
   position: fixed;
