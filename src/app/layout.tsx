@@ -6,7 +6,7 @@ import PageSpring from "@/components/PageSpring";
 import { currentSeason, resolvePersistedSeason } from "@/lib/seasons";
 
 export const metadata: Metadata = {
-  title: "F1 Results Tracker",
+  title: "Grid Walk",
   description: "Formula 1 race results, points and standings tracker",
 };
 

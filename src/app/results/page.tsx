@@ -8,7 +8,7 @@ import DriverPointsEvolutionChart from "@/components/DriverPointsEvolutionChart"
 import ConstructorPointsEvolutionChart from "@/components/ConstructorPointsEvolutionChart";
 import ShareButton from "@/components/ShareButton";
 
-export const metadata = { title: "Results | F1 Results Tracker" };
+export const metadata = { title: "Results | Grid Walk" };
 
 async function PointsGridSection({ season }: { season: number }) {
   const grid = await buildPointsGrid(season);

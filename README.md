@@ -1,4 +1,4 @@
-# F1 Results Tracker
+# Grid Walk
 
 A personal Formula 1 results tracker built with Next.js, TypeScript and
 Tailwind CSS. It reads race, sprint and championship data from the

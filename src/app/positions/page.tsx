@@ -9,7 +9,7 @@ import QualifyingPositionsGrid from "@/components/QualifyingPositionsGrid";
 import PodiumBars from "@/components/PodiumBars";
 import ShareButton from "@/components/ShareButton";
 
-export const metadata = { title: "Positions | F1 Results Tracker" };
+export const metadata = { title: "Positions | Grid Walk" };
 
 async function PositionsGridSection({ season }: { season: number }) {
   const grid = await buildPointsGrid(season);

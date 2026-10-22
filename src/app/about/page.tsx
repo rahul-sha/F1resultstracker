@@ -1,4 +1,4 @@
-export const metadata = { title: "About | F1 Results Tracker" };
+export const metadata = { title: "About | Grid Walk" };
 
 function CreditIcon({ children, title }: { children: React.ReactNode; title?: string }) {
   return (
