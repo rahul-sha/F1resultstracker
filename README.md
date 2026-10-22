@@ -9,32 +9,27 @@ language.
 
 ## Pages
 
-- **Home / Grid Walk** (`/`) — the site's entry point: a drag-navigable
-  3D scene rather than a page of links. The whole view sits "inside" a
-  sphere; click and drag to look around (the content follows the cursor
-  direction), and scroll, pinch on a trackpad, or pinch with two fingers
-  on a phone to zoom in and out around the pointer. Eight cards sit on an
-  8-point ring, 45° apart, running clockwise from the top in the same
+- **Home / Grid Walk** (`/`) — the site's entry point: the season's
+  eight graphics laid out on one horizontal carousel strip, in the same
   order as the "Jump to" bar below — Results, Constructors, Driver Points
   Evolution, Positions, Finish Frequency, Qualifying Frequency, Driver
-  Podiums and Constructor Podiums. Each one *is* its real heatmap, chart,
-  grid or podium bars for the selected season, under the same title and
-  subtitle it has on its own page, sized from its own content and shown
-  small at rest within the same square footprint as the others. Cards
-  stay hidden until they have been measured, so they never flash up full
-  size on load. Clicking a card, or its pill in the "Jump to" bar,
-  rotates one shared camera toward it and zooms the whole scene so the
-  card fits between the top and bottom bars; the other cards dim and
-  recede, the way zooming into one frame on a shared board does. From
-  there, scroll or pinch for more detail, or drag to pan across to a
-  neighbouring card. Back zooms out again and Reset view also re-centres
-  the ring. The top and bottom bars — including the icon-only theme and
-  palette toggles, all pinned to the same height as the About button and
-  season switcher — stay on screen and usable throughout. A
-  cursor-reactive distortion effect ripples a faint ring pattern in the
-  background, over the same drifting glow used site-wide. Results and
-  Positions keep their own full pages too — Grid Walk's cards reuse the
-  exact same data and components rather than duplicating them.
+  Podiums and Constructor Podiums. Each card *is* the real heatmap,
+  chart, grid or podium bars for the selected season, under the same
+  title and subtitle it has on its own page, fitted to the space between
+  the top and bottom bars (never enlarged past its natural size). The
+  centred card is at full strength and its neighbours peek in, dimmed, on
+  either side. Browse by dragging or swiping (one card per flick), with
+  the side arrows, the ← → keys or the jump-bar pills. Scroll the mouse
+  wheel or pinch (trackpad or two fingers) to zoom around the pointer,
+  and drag to pan while zoomed in; a sideways trackpad swipe browses
+  instead. Clicking the centred card jumps it to full size, and the Fit
+  button (or Esc) brings it back. Cards stay hidden until measured, so
+  they never flash up full size on load. The top bar — About, the
+  icon-only theme and palette toggles, and the season switcher, all the
+  same height — stays on screen throughout, over the same drifting glow
+  used site-wide. Results and Positions keep their own full pages too —
+  Grid Walk's cards reuse the exact same data and components rather than
+  duplicating them.
 - **Results** (`/results`) — every driver's points for each round of a
   season, shaded by magnitude, with a season points total bar per driver,
   and a matching per-race heatmap for Constructors underneath. Pole

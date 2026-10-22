@@ -27,50 +27,26 @@ export interface GridWalkProps {
 
 type SectionDef = {
   id: string;
-  x: number;
-  y: number;
   title: string;
   subtitle: string;
   render: () => React.ReactNode;
 };
 
 type View = { k: number; tx: number; ty: number };
+type SlotGeom = { s: number; c: number };
 
-const SPHERE_R = 760;
-const YAW_K = 0.062;
-const PITCH_K = 0.05;
-const ZOOM = 1.3;
-const BOUND_YAW = 58;
-const BOUND_PITCH = 30;
-const DRAG_THRESHOLD = 6; // px of movement before a pointerdown counts as a drag, not a click
-const TRAVEL_EASE = 0.12; // one shared per-frame lerp for camera travel and zoom, so they read as one camera move
-// Every card is shown at rest fitted inside the same square box, whatever
-// its own aspect ratio. Fitting by width alone let tall cards (the podium
-// bars) grow big enough that their tangent planes cut into a neighbour's
-// on the sphere — that was the clipping.
-const PREVIEW_BOX = 180;
-const MIN_K = 0.5;
-const MAX_K = 8;
-// Space a dive leaves clear for the top bar and the jump bar, so a dived
-// card fits between them instead of running underneath.
-const CHROME_TOP = 76;
-const CHROME_BOTTOM = 76;
-const FIT_MARGIN = 16;
+const GAP = 40;
+const EASE = 0.16;
+const MIN_K = 0.6;
+const MAX_K = 5;
+const DRAG_THRESHOLD = 6;
 
-function clamp(v: number, b: number) {
-  return Math.max(-b, Math.min(b, v));
-}
-
-// "Inside a sphere" CSS-3D navigation: every card sits on the sphere's
-// surface via translateZ(-SPHERE_R) (the camera is at the centre looking
-// out), and dragging rotates the whole rig the opposite way so content
-// appears to follow the cursor. See memory "3d-mockup-exploration" before
-// touching the translateZ sign or the drag-direction maths.
-//
-// Zoom is one flat 2D camera on gw-stage — translate(tx, ty) scale(k),
-// applied after the 3D projection — so the whole picture scales together,
-// Miro-style (see "grid-walk-round5-mockup" memory). Diving, scroll-wheel
-// zoom, pinch zoom and Back/Reset all drive that same view.
+// Grid Walk: the eight season graphics on one horizontal strip. One flat
+// camera — translate(tx, ty) scale(k) on .gw-strip — handles browsing
+// (tx), zoom (k, around the pointer) and panning while zoomed (tx, ty).
+// At k=1 the strip always settles with one card centred; each card is
+// fitted to the space between the top bar and the jump bar, never
+// enlarged past its natural size. See "grid-walk-carousel-mockup" memory.
 export default function GridWalk({
   season,
   pointsGrid,
@@ -80,104 +56,61 @@ export default function GridWalk({
 }: GridWalkProps) {
   const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
-  const rigRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const distortRef = useRef<HTMLDivElement>(null);
-  const dispRef = useRef<SVGFEDisplacementMapElement>(null);
-  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const backBtnRef = useRef<HTMLButtonElement>(null);
-  const brandRef = useRef<HTMLDivElement>(null);
-  const headlineRef = useRef<HTMLDivElement>(null);
+  const stripRef = useRef<HTMLDivElement>(null);
+  const pillsRef = useRef<HTMLDivElement>(null);
+  const zoomLevelRef = useRef<HTMLSpanElement>(null);
+  const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Each card's real, unscaled content size, measured from the DOM (state,
-  // not a ref, because cardPlaceStyle reads it during render).
-  const [naturalSizes, setNaturalSizes] = useState<Record<string, { w: number; h: number }>>({});
-
-  const camYaw = useRef(0);
-  const camPitch = useRef(0);
-  const vYaw = useRef(0);
-  const vPitch = useRef(0);
-  const dragging = useRef(false);
-  const dragMoved = useRef(false);
-  const startX = useRef(0);
-  const startY = useRef(0);
-  const startYaw = useRef(0);
-  const startPitch = useRef(0);
-  const pointerSpeed = useRef(0);
-  const distortScale = useRef(10);
-  const shownMx = useRef(50);
-  const shownMy = useRef(50);
-  const targetMx = useRef(50);
-  const targetMy = useRef(50);
-  const travelTarget = useRef<{ yaw: number; pitch: number } | null>(null);
-
+  const geom = useRef<SlotGeom[]>([]);
+  const metrics = useRef({ W: 0, TOP: 0, availH: 0 });
   const view = useRef<View>({ k: 1, tx: 0, ty: 0 });
-  const viewTarget = useRef<View | null>(null);
-  const clearFocusOnSettle = useRef(false);
+  const target = useRef<View | null>(null);
+  const focusRef = useRef(0);
+  const moved = useRef(false);
 
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const activeRef = useRef<string | null>(null);
-  useEffect(() => {
-    activeRef.current = activeId;
-  }, [activeId]);
+  const [focus, setFocus] = useState(0);
+  const [hintGone, setHintGone] = useState(false);
 
-  // An 8-point ring, 45° apart, running clockwise on screen from the top in
-  // the same order as the jump bar. Negative x is to the RIGHT on screen
-  // (the rig rotates opposite to the card's own yaw), which is why the
-  // right-hand side of the ring carries negative values.
   const sections: SectionDef[] = [
     {
       id: "results",
-      x: 0,
-      y: 24,
       title: "Results",
       subtitle: "Points scored by each driver per Grand Prix.",
       render: () => <PointsHeatmap grid={pointsGrid} />,
     },
     {
       id: "constructors",
-      x: -30,
-      y: 17,
       title: "Constructors",
       subtitle: "Points scored by each team per Grand Prix.",
       render: () => <ConstructorPointsHeatmap grid={constructorGrid} />,
     },
     {
       id: "evolution",
-      x: -42,
-      y: 0,
       title: "Driver Points Evolution",
       subtitle: "Cumulative points scored by each driver across the season.",
       render: () => <DriverPointsEvolutionChart grid={pointsGrid} />,
     },
     {
       id: "positions",
-      x: -30,
-      y: -17,
       title: "Positions",
       subtitle: "Where each driver finished in every Grand Prix.",
       render: () => <PointsHeatmap grid={pointsGrid} mode="position" />,
     },
     {
       id: "finishfreq",
-      x: 0,
-      y: -24,
       title: "Finish Frequency",
       subtitle: "How often each driver has finished in each position.",
       render: () => <FinishPositionsGrid summary={finishSummary} />,
     },
     {
       id: "qualifreq",
-      x: 30,
-      y: -17,
       title: "Qualifying Frequency",
       subtitle: "How often each driver has qualified in each grid position.",
       render: () => <QualifyingPositionsGrid summary={qualifyingSummary} />,
     },
     {
       id: "podiumsD",
-      x: 42,
-      y: 0,
       title: "Driver Podiums",
       subtitle: "1st/2nd/3rd place finishes per driver.",
       render: () => (
@@ -194,8 +127,6 @@ export default function GridWalk({
     },
     {
       id: "podiumsT",
-      x: 30,
-      y: 17,
       title: "Constructor Podiums",
       subtitle: "1st/2nd/3rd place finishes per team.",
       render: () => (
@@ -210,192 +141,263 @@ export default function GridWalk({
       ),
     },
   ];
+  const count = sections.length;
 
-  // Re-measures every card after each commit; only sets state when a size
-  // actually changed, so it settles after one extra pass.
-  useLayoutEffect(() => {
-    setNaturalSizes((prev) => {
-      let changed = false;
-      const next = { ...prev };
-      sections.forEach((section) => {
-        const el = cardRefs.current[section.id];
-        if (!el) return;
-        const w = el.offsetWidth;
-        const h = el.offsetHeight;
-        const p = prev[section.id];
-        if (!p || p.w !== w || p.h !== h) {
-          next[section.id] = { w, h };
-          changed = true;
-        }
-      });
-      return changed ? next : prev;
-    });
-  });
-
-  function travelTo(yaw: number, pitch: number) {
-    travelTarget.current = { yaw: clamp(yaw, BOUND_YAW), pitch: clamp(pitch, BOUND_PITCH) };
-    vYaw.current = 0;
-    vPitch.current = 0;
+  function txFor(i: number, k: number) {
+    return metrics.current.W / 2 - k * geom.current[i].c;
   }
 
-  function applyCamera() {
-    if (rigRef.current) {
-      rigRef.current.style.transform = `scale(${ZOOM}) rotateX(${camPitch.current}deg) rotateY(${-camYaw.current}deg)`;
+  function nearestTo(stripX: number) {
+    let best = 0;
+    let bestDist = Infinity;
+    geom.current.forEach((g, i) => {
+      const d = Math.abs(g.c - stripX);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  // Measures each card's natural size and writes every slot's position and
+  // fitted scale straight to the DOM (no state: it's re-run on resize and
+  // after every render, and React never sets these styles itself).
+  function layout() {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const phone = W <= 640;
+    const TOP = phone ? 84 : 92;
+    const BOTTOM = phone ? 92 : 100;
+    const availH = Math.max(160, H - TOP - BOTTOM);
+    const availW = W - (phone ? 48 : 180);
+    metrics.current = { W, TOP, availH };
+    let x = 0;
+    geom.current = sections.map((_, i) => {
+      const card = cardRefs.current[i];
+      const slot = slotRefs.current[i];
+      if (!card || !slot) return { s: 1, c: x };
+      const nw = card.offsetWidth;
+      const nh = card.offsetHeight;
+      const s = Math.min(1, availH / nh, availW / nw);
+      const w = nw * s;
+      const h = nh * s;
+      card.style.transform = `scale(${s})`;
+      slot.style.left = `${x}px`;
+      slot.style.top = `${(availH - h) / 2}px`;
+      slot.style.width = `${w}px`;
+      slot.style.height = `${h}px`;
+      const g = { s, c: x + w / 2 };
+      x += w + GAP;
+      return g;
+    });
+  }
+
+  function apply() {
+    const strip = stripRef.current;
+    if (!strip) return;
+    const { k, tx, ty } = view.current;
+    strip.style.transform = `translate(${tx.toFixed(1)}px, ${(metrics.current.TOP + ty).toFixed(1)}px) scale(${k.toFixed(4)})`;
+    const f = nearestTo((metrics.current.W / 2 - tx) / k);
+    if (f !== focusRef.current) {
+      focusRef.current = f;
+      setFocus(f);
+    }
+    wrapRef.current?.classList.toggle("zoomed", k > 1.02);
+    if (zoomLevelRef.current) {
+      zoomLevelRef.current.textContent =
+        Math.abs(k - 1) < 0.02 ? "Fit" : `${Math.round(k * (geom.current[f]?.s ?? 1) * 100)}%`;
     }
   }
 
-  function applyView() {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const { k, tx, ty } = view.current;
-    stage.style.transform =
-      k === 1 && tx === 0 && ty === 0 ? "" : `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${k.toFixed(4)})`;
+  function goTo(i: number, resetZoom = true) {
+    const idx = Math.max(0, Math.min(count - 1, i));
+    const k = resetZoom ? 1 : view.current.k;
+    target.current = { k, tx: txFor(idx, k), ty: resetZoom ? 0 : view.current.ty };
   }
 
-  // Zooms by `factor` keeping the screen point (px, py) fixed under the
-  // cursor or pinch midpoint — the standard map/canvas zoom.
+  // Zooms by `factor` keeping the screen point (px, py) fixed — the
+  // standard map/canvas zoom.
   function zoomAt(px: number, py: number, factor: number) {
-    viewTarget.current = null;
-    clearFocusOnSettle.current = false;
+    target.current = null;
     const v = view.current;
     const k = Math.max(MIN_K, Math.min(MAX_K, v.k * factor));
     const f = k / v.k;
-    view.current = { k, tx: px - (px - v.tx) * f, ty: py - (py - v.ty) * f };
-    applyView();
-    if (activeRef.current) setActiveId(null);
+    const ly = py - metrics.current.TOP;
+    view.current = { k, tx: px - (px - v.tx) * f, ty: ly - (ly - v.ty) * f };
+    apply();
   }
 
-  function panBy(dx: number, dy: number) {
-    view.current = { ...view.current, tx: view.current.tx + dx, ty: view.current.ty + dy };
-    applyView();
+  function zoomCentre(factor: number) {
+    const { W, TOP, availH } = metrics.current;
+    zoomAt(W / 2, TOP + availH / 2, factor);
   }
 
-  // Renders the card's own centring rotation for one synchronous frame with
-  // the stage's zoom stripped out, reads its on-screen rect, then restores
-  // both — never painted. Gives the card's "cold" (k=1) centred position.
-  function measureCenteredRect(section: SectionDef) {
-    const rig = rigRef.current;
-    const stage = stageRef.current;
-    const el = cardRefs.current[section.id];
-    if (!rig || !stage || !el) return null;
-    const savedStage = stage.style.transform;
-    rig.style.transform = `scale(${ZOOM}) rotateX(${section.y}deg) rotateY(${-section.x}deg)`;
-    stage.style.transform = "";
-    const rect = el.getBoundingClientRect();
-    applyCamera();
-    stage.style.transform = savedStage;
-    return rect;
+  function dismissHint() {
+    setHintGone(true);
   }
 
-  function isZoomed() {
+  // Clicking a side card brings it to the centre; clicking the centred
+  // card toggles between "fit" and its full natural size (at least 1.8x),
+  // zooming around the click point.
+  function onCardClick(i: number, e: React.MouseEvent) {
+    if (moved.current) return;
+    dismissHint();
+    if (i !== focusRef.current || view.current.k > 1.02) {
+      goTo(i);
+      return;
+    }
     const v = view.current;
-    return Math.abs(v.k - 1) > 0.01 || Math.abs(v.tx) > 0.5 || Math.abs(v.ty) > 0.5 || viewTarget.current !== null;
+    const k = Math.min(MAX_K, Math.max(1.8, 1 / geom.current[i].s));
+    const f = k / v.k;
+    const ly = e.clientY - metrics.current.TOP;
+    target.current = { k, tx: e.clientX - (e.clientX - v.tx) * f, ty: ly - (ly - v.ty) * f };
   }
 
-  // Back button and headline/brand follow the actual zoom level every frame
-  // (direct DOM writes, not state), since manual zoom and dives both change it.
-  function syncChrome() {
-    const zoomed = isZoomed();
-    backBtnRef.current?.classList.toggle("show", zoomed);
-    brandRef.current?.classList.toggle("gw-hide", zoomed);
-    headlineRef.current?.classList.toggle("gw-hide", zoomed);
-  }
+  // Re-measure after every commit (a season switch changes card sizes);
+  // at fit zoom, keep the focused card centred.
+  useLayoutEffect(() => {
+    layout();
+    if (Math.abs(view.current.k - 1) < 0.02 && !target.current) {
+      view.current = { k: 1, tx: txFor(focusRef.current, 1), ty: 0 };
+    }
+    apply();
+    stripRef.current?.classList.remove("pending");
+  });
+
+  // Keeps the active pill in view in the jump bar's own scroller (not
+  // scrollIntoView, which can also nudge the page).
+  useEffect(() => {
+    const bar = pillsRef.current;
+    const pill = bar?.children[focus] as HTMLElement | undefined;
+    if (!bar || !pill) return;
+    const left = pill.offsetLeft - bar.clientWidth / 2 + pill.offsetWidth / 2;
+    bar.scrollTo({ left, behavior: "smooth" });
+  }, [focus]);
 
   useEffect(() => {
     const wrap = wrapRef.current;
-    const rig = rigRef.current;
-    const distortLayer = distortRef.current;
-    const dispEl = dispRef.current;
-    if (!wrap || !rig) return;
+    if (!wrap) return;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const pointers = new Map<number, { x: number; y: number }>();
-    let pinch: { dist: number; mx: number; my: number } | null = null;
+    let pinch: { d: number; mx: number; my: number } | null = null;
+    let dragging = false;
+    let downX = 0;
+    let lastX = 0;
+    let lastY = 0;
+    let vx = 0;
+    let vy = 0;
+    let startFocus = 0;
+    let coast: { vx: number; vy: number } | null = null;
+    let settleTimer = 0;
+
+    // After a wheel swipe or zoom ends near fit, glide onto the nearest card.
+    function scheduleSettle() {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(() => {
+        if (dragging || pointers.size) return;
+        if (view.current.k < 1.06) goTo(focusRef.current);
+      }, 160);
+    }
 
     function pinchState() {
       const [a, b] = [...pointers.values()];
-      return { dist: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+      return { d: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
     }
 
     function onPointerDown(e: PointerEvent) {
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size === 2) {
-        // Second finger down: stop rotating and switch to pinch zoom. Counts
-        // as a "move" so lifting the fingers never fires a card click.
-        dragging.current = false;
-        dragMoved.current = true;
+        dragging = false;
+        moved.current = true;
         wrap!.classList.remove("dragging");
         pinch = pinchState();
         return;
       }
       if (pointers.size > 2) return;
-      dragging.current = true;
-      dragMoved.current = false;
-      travelTarget.current = null;
-      startX.current = e.clientX;
-      startY.current = e.clientY;
-      startYaw.current = camYaw.current;
-      startPitch.current = camPitch.current;
-      vYaw.current = 0;
-      vPitch.current = 0;
+      dragging = true;
+      moved.current = false;
+      target.current = null;
+      coast = null;
+      vx = vy = 0;
+      downX = lastX = e.clientX;
+      lastY = e.clientY;
+      startFocus = focusRef.current;
       wrap!.classList.add("dragging");
-      // No setPointerCapture: it retargets the synthesized click to wrap, so
-      // a card's own onClick would never fire.
+      // No setPointerCapture: it would retarget the click to wrap, so a
+      // card's own onClick would never fire.
     }
 
     function onPointerMove(e: PointerEvent) {
-      targetMx.current = (e.clientX / window.innerWidth) * 100;
-      targetMy.current = (e.clientY / window.innerHeight) * 100;
-
-      if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-
+      if (!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pinch && pointers.size === 2) {
         const next = pinchState();
-        panBy(next.mx - pinch.mx, next.my - pinch.my);
-        if (pinch.dist > 0) zoomAt(next.mx, next.my, next.dist / pinch.dist);
+        view.current.tx += next.mx - pinch.mx;
+        view.current.ty += next.my - pinch.my;
+        if (pinch.d > 0) zoomAt(next.mx, next.my, next.d / pinch.d);
         pinch = next;
         return;
       }
-
-      if (!dragging.current) return;
-      const dx = e.clientX - startX.current;
-      const dy = e.clientY - startY.current;
-      if (!dragMoved.current && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
-        dragMoved.current = true;
-        // A real drag while dived lets go of the focused card but keeps the
-        // zoom, so the camera pans across the zoomed-in canvas.
-        if (activeRef.current) setActiveId(null);
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (Math.abs(e.clientX - downX) > DRAG_THRESHOLD) {
+        moved.current = true;
+        setHintGone(true);
       }
-
-      // Divide by the zoom so a drag moves the content about as far as the
-      // pointer moved, however far in the user has zoomed.
-      const k = Math.max(1, view.current.k);
-      const nextYaw = clamp(startYaw.current + (dx * YAW_K) / k, BOUND_YAW);
-      const nextPitch = clamp(startPitch.current + (dy * PITCH_K) / k, BOUND_PITCH);
-      vYaw.current = nextYaw - camYaw.current;
-      vPitch.current = nextPitch - camPitch.current;
-      camYaw.current = nextYaw;
-      camPitch.current = nextPitch;
-      pointerSpeed.current = Math.min(40, Math.hypot(dx, dy) * 0.08);
-      applyCamera();
+      const zoomed = view.current.k > 1.02;
+      view.current.tx += dx;
+      if (zoomed) view.current.ty += dy;
+      vx = dx;
+      vy = zoomed ? dy : 0;
+      apply();
     }
 
     function onPointerUp(e: PointerEvent) {
       pointers.delete(e.pointerId);
       if (pointers.size < 2) pinch = null;
-      if (pointers.size === 0) {
-        dragging.current = false;
-        wrap!.classList.remove("dragging");
+      if (pointers.size > 0) return;
+      if (!dragging) {
+        scheduleSettle();
+        return;
+      }
+      dragging = false;
+      wrap!.classList.remove("dragging");
+      if (!moved.current) return;
+      if (view.current.k <= 1.06) {
+        // Flick-aware snap, but one swipe moves one card at most.
+        let best = nearestTo((metrics.current.W / 2 - (view.current.tx + vx * 10)) / view.current.k);
+        if (best === startFocus && Math.abs(vx) > 6) best += vx < 0 ? 1 : -1;
+        goTo(Math.max(startFocus - 1, Math.min(startFocus + 1, best)));
+      } else {
+        coast = { vx, vy };
       }
     }
 
+    // Vertical wheel zooms (the ask was "zoom via scroll"); a sideways
+    // trackpad swipe or shift+wheel browses the strip instead. Trackpad
+    // pinch arrives as ctrl+wheel with small deltas, hence its higher rate.
     function onWheel(e: WheelEvent) {
       e.preventDefault();
+      setHintGone(true);
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
-      // Trackpad pinch arrives as a ctrlKey wheel with small deltas, so it
-      // gets a stronger rate than a mouse wheel's notches.
-      const rate = e.ctrlKey ? 0.01 : 0.0015;
-      zoomAt(e.clientX, e.clientY, Math.exp(-e.deltaY * unit * rate));
+      let dx = e.deltaX * unit;
+      let dy = e.deltaY * unit;
+      if (e.shiftKey && !dx) {
+        dx = dy;
+        dy = 0;
+      }
+      if (!e.ctrlKey && Math.abs(dx) > Math.abs(dy)) {
+        target.current = null;
+        view.current.tx -= dx;
+        apply();
+      } else {
+        zoomAt(e.clientX, e.clientY, Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.0012)));
+      }
+      scheduleSettle();
     }
 
     // Safari's trackpad pinch sends gesture events instead of ctrl+wheel.
@@ -411,6 +413,29 @@ export default function GridWalk({
       zoomAt(g.clientX, g.clientY, g.scale / lastGestureScale);
       lastGestureScale = g.scale;
     }
+    function onGestureEnd(e: Event) {
+      e.preventDefault();
+      scheduleSettle();
+    }
+
+    function onKeyDown(e: KeyboardEvent) {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      if (e.key === "ArrowRight") goTo(focusRef.current + 1);
+      else if (e.key === "ArrowLeft") goTo(focusRef.current - 1);
+      else if (e.key === "+" || e.key === "=") zoomCentre(1.25);
+      else if (e.key === "-") zoomCentre(0.8);
+      else if (e.key === "0" || e.key === "Escape") goTo(focusRef.current);
+      else return;
+      setHintGone(true);
+    }
+
+    function onResize() {
+      layout();
+      target.current = null;
+      view.current = { k: 1, tx: txFor(focusRef.current, 1), ty: 0 };
+      apply();
+    }
 
     wrap.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove);
@@ -419,71 +444,38 @@ export default function GridWalk({
     wrap.addEventListener("wheel", onWheel, { passive: false });
     wrap.addEventListener("gesturestart", onGestureStart);
     wrap.addEventListener("gesturechange", onGestureChange);
+    wrap.addEventListener("gestureend", onGestureEnd);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", onResize);
 
     let raf = 0;
-    function animate() {
-      if (!dragging.current) {
-        if (travelTarget.current) {
-          camYaw.current += (travelTarget.current.yaw - camYaw.current) * TRAVEL_EASE;
-          camPitch.current += (travelTarget.current.pitch - camPitch.current) * TRAVEL_EASE;
-          if (
-            Math.abs(travelTarget.current.yaw - camYaw.current) < 0.05 &&
-            Math.abs(travelTarget.current.pitch - camPitch.current) < 0.05
-          ) {
-            camYaw.current = travelTarget.current.yaw;
-            camPitch.current = travelTarget.current.pitch;
-            travelTarget.current = null;
-          }
-          applyCamera();
+    function tick() {
+      const t = target.current;
+      if (t) {
+        const v = view.current;
+        const next = {
+          k: v.k + (t.k - v.k) * EASE,
+          tx: v.tx + (t.tx - v.tx) * EASE,
+          ty: v.ty + (t.ty - v.ty) * EASE,
+        };
+        if (Math.abs(t.k - next.k) < 0.002 && Math.abs(t.tx - next.tx) < 0.5 && Math.abs(t.ty - next.ty) < 0.5) {
+          view.current = { ...t };
+          target.current = null;
         } else {
-          camYaw.current = clamp(camYaw.current + vYaw.current, BOUND_YAW);
-          camPitch.current = clamp(camPitch.current + vPitch.current, BOUND_PITCH);
-          vYaw.current *= 0.92;
-          vPitch.current *= 0.92;
-          if (Math.abs(vYaw.current) > 0.001 || Math.abs(vPitch.current) > 0.001) applyCamera();
+          view.current = next;
         }
-
-        // k, tx and ty ease at the same rate, so a point that starts at the
-        // card's centre travels in a straight line to its target spot.
-        const t = viewTarget.current;
-        if (t) {
-          const v = view.current;
-          const next = {
-            k: v.k + (t.k - v.k) * TRAVEL_EASE,
-            tx: v.tx + (t.tx - v.tx) * TRAVEL_EASE,
-            ty: v.ty + (t.ty - v.ty) * TRAVEL_EASE,
-          };
-          if (Math.abs(t.k - next.k) < 0.002 && Math.abs(t.tx - next.tx) < 0.5 && Math.abs(t.ty - next.ty) < 0.5) {
-            view.current = t;
-            viewTarget.current = null;
-            if (clearFocusOnSettle.current) {
-              clearFocusOnSettle.current = false;
-              setActiveId(null);
-            }
-          } else {
-            view.current = next;
-          }
-          applyView();
-        }
+        apply();
+      } else if (coast && !dragging) {
+        view.current.tx += coast.vx;
+        view.current.ty += coast.vy;
+        coast.vx *= 0.92;
+        coast.vy *= 0.92;
+        if (Math.abs(coast.vx) < 0.2 && Math.abs(coast.vy) < 0.2) coast = null;
+        apply();
       }
-
-      syncChrome();
-
-      if (distortLayer) {
-        const targetDistort = reduceMotion ? 8 : Math.min(95, 10 + pointerSpeed.current * 1.6);
-        distortScale.current += (targetDistort - distortScale.current) * 0.12;
-        pointerSpeed.current *= 0.85;
-        shownMx.current += (targetMx.current - shownMx.current) * 0.18;
-        shownMy.current += (targetMy.current - shownMy.current) * 0.18;
-        distortLayer.style.setProperty("--mx", shownMx.current.toFixed(1) + "%");
-        distortLayer.style.setProperty("--my", shownMy.current.toFixed(1) + "%");
-        dispEl?.setAttribute("scale", distortScale.current.toFixed(1));
-      }
-
-      raf = requestAnimationFrame(animate);
+      raf = requestAnimationFrame(tick);
     }
-    raf = requestAnimationFrame(animate);
-    applyCamera();
+    raf = requestAnimationFrame(tick);
 
     return () => {
       wrap.removeEventListener("pointerdown", onPointerDown);
@@ -493,107 +485,46 @@ export default function GridWalk({
       wrap.removeEventListener("wheel", onWheel);
       wrap.removeEventListener("gesturestart", onGestureStart);
       wrap.removeEventListener("gesturechange", onGestureChange);
+      wrap.removeEventListener("gestureend", onGestureEnd);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onResize);
+      window.clearTimeout(settleTimer);
       cancelAnimationFrame(raf);
     };
     // Runs once: everything it reads that changes over time is a ref.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function placeStyle(yawDeg: number, pitchDeg: number): React.CSSProperties {
-    return {
-      transform: `translate(-50%, -50%) rotateY(${yawDeg}deg) rotateX(${-pitchDeg}deg) translateZ(${-SPHERE_R}px)`,
-    };
-  }
-
-  function cardPlaceStyle(section: SectionDef): React.CSSProperties {
-    const natural = naturalSizes[section.id];
-    const previewScale = natural ? Math.min(PREVIEW_BOX / natural.w, PREVIEW_BOX / natural.h) : 1;
-    return {
-      transform: `translate(-50%, -50%) rotateY(${section.x}deg) rotateX(${-section.y}deg) translateZ(${-SPHERE_R}px) scale(${previewScale})`,
-    };
-  }
-
-  // Dive: rotate toward the card and zoom so the whole card fits between
-  // the top bar and the jump bar (never past its own natural size). From
-  // there, scroll or pinch zooms further in for detail. The zoom factor
-  // uses the geometric mean of the width and height ratios because an
-  // off-centre card's measured rect carries a little perspective skew.
-  function diveInto(section: SectionDef) {
-    if (dragMoved.current) return;
-    if (activeId === section.id && viewTarget.current) return;
-
-    const rect = measureCenteredRect(section);
-    if (!rect) return;
-    const ox = rect.left + rect.width / 2;
-    const oy = rect.top + rect.height / 2;
-
-    const natural = naturalSizes[section.id];
-    const naturalK = natural ? Math.sqrt((natural.w / rect.width) * (natural.h / rect.height)) : MAX_K;
-    const availW = window.innerWidth - FIT_MARGIN * 2;
-    const availH = window.innerHeight - CHROME_TOP - CHROME_BOTTOM;
-    const fitK = Math.min(availW / rect.width, availH / rect.height);
-    const k = Math.max(MIN_K, Math.min(naturalK, fitK));
-
-    const cx = window.innerWidth / 2;
-    const cy = CHROME_TOP + availH / 2;
-    viewTarget.current = { k, tx: cx - k * ox, ty: cy - k * oy };
-    clearFocusOnSettle.current = false;
-
-    travelTo(section.x, section.y);
-    setActiveId(section.id);
-  }
-
-  function diveOut() {
-    viewTarget.current = { k: 1, tx: 0, ty: 0 };
-    clearFocusOnSettle.current = true;
-  }
-
-  function resetView() {
-    diveOut();
-    travelTo(0, 0);
-  }
-
   return (
     <div className="gw-wrap" ref={wrapRef}>
       <div className="gw-pulse-a" />
       <div className="gw-pulse-b" />
-      <div className="gw-distort" ref={distortRef} />
-      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-        <filter id="gw-distortion-filter">
-          <feTurbulence baseFrequency="0.006 0.009" numOctaves={1} seed={7} result="turb" />
-          <feDisplacementMap ref={dispRef} in="SourceGraphic" in2="turb" scale={10} xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </svg>
 
-      <div className="gw-stage" ref={stageRef}>
-        <div className="gw-rig" ref={rigRef}>
-          <div className="gw-headline" ref={headlineRef} style={placeStyle(0, 0)}>
-            <h1>Grid Walk</h1>
-            <p>{season} season — drag to look around, scroll or pinch to zoom, click a card to dive in.</p>
-          </div>
-
-          {sections.map((section) => (
+      {/* "pending" is removed by the layout effect once every card has been
+          measured and placed; React never rewrites this constant className. */}
+      <div className="gw-strip pending" ref={stripRef}>
+        {sections.map((section, i) => (
+          <div
+            key={section.id}
+            ref={(el) => {
+              slotRefs.current[i] = el;
+            }}
+            className={"gw-slot" + (i === focus ? " focus" : "")}
+          >
             <div
-              key={section.id}
               ref={(el) => {
-                cardRefs.current[section.id] = el;
+                cardRefs.current[i] = el;
               }}
-              className={
-                "gw-card" +
-                // Hidden until measured: the server render can't know each
-                // card's size, so without this every card painted full size
-                // for a moment, piled on top of each other.
-                (naturalSizes[section.id] ? "" : " gw-card-pending") +
-                (section.id === activeId ? " gw-card-inert" : "") +
-                (activeId !== null && section.id !== activeId ? " gw-faded" : "")
-              }
-              style={cardPlaceStyle(section)}
-              onClick={() => diveInto(section)}
+              className="gw-card"
               role="button"
               tabIndex={0}
               aria-label={`${section.title}: ${section.subtitle}`}
+              onClick={(e) => onCardClick(i, e)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") diveInto(section);
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  goTo(i);
+                }
               }}
             >
               <div className="gw-card-inner">
@@ -606,21 +537,12 @@ export default function GridWalk({
                 {section.render()}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
-      <button type="button" className="gw-back-btn" ref={backBtnRef} onClick={diveOut} aria-label="Back to Grid Walk">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-        Back
-      </button>
-
-      {/* Stays on screen through a dive; only the brand hides, since the Back
-          button takes its corner. syncChrome() drives both. */}
       <div className="gw-topbar">
-        <div className="gw-brand" ref={brandRef}>
+        <div className="gw-brand">
           <span className="gw-brand-mark" aria-hidden="true">
             <svg width="22" height="14" viewBox="0 0 22 14" fill="currentColor">
               <path d="M0 14L6 0h4L4 14H0z" />
@@ -640,22 +562,78 @@ export default function GridWalk({
         </div>
       </div>
 
+      <div className={"gw-hint" + (hintGone ? " gone" : "")} aria-hidden="true">
+        <span className="gw-hint-wide">
+          {season} season · drag or use ← → to browse · scroll or pinch to zoom · click a card for full size
+        </span>
+        <span className="gw-hint-narrow">Swipe to browse · pinch to zoom · tap for full size</span>
+      </div>
+
+      <button
+        type="button"
+        className="gw-arrow prev"
+        aria-label="Previous card"
+        disabled={focus === 0}
+        onClick={() => {
+          goTo(focus - 1);
+          dismissHint();
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className="gw-arrow next"
+        aria-label="Next card"
+        disabled={focus === count - 1}
+        onClick={() => {
+          goTo(focus + 1);
+          dismissHint();
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+      </button>
+
+      <div className="gw-dots" aria-hidden="true">
+        {sections.map((section, i) => (
+          <span key={section.id} className={i === focus ? "on" : ""} />
+        ))}
+      </div>
+
       <div className="gw-jumpbar">
         <span className="gw-jumpbar-label">Jump to</span>
-        <div className="gw-jumpbar-pills">
-          {sections.map((section) => (
+        <div className="gw-jumpbar-pills" ref={pillsRef}>
+          {sections.map((section, i) => (
             <button
               key={section.id}
               type="button"
-              className={"gw-jump-pill" + (section.id === activeId ? " active" : "")}
-              onClick={() => diveInto(section)}
+              className={"gw-jump-pill" + (i === focus ? " active" : "")}
+              aria-current={i === focus ? "true" : undefined}
+              onClick={() => {
+                goTo(i);
+                dismissHint();
+              }}
             >
               {section.title}
             </button>
           ))}
-          <button type="button" className="gw-jump-pill gw-jump-reset" onClick={resetView}>
-            <span className="gw-reset-dot" aria-hidden="true" />
-            Reset view
+        </div>
+        <div className="gw-zoomctl">
+          <button type="button" className="gw-zoom-btn icon" aria-label="Zoom out" onClick={() => zoomCentre(0.8)}>
+            −
+          </button>
+          <span className="gw-zoom-level" ref={zoomLevelRef}>
+            Fit
+          </span>
+          <button type="button" className="gw-zoom-btn icon" aria-label="Zoom in" onClick={() => zoomCentre(1.25)}>
+            +
+          </button>
+          <button type="button" className="gw-zoom-btn" onClick={() => goTo(focusRef.current)}>
+            Fit
           </button>
         </div>
       </div>
