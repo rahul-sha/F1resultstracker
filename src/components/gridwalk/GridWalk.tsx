@@ -61,10 +61,13 @@ export default function GridWalk({
   const gridRef = useRef<HTMLCanvasElement>(null);
   const pillsRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
-  // When the top tab strip was last scrolled by code rather than by hand,
-  // and the timer that waits for a hand scroll to come to rest.
-  const tabsProgrammaticAt = useRef(0);
+  // Whether the top tab strip's current scroll was started by code rather
+  // than by hand, and the timer that waits for a scroll to come to rest.
+  const tabsProgrammatic = useRef(false);
   const tabsSettle = useRef(0);
+  // Set after a mouse drag of the tab strip, so the release doesn't also
+  // count as a click on whichever tab was under the pointer.
+  const tabsDragged = useRef(false);
   const zoomLevelRef = useRef<HTMLSpanElement>(null);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -287,8 +290,10 @@ export default function GridWalk({
     const track = tabsRef.current;
     const tab = track?.children[focus] as HTMLElement | undefined;
     if (!track || !tab || !track.offsetParent) return;
-    tabsProgrammaticAt.current = Date.now();
-    track.scrollTo({ left: tab.offsetLeft - track.offsetLeft, behavior: "smooth" });
+    const left = tab.offsetLeft - track.offsetLeft;
+    if (Math.abs(track.scrollLeft - left) < 1) return;
+    tabsProgrammatic.current = true;
+    track.scrollTo({ left, behavior: "smooth" });
   }, [focus]);
 
   // Scrolling the tab strip by hand also browses: once it comes to rest,
@@ -297,7 +302,11 @@ export default function GridWalk({
     window.clearTimeout(tabsSettle.current);
     tabsSettle.current = window.setTimeout(() => {
       const track = tabsRef.current;
-      if (!track || Date.now() - tabsProgrammaticAt.current < 700) return;
+      if (!track) return;
+      if (tabsProgrammatic.current) {
+        tabsProgrammatic.current = false;
+        return;
+      }
       let best = 0;
       let bd = Infinity;
       Array.from(track.children).forEach((el, i) => {
@@ -310,9 +319,6 @@ export default function GridWalk({
       if (best !== focusRef.current) {
         goTo(best);
         dismissHint();
-      } else {
-        tabsProgrammaticAt.current = Date.now();
-        track.scrollTo({ left: (track.children[best] as HTMLElement).offsetLeft - track.offsetLeft, behavior: "smooth" });
       }
     }, 160);
   }
@@ -347,7 +353,14 @@ export default function GridWalk({
       return { d: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
     }
 
+    // The bars, arrows and their controls sit inside the wrap, but presses,
+    // drags and wheel scrolls on them must never move or zoom the cards.
+    function onChrome(e: Event) {
+      return e.target instanceof Element && !!e.target.closest(".gw-topbar, .gw-jumpbar, .gw-arrow");
+    }
+
     function onPointerDown(e: PointerEvent) {
+      if (onChrome(e)) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (pointers.size === 2) {
         dragging = false;
@@ -399,7 +412,8 @@ export default function GridWalk({
     }
 
     function onPointerUp(e: PointerEvent) {
-      pointers.delete(e.pointerId);
+      // Presses that started on the bars or arrows were never tracked.
+      if (!pointers.delete(e.pointerId)) return;
       if (pointers.size < 2) pinch = null;
       if (pointers.size > 0) return;
       if (!dragging) {
@@ -419,10 +433,33 @@ export default function GridWalk({
       }
     }
 
+    // Wheel or trackpad scrolling over the top tab strip steps one tab at a
+    // time (either direction), so you can always get back from the last card.
+    let tabWheel = 0;
+    let tabWheelAt = 0;
+    function onTabsWheel(e: WheelEvent) {
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
+      const d = (Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * unit;
+      const now = Date.now();
+      if (now - tabWheelAt > 300) tabWheel = 0;
+      tabWheel += d;
+      if (Math.abs(tabWheel) < 40 || now - tabWheelAt < 260) return;
+      tabWheelAt = now;
+      const step = tabWheel > 0 ? 1 : -1;
+      tabWheel = 0;
+      goTo(Math.max(0, Math.min(sections.length - 1, focusRef.current + step)));
+      setHintGone(true);
+    }
+
     // Vertical wheel zooms (the ask was "zoom via scroll"); a sideways
     // trackpad swipe or shift+wheel browses the strip instead. Trackpad
     // pinch arrives as ctrl+wheel with small deltas, hence its higher rate.
     function onWheel(e: WheelEvent) {
+      if (onChrome(e)) {
+        e.preventDefault();
+        if (e.target instanceof Element && e.target.closest(".gw-toptabs-track")) onTabsWheel(e);
+        return;
+      }
       e.preventDefault();
       setHintGone(true);
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
@@ -446,10 +483,12 @@ export default function GridWalk({
     let lastGestureScale = 1;
     type GestureLike = Event & { scale: number; clientX: number; clientY: number };
     function onGestureStart(e: Event) {
+      if (onChrome(e)) return;
       e.preventDefault();
       lastGestureScale = 1;
     }
     function onGestureChange(e: Event) {
+      if (onChrome(e)) return;
       e.preventDefault();
       const g = e as GestureLike;
       zoomAt(g.clientX, g.clientY, g.scale / lastGestureScale);
@@ -492,6 +531,39 @@ export default function GridWalk({
 
     const grid = gridRef.current ? createLiveGrid(gridRef.current) : null;
 
+    // A mouse can't scroll an overflowing strip by itself, so holding and
+    // dragging the top tab strip scrolls it; on release it snaps, and the
+    // tab that comes to rest at the left opens (see onTabsScroll).
+    const track = tabsRef.current;
+    let tabDrag: { id: number; x: number; left: number; moved: boolean } | null = null;
+    function onTrackDown(e: PointerEvent) {
+      if (e.pointerType !== "mouse" || e.button !== 0 || !track) return;
+      tabDrag = { id: e.pointerId, x: e.clientX, left: track.scrollLeft, moved: false };
+    }
+    function onTrackMove(e: PointerEvent) {
+      if (!tabDrag || e.pointerId !== tabDrag.id || !track) return;
+      const dx = e.clientX - tabDrag.x;
+      if (!tabDrag.moved && Math.abs(dx) > 4) {
+        tabDrag.moved = true;
+        tabsDragged.current = true;
+        track.classList.add("dragging");
+      }
+      if (tabDrag.moved) track.scrollLeft = tabDrag.left - dx;
+    }
+    function onTrackUp(e: PointerEvent) {
+      if (!tabDrag || e.pointerId !== tabDrag.id || !track) return;
+      const wasMoved = tabDrag.moved;
+      tabDrag = null;
+      if (!wasMoved) return;
+      track.classList.remove("dragging");
+      window.setTimeout(() => {
+        tabsDragged.current = false;
+      }, 0);
+    }
+    track?.addEventListener("pointerdown", onTrackDown);
+    window.addEventListener("pointermove", onTrackMove);
+    window.addEventListener("pointerup", onTrackUp);
+
     let raf = 0;
     function tick(now: number) {
       grid?.draw(now, view.current);
@@ -532,6 +604,9 @@ export default function GridWalk({
       wrap.removeEventListener("gesturechange", onGestureChange);
       wrap.removeEventListener("gestureend", onGestureEnd);
       window.removeEventListener("keydown", onKeyDown);
+      track?.removeEventListener("pointerdown", onTrackDown);
+      window.removeEventListener("pointermove", onTrackMove);
+      window.removeEventListener("pointerup", onTrackUp);
       window.removeEventListener("resize", onResize);
       window.clearTimeout(settleTimer);
       cancelAnimationFrame(raf);
@@ -621,6 +696,7 @@ export default function GridWalk({
                   className={"gw-toptab" + (i === focus ? " active" : "")}
                   aria-current={i === focus ? "true" : undefined}
                   onClick={() => {
+                    if (tabsDragged.current) return;
                     goTo(i);
                     dismissHint();
                   }}

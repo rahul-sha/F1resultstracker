@@ -34,6 +34,9 @@ function readStoredAccent(): Accent {
 export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean }) {
   const [accent, setAccent] = useState<Accent>(readStoredAccent);
   const [mounted, setMounted] = useState(false);
+  // Counts clicks, so each one re-mounts the icon and ring below and
+  // replays their animation as feedback (nothing animates on first load).
+  const [pulse, setPulse] = useState(0);
 
   useEffect(() => {
     // Only used to avoid a server/client text mismatch on first paint; the
@@ -47,6 +50,7 @@ export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean 
     setAccent(next);
     applyAccent(next);
     window.localStorage.setItem(STORAGE_KEY, next);
+    setPulse((p) => p + 1);
   }
 
   if (iconOnly) {
@@ -59,7 +63,10 @@ export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean 
         aria-label={`Cycle color palette (currently ${mounted ? LABEL[accent] : ""})`}
         title={mounted ? LABEL[accent] : undefined}
       >
-        <PaletteIcon />
+        <span key={pulse} className={"toggle-icon" + (pulse ? " pop" : "")}>
+          <PaletteIcon />
+        </span>
+        {pulse > 0 && <span key={`ring-${pulse}`} className="toggle-ring" aria-hidden="true" />}
       </button>
     );
   }

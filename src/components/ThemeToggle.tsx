@@ -27,6 +27,9 @@ function readStoredTheme(): Theme {
 export default function ThemeToggle({ iconOnly = false }: { iconOnly?: boolean }) {
   const [theme, setTheme] = useState<Theme>(readStoredTheme);
   const [mounted, setMounted] = useState(false);
+  // Counts clicks, so each one re-mounts the icon and ring below and
+  // replays their animation as feedback (nothing animates on first load).
+  const [pulse, setPulse] = useState(0);
 
   useEffect(() => {
     // Only used to avoid a server/client text mismatch on first paint;
@@ -40,6 +43,7 @@ export default function ThemeToggle({ iconOnly = false }: { iconOnly?: boolean }
     setTheme(next);
     applyTheme(next);
     window.localStorage.setItem(STORAGE_KEY, next);
+    setPulse((p) => p + 1);
   }
 
   if (iconOnly) {
@@ -52,7 +56,10 @@ export default function ThemeToggle({ iconOnly = false }: { iconOnly?: boolean }
         aria-label={`Toggle color theme (currently ${mounted ? LABEL[theme] : ""})`}
         title={mounted ? LABEL[theme] : undefined}
       >
-        <ThemeIcon />
+        <span key={pulse} className={"toggle-icon" + (pulse ? " pop" : "")}>
+          <ThemeIcon />
+        </span>
+        {pulse > 0 && <span key={`ring-${pulse}`} className="toggle-ring" aria-hidden="true" />}
       </button>
     );
   }
