@@ -579,7 +579,7 @@ export default function GridWalk({
       <div className="gw-stage" ref={stageRef}>
         <div className="gw-rig" ref={rigRef}>
           <div className={"gw-headline" + (diving ? " gw-hide" : "")} style={placeStyle(0, 0)}>
-            <h1>F1 Results Tracker</h1>
+            <h1>Grid Walk</h1>
             <p>{season} season — drag to look around, click a card to dive in.</p>
           </div>
 
