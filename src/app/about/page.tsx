@@ -76,11 +76,28 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            40 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            41 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">41</span>
+                <b>Grid Walk: one shared camera, not an isolated card</b>
+                <span>
+                  Diving into a card used to grow just that one card while the rest of the scene
+                  sat still (blurred) &mdash; visually calm, but a different kind of motion from
+                  Rahul&apos;s actual reference: a Miro board, where zooming into one frame scales
+                  the whole canvas together and its neighbours visibly recede. Reworked the dive
+                  to do exactly that &mdash; one camera, rotating toward the card and zooming the
+                  whole scene at once &mdash; so no card ever grows on its own any more. The top
+                  and bottom bars (including the theme toggle, now reachable from this page for
+                  the first time) stay on screen and usable through a dive, and every card now
+                  keeps its own natural width and height instead of being squeezed into one
+                  square-ish box. Mocked up against the real Miro reference and approved before
+                  shipping.
+                </span>
+              </li>
               <li>
                 <span className="seq">40</span>
                 <b>Grid Walk: one continuous zoom, not two</b>

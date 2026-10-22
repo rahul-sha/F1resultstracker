@@ -83,14 +83,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: filter 0.45s ease;
-}
-
-/* "Depth of field": the scene itself blurs/dims behind a dived-into card,
-   reinforcing that the camera is looking closer at the same scene rather
-   than a new layer opening on top of it. */
-.gw-stage.gw-dive-dim {
-  filter: blur(14px) brightness(0.55);
+  /* 0 0, not the default centre — the dive's pan+zoom math (GridWalk.tsx's
+     applyZoom2d) is written against a fixed, known origin. A dive applies
+     its own translate()+scale() here imperatively (not a CSS transition —
+     it's eased frame-by-frame alongside the camera rotation, see
+     diveInto/diveOut), so no `transition` is declared on this property. */
+  transform-origin: 0 0;
 }
 
 .gw-rig {
@@ -142,8 +140,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 720px;
-  height: 800px;
+  /* width/height are set per card in JSX (GridWalk.tsx's cardPlaceStyle) —
+     each section keeps its own natural proportions instead of every card
+     being forced into one square-ish box. */
   border-radius: 14px;
   background: color-mix(in srgb, var(--surface-2) 90%, transparent);
   border: 1px solid var(--border-hairline);
@@ -151,7 +150,7 @@
   cursor: pointer;
   backdrop-filter: blur(6px);
   overflow: hidden;
-  transition: border-color 0.15s ease, opacity 0.35s ease, box-shadow 0.3s ease;
+  transition: border-color 0.15s ease, opacity 0.5s ease, filter 0.5s ease, box-shadow 0.3s ease;
 }
 
 .gw-card:hover {
@@ -163,23 +162,20 @@
   outline-offset: 2px;
 }
 
+/* Every other card while one is being dived into — dimmed so attention
+   stays on the target, but still visible and still growing/sliding with
+   the same camera move, never hidden or removed, exactly like an
+   unfocused Miro frame receding as you zoom into its neighbour. */
 .gw-faded {
-  opacity: 0;
+  opacity: 0.1;
+  filter: blur(3px);
   pointer-events: none;
 }
 
-/* Applied to the active card for the whole dive (both the camera-travel
-   wait and the grown view) so it can't be clicked/hovered again while
-   that's in progress. */
+/* Applied to the active card for the whole dive so it can't be
+   clicked/hovered again while that's in progress. */
 .gw-card-inert {
   pointer-events: none;
-}
-
-/* Applied only once the card has been reparented to <body> and is
-   animating to/from its full-screen size — see diveInto/diveOut. */
-.gw-card-diving {
-  cursor: default;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
 }
 
 .gw-card-tab {
@@ -275,8 +271,9 @@
 }
 
 /* No mobile size override needed for .gw-card: the dive's fitScale
-   (computed in GridWalk.tsx from the viewport) already shrinks the fixed
-   720x800 card to fit any screen, at rest and fully dived alike. */
+   (computed in GridWalk.tsx from the viewport, per card, off that card's
+   own w/h) already shrinks any card's natural size to fit any screen, at
+   rest and fully dived alike. */
 
 .gw-back-btn {
   position: fixed;
@@ -313,6 +310,8 @@
 .gw-topbar-right {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.6rem;
 }
 

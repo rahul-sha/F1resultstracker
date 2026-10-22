@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./gridwalk.css";
 import SeasonSelector from "@/components/SeasonSelector";
+import ThemeToggle from "@/components/ThemeToggle";
 import type { PointsGrid } from "@/lib/points-grid";
 import type { ConstructorPointsGrid } from "@/lib/constructor-points-grid";
 import type { FinishPositionSummary } from "@/lib/finish-positions";
@@ -43,6 +44,8 @@ type SectionDef = {
   x: number;
   y: number;
   z: number;
+  w: number;
+  h: number;
   eyebrow: string;
   tabColor: string;
   title: string;
@@ -59,15 +62,14 @@ const ZOOM = 1.3;
 const BOUND_YAW = 58;
 const BOUND_PITCH = 30;
 const DRAG_THRESHOLD = 6; // px of movement before a pointerdown counts as a drag, not a click
-const TRAVEL_EASE = 0.12; // per-frame lerp factor for the "jump to" camera travel
-const DIVE_MS = 700;
-const DIVE_EASE = "cubic-bezier(.22,.7,.2,1)";
-// A card's DOM is laid out at this size always — see the .gw-card rule's
-// comment. PREVIEW_SCALE is just what shrinks that natural size down to
-// a sphere-card-sized footprint at rest.
-const NATURAL_W = 720;
-const NATURAL_H = 800;
-const PREVIEW_SCALE = 190 / NATURAL_W;
+const TRAVEL_EASE = 0.12; // per-frame lerp factor for both the camera travel and the dive zoom — one shared rate so rotating toward a card and zooming into it read as the one camera move, not two
+// Each card's DOM is laid out at ITS OWN natural w/h always (section.w/h
+// below — not forced square, so a wide heatmap and a compact bar chart
+// keep their own real proportions) — see the .gw-card rule's comment.
+// previewScale shrinks that down to a sphere-card-sized footprint at
+// rest: scaled so every card is about the same WIDTH at rest, with
+// height varying by its own aspect ratio.
+const PREVIEW_TARGET_W = 190;
 
 function clamp(v: number, b: number) {
   return Math.max(-b, Math.min(b, v));
@@ -85,30 +87,33 @@ function clamp(v: number, b: number) {
 // Diving into a card doesn't navigate to a new page, and it doesn't swap a
 // small preview for a separate "full" element either — each card's DOM
 // always contains its real content (the actual heatmap/chart/bars), laid
-// out at a fixed natural size (NATURAL_W x NATURAL_H). At rest that's
+// out at a fixed natural size (section.w x section.h). At rest that's
 // shown shrunk via a scale() folded into the card's sphere-placement
-// transform; diving reparents the card to <body> (so it escapes the rig's
-// own 3D transform, which would otherwise hijack position: fixed) and
-// animates a FLIP transform (translate+scale only, computed from
-// getBoundingClientRect — see diveInto/diveOut) from that resting size up
-// to a near-fullscreen one. It's one continuous zoom of the same DOM
-// node the whole time, never two distinct objects crossfading — see
-// "grid-walk-8-section-redesign" memory for why the earlier box-morph
-// overlay version read as "opening a new element" even after its own
-// pop/timing bugs were fixed.
+// transform.
 //
-// The FLIP itself starts in the same tick as the click — there is no
-// camera-travel-then-dive handoff. An earlier version rotated the camera
-// toward the clicked card first and only started the FLIP once that
-// settled, which Rahul (shown a Miro recording of zooming into a sticky
-// note) correctly read as two animations, not one. diveInto now snaps
-// the camera to the card's angle with no easing, purely so it's already
-// facing the right way if the user dives back out — it has no visible
-// effect, since the card is reparented out of the rig before the browser
-// ever paints that frame. The FLIP transform also needs transform-origin
-// pinned to the card's own top-left (see diveInto/diveOut) — with the
-// CSS default (centre), translate+scale doesn't land the box at a given
-// rect, which was a real, separate bug this surfaced.
+// Round 4 reparented the clicked card to <body> and FLIPped it full
+// screen while the rest of the scene sat still (blurred/dimmed) — visibly
+// calm, but structurally still "one thing animates while the world
+// freezes", which Rahul correctly kept reading as "another object, a
+// separate animation" even after that round's own timing fix, once he
+// shared his actual reference: a Miro board, panned and zoomed with
+// Miro's own single camera, where the WHOLE canvas — the frame you're
+// zooming into and its neighbours alike — scales together.
+//
+// Round 5 (this version) removes the FLIP/reparenting entirely. There is
+// exactly one camera, used for both "jump to" and diving: rotate the rig
+// toward a card (travelTo, unchanged) and, separately, scale
+// the whole already-PROJECTED 2D picture — a plain scale() on gw-stage,
+// outside and after the 3D sphere, around wherever the card actually
+// lands (see measureCenteredRect/applyZoom2d below). No card ever leaves
+// the rig or animates on its own; every pixel, target card and
+// neighbours alike, grows by the same factor, exactly like Miro's own
+// flat-canvas zoom. A translateZ "dolly" on the 3D rig itself was tried
+// first and rejected: on a sphere, the card dead centre in view is
+// actually the DEEPEST point once you've rotated to face it, so a shared
+// depth shift grows the shallower neighbour cards toward the edge of
+// frame faster than the one you clicked. See "grid-walk-round5-mockup"
+// memory for the full diagnosis and the mockup this was ported from.
 export default function GridWalk({
   season,
   driverLeader,
@@ -128,13 +133,6 @@ export default function GridWalk({
   const distortRef = useRef<HTMLDivElement>(null);
   const dispRef = useRef<SVGFEDisplacementMapElement>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const restRectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
-  // While a card is reparented to <body> for its dive, this remembers
-  // where it came from — both so diveOut can hand it back, and so a
-  // cleanup effect can do the same if the component unmounts mid-dive
-  // (otherwise React's own unmount would try to remove it from the rig,
-  // where it no longer physically is, and throw).
-  const reparented = useRef<{ el: HTMLDivElement; originalParent: HTMLElement } | null>(null);
 
   const camYaw = useRef(0);
   const camPitch = useRef(0);
@@ -157,6 +155,25 @@ export default function GridWalk({
   // always interrupt a travel.
   const travelTarget = useRef<{ yaw: number; pitch: number } | null>(null);
 
+  // The zoom half of a dive, applied to gw-stage — a plain 2D scale()
+  // around wherever the card actually lands, OUTSIDE the 3D sphere
+  // entirely (see the top-of-file comment). zoomOriginX/Y aren't a
+  // hardcoded viewport-centre, even though rotating the camera to a
+  // card's (x, y) is SUPPOSED to put it exactly there: the card's own
+  // translate(-50%, -50%) recentring is sandwiched inside its transform
+  // chain, ahead of the rig's rotation — so the rig's rotation also
+  // rotates that (fixed, axis-aligned) offset, landing the card a few
+  // hundred pixels off true centre. zoomPivotK is the dive's target zoom
+  // (fixed for the whole dive, in and out); applyZoom2d pans and grows at
+  // once so the measured point slides to the viewport's true centre
+  // exactly as the zoom completes.
+  const zoom2d = useRef(1);
+  const zoom2dTarget = useRef<number | null>(null);
+  const zoom2dOnSettleRef = useRef<(() => void) | null>(null);
+  const zoomOriginX = useRef<number | null>(null);
+  const zoomOriginY = useRef<number | null>(null);
+  const zoomPivotK = useRef<number | null>(null);
+
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const diving = activeId !== null;
@@ -167,6 +184,8 @@ export default function GridWalk({
       x: -46,
       y: 18,
       z: 0,
+      w: 940,
+      h: 640,
       eyebrow: "/results",
       tabColor: "#ff8000",
       title: "Results",
@@ -180,6 +199,8 @@ export default function GridWalk({
       x: -20,
       y: 6,
       z: 15,
+      w: 940,
+      h: 420,
       eyebrow: "/results",
       tabColor: "#ff8000",
       title: "Constructors",
@@ -192,6 +213,8 @@ export default function GridWalk({
       x: 10,
       y: 22,
       z: -8,
+      w: 660,
+      h: 460,
       eyebrow: "/results",
       tabColor: "#66d9ef",
       title: "Points Evolution",
@@ -204,6 +227,8 @@ export default function GridWalk({
       x: 38,
       y: 9,
       z: 10,
+      w: 940,
+      h: 640,
       eyebrow: "/positions",
       tabColor: "#3671c6",
       title: "Positions",
@@ -216,6 +241,8 @@ export default function GridWalk({
       x: -33,
       y: -20,
       z: 5,
+      w: 560,
+      h: 560,
       eyebrow: "/positions",
       tabColor: "#3671c6",
       title: "Finish Frequency",
@@ -228,6 +255,8 @@ export default function GridWalk({
       x: -2,
       y: -9,
       z: 20,
+      w: 560,
+      h: 560,
       eyebrow: "/positions",
       tabColor: "#00d2be",
       title: "Qualifying Frequency",
@@ -240,6 +269,8 @@ export default function GridWalk({
       x: 24,
       y: -26,
       z: -5,
+      w: 480,
+      h: 480,
       eyebrow: "/positions",
       tabColor: "#ff8000",
       title: "Driver Podiums",
@@ -263,6 +294,8 @@ export default function GridWalk({
       x: 48,
       y: -6,
       z: 12,
+      w: 480,
+      h: 440,
       eyebrow: "/positions",
       tabColor: "#f92672",
       title: "Constructor Podiums",
@@ -287,22 +320,54 @@ export default function GridWalk({
     vPitch.current = 0;
   }
 
-  // Snaps the camera straight to a card's angle, with no easing and no
-  // visible transition. Used only so the sphere is already facing the
-  // right way if the user dives back out — diveInto reparents the card
-  // out of the rig before the browser paints the next frame, so this has
-  // zero effect on the dive itself. Unlike travelTo, it doesn't animate,
-  // which is the point: an eased camera move is what made diving read as
-  // two animations instead of one.
-  function snapCameraTo(yaw: number, pitch: number) {
-    travelTarget.current = null;
-    vYaw.current = 0;
-    vPitch.current = 0;
-    camYaw.current = clamp(yaw, BOUND_YAW);
-    camPitch.current = clamp(pitch, BOUND_PITCH);
+  function applyCamera() {
     if (rigRef.current) {
       rigRef.current.style.transform = `scale(${ZOOM}) rotateX(${camPitch.current}deg) rotateY(${-camYaw.current}deg)`;
     }
+  }
+
+  // The zoom half of a dive — see the zoom2d refs' comment above. Not a
+  // plain scale() around a fixed point: that would either leave the card
+  // stranded wherever it happened to land (pivot = the card's own point)
+  // or push it further off-centre as it grows (pivot = viewport centre).
+  // frac is "how far into this dive's zoom" zoom2d currently is (0 at
+  // rest, 1 fully dived in); the pan is frac's share of the full pan this
+  // zoom needs — zero at rest, exactly centred at full zoom.
+  function applyZoom2d() {
+    const stage = stageRef.current;
+    if (!stage) return;
+    if (zoomOriginX.current === null || zoomOriginY.current === null || zoomPivotK.current === null) {
+      stage.style.transform = zoom2d.current === 1 ? "" : `scale(${zoom2d.current.toFixed(4)})`;
+      return;
+    }
+    const frac = (zoom2d.current - 1) / (zoomPivotK.current - 1);
+    const tx = frac * (window.innerWidth / 2 - zoomPivotK.current * zoomOriginX.current);
+    const ty = frac * (window.innerHeight / 2 - zoomPivotK.current * zoomOriginY.current);
+    stage.style.transform = `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${zoom2d.current.toFixed(4)})`;
+  }
+
+  // Renders a card's own centring rotation for one synchronous frame,
+  // reads its actual on-screen rect, then puts the camera back exactly as
+  // it was — never visible, since it resolves before the browser paints.
+  // Also zeroes gw-stage's own transform for that one frame: the math
+  // above always assumes this rect is the card's COLD (zoom2d===1) size,
+  // which only holds if whatever zoom is already mid-flight is stripped
+  // out first — matters once diveInto can retarget a second card while
+  // still zoomed into the first (see diveInto).
+  function measureCenteredRect(section: SectionDef) {
+    const rig = rigRef.current;
+    const stage = stageRef.current;
+    const el = cardRefs.current[section.id];
+    if (!rig || !stage || !el) return null;
+    const savedStage = stage.style.transform;
+    rig.style.transition = "none";
+    rig.style.transform = `scale(${ZOOM}) rotateX(${section.y}deg) rotateY(${-section.x}deg)`;
+    stage.style.transform = "";
+    const rect = el.getBoundingClientRect();
+    applyCamera();
+    stage.style.transform = savedStage;
+    rig.style.transition = "";
+    return rect;
   }
 
   useEffect(() => {
@@ -313,10 +378,6 @@ export default function GridWalk({
     if (!wrap || !rig) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    function applyCamera() {
-      rig!.style.transform = `scale(${ZOOM}) rotateX(${camPitch.current}deg) rotateY(${-camYaw.current}deg)`;
-    }
 
     function onPointerDown(e: PointerEvent) {
       if (diving) return;
@@ -396,6 +457,22 @@ export default function GridWalk({
           vPitch.current *= 0.92;
           if (Math.abs(vYaw.current) > 0.001 || Math.abs(vPitch.current) > 0.001) applyCamera();
         }
+
+        if (zoom2dTarget.current !== null) {
+          zoom2d.current += (zoom2dTarget.current - zoom2d.current) * TRAVEL_EASE;
+          if (Math.abs(zoom2dTarget.current - zoom2d.current) < 0.004) {
+            zoom2d.current = zoom2dTarget.current;
+            zoom2dTarget.current = null;
+            // Fires exactly when the zoom actually finishes easing, not
+            // after some guessed duration — a fixed timeout here could
+            // clear the pivot before a slower run of this loop had really
+            // reached it, dropping the pan mid-flight.
+            const cb = zoom2dOnSettleRef.current;
+            zoom2dOnSettleRef.current = null;
+            if (cb) cb();
+          }
+          applyZoom2d();
+        }
       }
 
       if (distortLayer) {
@@ -424,20 +501,6 @@ export default function GridWalk({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diving]);
 
-  // If the component unmounts mid-dive (e.g. a browser back navigation
-  // while a card is reparented to <body>), hand the card back to the rig
-  // first — otherwise React's own unmount would try to remove it from the
-  // rig, where it no longer physically lives, and throw.
-  useEffect(() => {
-    return () => {
-      const info = reparented.current;
-      if (info) {
-        info.originalParent.appendChild(info.el);
-        reparented.current = null;
-      }
-    };
-  }, []);
-
   // x/y here are each card's own yaw/pitch degrees on the sphere — unlike
   // the YAW_K/PITCH_K constants above, which only convert a drag's pixel
   // delta into a camera-rotation degree, placement needs real angular
@@ -449,113 +512,66 @@ export default function GridWalk({
     };
   }
 
-  // Same sphere placement as placeStyle, but with PREVIEW_SCALE folded in
-  // as part of the same transform — this is the only thing that makes a
-  // card's always-full-size content look small at rest. Kept as a
-  // separate function (rather than an extra placeStyle param) because
-  // this exact string, with this exact scale, is also what diveOut hands
-  // the card back to when a dive finishes — see cardRestTransform below.
+  // Same sphere placement as placeStyle, but with this card's own
+  // previewScale folded in as part of the same transform — this is the
+  // only thing that makes a card's always-full-size content look small
+  // at rest. previewScale targets the same rest WIDTH (PREVIEW_TARGET_W)
+  // for every card, so height varies with each card's own aspect ratio
+  // instead of every card being forced square.
   function cardRestTransform(section: SectionDef): string {
-    return `translate(-50%, -50%) rotateY(${section.x}deg) rotateX(${-section.y}deg) translateZ(${-(SPHERE_R + section.z)}px) scale(${PREVIEW_SCALE})`;
+    const previewScale = PREVIEW_TARGET_W / section.w;
+    return `translate(-50%, -50%) rotateY(${section.x}deg) rotateX(${-section.y}deg) translateZ(${-(SPHERE_R + section.z)}px) scale(${previewScale})`;
   }
 
   function cardPlaceStyle(section: SectionDef): React.CSSProperties {
-    return { transform: cardRestTransform(section) };
+    return { transform: cardRestTransform(section), width: section.w, height: section.h };
   }
 
+  // Dive-in / dive-out. There is no FLIP and no reparenting: diving sets
+  // the normal rotation travelTarget (exactly what "jump to" sets) and a
+  // zoom2dTarget (see applyZoom2d/measureCenteredRect above), and the one
+  // shared animate loop eases both — so pointing the camera at a card and
+  // zooming into it are the same camera move, converging together. The
+  // bar at the bottom stays usable mid-dive: clicking a different jump
+  // pill or card calls this again to retarget straight to it, without a
+  // dive-out step first.
   function diveInto(section: SectionDef) {
-    if (dragMoved.current || diving) return;
+    if (dragMoved.current) return;
+    if (diving && activeId === section.id) return;
+
+    const fitScale = Math.min(1, (window.innerWidth * 0.92) / section.w, (window.innerHeight * 0.9) / section.h);
+    const targetWidth = section.w * fitScale;
+    const targetHeight = section.h * fitScale;
+    const centeredRect = measureCenteredRect(section);
+    if (!centeredRect) return;
+    zoomOriginX.current = centeredRect.left + centeredRect.width / 2;
+    zoomOriginY.current = centeredRect.top + centeredRect.height / 2;
+    // The sphere's perspective keystones a card more the further its
+    // angle is from dead ahead — width and height foreshorten by
+    // different amounts, so a card near the edge of the sphere doesn't
+    // measure at its natural aspect ratio even once centred. Taking
+    // whichever axis needs the smaller zoom keeps every card on-screen.
+    const target = Math.min(targetWidth / centeredRect.width, targetHeight / centeredRect.height);
+    zoom2dTarget.current = target;
+    zoomPivotK.current = target;
+
+    travelTo(section.x, section.y);
     setActiveId(section.id);
-
-    const el = cardRefs.current[section.id];
-    if (!el || !rigRef.current) return;
-
-    // Measure the card at its current, still-on-the-sphere on-screen
-    // rect ("First"), then reparent it to <body> at its real natural
-    // size ("Last" — nothing about its own layout changes, only where
-    // it lives in the DOM) and immediately apply a transform that makes
-    // it visually occupy exactly the First rect ("Invert"), before a
-    // single frame paints. Playing that transform back to identity is
-    // the "Play" step below. This all happens synchronously, in the same
-    // tick as the click — the camera reorients in the background via
-    // snapCameraTo below, but nothing here waits on it.
-    const firstRect = el.getBoundingClientRect();
-    restRectRef.current = { left: firstRect.left, top: firstRect.top, width: firstRect.width, height: firstRect.height };
-
-    snapCameraTo(section.x, section.y);
-
-    reparented.current = { el, originalParent: rigRef.current };
-    document.body.appendChild(el);
-    el.style.transition = "none";
-    el.style.position = "fixed";
-    el.style.margin = "0";
-    el.style.zIndex = "45";
-    el.style.left = "0";
-    el.style.top = "0";
-    // translate+scale only places an element at a given rect when the
-    // transform originates from its top-left corner — the CSS default is
-    // the element's centre, which silently drifts the math by however far
-    // off-centre the card is. Pin it for the whole dive.
-    el.style.transformOrigin = "0 0";
-
-    // Scale the card's own natural size to fit the viewport (never its
-    // width/height — those stay NATURAL_W/NATURAL_H always), then
-    // centre it. This is the only screen-size adaptation here, and it's
-    // still one uniform scale, so zooming back out to wherever the card
-    // sits at rest is one continuous transform the whole way, not two
-    // different kinds of animation stitched together.
-    const fitScale = Math.min(1, (window.innerWidth * 0.92) / NATURAL_W, (window.innerHeight * 0.9) / NATURAL_H);
-    const targetW = NATURAL_W * fitScale;
-    const targetH = NATURAL_H * fitScale;
-    const targetL = (window.innerWidth - targetW) / 2;
-    const targetT = (window.innerHeight - targetH) / 2;
-
-    const scale = firstRect.width / NATURAL_W;
-    el.style.transform = `translate(${firstRect.left.toFixed(1)}px, ${firstRect.top.toFixed(1)}px) scale(${scale.toFixed(4)})`;
-    // Force layout/paint before the "Play" step below, or the browser
-    // never registers this Invert transform as a starting point and the
-    // transition animates from whatever the element's previous
-    // transform was instead.
-    void el.offsetHeight;
-
-    stageRef.current?.classList.add("gw-dive-dim");
-
-    el.style.transition = `transform ${DIVE_MS}ms ${DIVE_EASE}, border-color 0.15s ease`;
-    el.style.transform = `translate(${targetL.toFixed(1)}px, ${targetT.toFixed(1)}px) scale(${fitScale.toFixed(4)})`;
   }
 
   function diveOut() {
-    const info = reparented.current;
-    const rect = restRectRef.current;
-    if (!info || !rect) return;
-    const { el, originalParent } = info;
-
-    stageRef.current?.classList.remove("gw-dive-dim");
-
-    const scale = rect.width / NATURAL_W;
-    el.style.transition = `transform ${DIVE_MS}ms ${DIVE_EASE}, border-color 0.15s ease`;
-    el.style.transform = `translate(${rect.left.toFixed(1)}px, ${rect.top.toFixed(1)}px) scale(${scale.toFixed(4)})`;
-
-    window.setTimeout(() => {
-      // Hand the card back to the rig at its usual sphere position. The
-      // transform is set explicitly to the resting value (rather than
-      // cleared to "") because React's own diff against this same style
-      // prop sees no change across this render and won't reapply it
-      // otherwise, leaving whatever we last set here in place.
-      const section = sections.find((s) => s.id === activeId);
-      el.style.transition = "none";
-      el.style.position = "";
-      el.style.margin = "";
-      el.style.left = "";
-      el.style.top = "";
-      el.style.zIndex = "";
-      el.style.transformOrigin = "";
-      if (section) el.style.transform = cardRestTransform(section);
-      originalParent.appendChild(el);
-      reparented.current = null;
-      restRectRef.current = null;
+    if (!diving) return;
+    // Only the flat zoom reverses — the rotation stays exactly where it
+    // is, so the sphere settles back to the same place the card was
+    // dived into from, the same way "jump to" leaves the camera wherever
+    // it last pointed.
+    zoom2dTarget.current = 1;
+    zoom2dOnSettleRef.current = () => {
+      zoomOriginX.current = null;
+      zoomOriginY.current = null;
+      zoomPivotK.current = null;
       setActiveId(null);
-    }, DIVE_MS + 40);
+    };
   }
 
   const stats: { x: number; y: number; stat: GridWalkStat | null }[] = [
@@ -591,17 +607,14 @@ export default function GridWalk({
               }}
               className={
                 "gw-card" +
-                // Applied for the whole dive (both the camera-travel wait
-                // and the grown view), so the active card can't be
-                // clicked/hovered again while that's in progress.
-                // Both classes last the whole dive. They're driven by
-                // activeId (React-rendered) rather than toggled
-                // imperatively in diveInto/diveOut, because an imperative
-                // classList.add right before diveInto's reparent gets
-                // wiped out by the re-render that setActiveId itself
-                // schedules moments later — React overwrites className
-                // wholesale on every render of this element.
-                (section.id === activeId ? " gw-card-inert gw-card-diving" : "") +
+                // Applied for the whole dive, so the active card can't be
+                // clicked/hovered again while that's in progress. Every
+                // other card gets gw-faded instead — dimmed so attention
+                // stays on the target, but still visible and still
+                // growing/sliding with the same camera move, never hidden
+                // or removed, exactly like an unfocused Miro frame
+                // receding as you zoom into its neighbour.
+                (section.id === activeId ? " gw-card-inert" : "") +
                 (diving && section.id !== activeId ? " gw-faded" : "")
               }
               style={cardPlaceStyle(section)}
@@ -674,8 +687,14 @@ export default function GridWalk({
         Back
       </button>
 
-      <div className={"gw-topbar" + (diving ? " gw-hide" : "")}>
-        <div className="gw-brand">
+      {/* Stays on screen through a dive — the card zooms in behind it,
+          never over it, and the theme toggle (the only place to reach it
+          on this page, since NavBar hides itself on "/") needs to stay
+          reachable the whole time. Just the brand mark hides while diving
+          — the Back button sits in the same top-left corner and would
+          otherwise overlap it. */}
+      <div className="gw-topbar">
+        <div className={"gw-brand" + (diving ? " gw-hide" : "")}>
           <span className="gw-brand-mark" aria-hidden="true">
             <svg width="22" height="14" viewBox="0 0 22 14" fill="currentColor">
               <path d="M0 14L6 0h4L4 14H0z" />
@@ -689,11 +708,15 @@ export default function GridWalk({
           <button type="button" className="gw-about-link" onClick={() => router.push("/about")}>
             About
           </button>
+          <ThemeToggle />
           <SeasonSelector initialSeason={season} />
         </div>
       </div>
 
-      <div className={"gw-jumpbar" + (diving ? " gw-hide" : "")}>
+      {/* Also stays visible and usable through a dive: clicking another
+          pill (or Reset) retargets straight to it/out without needing
+          Back first — see diveInto/diveOut. */}
+      <div className="gw-jumpbar">
         <span className="gw-jumpbar-label">Jump to</span>
         <div className="gw-jumpbar-pills">
           {sections.map((section) => (
@@ -706,7 +729,11 @@ export default function GridWalk({
               {section.title}
             </button>
           ))}
-          <button type="button" className="gw-jump-pill gw-jump-reset" onClick={() => travelTo(0, 0)}>
+          <button
+            type="button"
+            className="gw-jump-pill gw-jump-reset"
+            onClick={() => (diving ? diveOut() : travelTo(0, 0))}
+          >
             <span className="gw-reset-dot" aria-hidden="true" />
             Reset view
           </button>
