@@ -76,11 +76,27 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            39 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            40 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">40</span>
+                <b>Grid Walk: one continuous zoom, not two</b>
+                <span>
+                  Diving into a card used to rotate the camera toward it first and only start
+                  growing it once that settled &mdash; a single object, but still two animations
+                  stitched together. It now starts growing the instant you click, with the camera
+                  reorienting invisibly in the background rather than beforehand, so it reads as
+                  one continuous zoom the whole way &mdash; closer to zooming into a photo on a
+                  shared board than opening something new. Also fixed the zoom math itself, which
+                  assumed it was scaling from a card&apos;s corner when it was actually scaling
+                  from its centre; most of the time this only nudged the start position by a few
+                  pixels, but it&apos;s now exact for every card. Mocked up and approved before
+                  shipping.
+                </span>
+              </li>
               <li>
                 <span className="seq">39</span>
                 <b>Grid Walk: true one-object zoom</b>
