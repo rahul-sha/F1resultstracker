@@ -150,17 +150,22 @@
   width: max-content;
   height: max-content;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+  /* Solid, no backdrop-filter: a blur inside a preserve-3d scene forces
+     Chrome to flatten and re-split the planes, which showed up as hard
+     rectangular cut-offs on neighbouring cards. */
+  background: var(--surface-2);
   border: 1px solid var(--border-hairline);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   cursor: pointer;
-  backdrop-filter: blur(6px);
   overflow: hidden;
-  transition: border-color 0.15s ease, opacity 0.5s ease, filter 0.5s ease, box-shadow 0.3s ease;
+  transition: opacity 0.4s ease;
 }
 
-.gw-card:hover {
-  border-color: color-mix(in srgb, var(--accent) 60%, var(--border-hairline));
+/* Until a card's natural size is measured it can't be given its preview
+   scale, so it stays invisible rather than flashing at full size. */
+.gw-card-pending {
+  opacity: 0;
+  transition: none;
 }
 
 .gw-card:focus-visible {
@@ -173,8 +178,9 @@
    the same camera move, never hidden or removed, exactly like an
    unfocused Miro frame receding as you zoom into its neighbour. */
 .gw-faded {
-  opacity: 0.1;
-  filter: blur(3px);
+  /* Opacity only: a filter here also flattened the card in 3D and cut it
+     off where it met its neighbours. */
+  opacity: 0.12;
   pointer-events: none;
 }
 
@@ -184,66 +190,9 @@
   pointer-events: none;
 }
 
-.gw-card-tab {
-  position: absolute;
-  top: 0;
-  left: 48px;
-  width: 60px;
-  height: 7px;
-  border-radius: 0 0 4px 4px;
-}
-
 .gw-card-inner {
   position: relative;
   padding: 1.5rem 1.6rem 1.8rem;
-}
-
-.gw-card-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 0.4rem;
-  font-size: 0.78rem;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-}
-
-.gw-card-eyebrow-dot {
-  width: 6px;
-  height: 6px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.gw-card-inner h2 {
-  margin: 0 0 0.6rem;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.gw-card-stat {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  margin: 0 0 1.1rem;
-}
-
-.gw-card-stat b {
-  font-size: 1rem;
-  color: var(--text-primary);
-}
-
-.gw-quote {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  max-width: 180px;
-  font-size: 0.8rem;
-  font-style: italic;
-  color: var(--text-muted);
-  pointer-events: none;
-  text-align: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -253,17 +202,23 @@
   }
 }
 
+@media (max-width: 480px) {
+  /* Just the mark on phones, so the brand and the four topbar controls
+     share one row instead of wrapping. */
+  .gw-brand-text {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
   .gw-headline h1 {
     font-size: 1.4rem;
   }
 }
 
-/* No mobile size override needed for .gw-card: at rest it's always shown
-   via previewScale regardless of viewport, and a dive now zooms to the
-   card's own natural size, which can be wider or taller than the
-   viewport by design — panning (not shrinking to fit) is how the user
-   reaches the rest of it. */
+/* No mobile size override needed for .gw-card: at rest it's fitted into
+   PREVIEW_BOX, and a dive fits it between the top and bottom bars, with
+   scroll or pinch zoom for anything finer. */
 
 .gw-back-btn {
   position: fixed;
@@ -344,33 +299,6 @@
   color: var(--text-primary);
 }
 
-.gw-mini-chip {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  padding: 0.3rem 0.6rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-3) 94%, transparent);
-  border: 1px solid var(--border-hairline);
-  color: var(--text-primary);
-  font-size: 0.7rem;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transform-origin: center;
-  transition: opacity 0.15s ease;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.22);
-}
-
-.gw-mini-chip.show {
-  opacity: 1;
-}
-
-.gw-mini-chip-code {
-  color: var(--accent);
-  font-weight: 700;
-}
-
 .gw-topbar {
   position: fixed;
   top: 0;
@@ -397,6 +325,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.95rem;
+  white-space: nowrap;
   color: var(--text-primary);
 }
 
@@ -448,6 +377,11 @@
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
+.gw-jump-pill.active {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border-hairline));
+  color: var(--text-primary);
+}
+
 .gw-jump-pill:hover {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--border-hairline));
   color: var(--text-primary);
@@ -473,6 +407,10 @@
 @media (max-width: 640px) {
   .gw-topbar {
     padding: 0.75rem 0.9rem;
+  }
+  .gw-topbar-right {
+    flex-wrap: nowrap;
+    gap: 0.4rem;
   }
   .gw-jumpbar {
     padding: 0.6rem 0.9rem;
