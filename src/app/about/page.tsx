@@ -76,11 +76,24 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            42 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            43 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">43</span>
+                <b>Grid Walk: full-size cards, free panning</b>
+                <span>
+                  Each of the eight cards used to shrink to fit a fixed preview box; now every
+                  card sizes itself from its own content, so a wide 24-column heatmap stays at
+                  its natural width instead of being squeezed down. Diving into a card zooms all
+                  the way to that natural size &mdash; crisp and fully readable &mdash; rather
+                  than stopping at a viewport-fit cap. And once zoomed in, the camera keeps
+                  rotating with a drag, so you can pan across to a neighbouring card without
+                  backing out first.
+                </span>
+              </li>
               <li>
                 <span className="seq">42</span>
                 <b>Grid Walk: tidier topbar, clockwise cards</b>

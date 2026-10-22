@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./gridwalk.css";
 import SeasonSelector from "@/components/SeasonSelector";
@@ -45,8 +45,6 @@ type SectionDef = {
   x: number;
   y: number;
   z: number;
-  w: number;
-  h: number;
   eyebrow: string;
   tabColor: string;
   title: string;
@@ -134,6 +132,18 @@ export default function GridWalk({
   const distortRef = useRef<HTMLDivElement>(null);
   const dispRef = useRef<SVGFEDisplacementMapElement>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const backBtnRef = useRef<HTMLButtonElement>(null);
+  const brandRef = useRef<HTMLDivElement>(null);
+  const headlineRef = useRef<HTMLDivElement>(null);
+
+  // Each card's real, unscaled content size — measured via
+  // offsetWidth/offsetHeight (layout-only, unaffected by the scale() a
+  // card's rest/dive transform carries) rather than taken from a
+  // design-time constant, so a card's rest-preview size and its dive's
+  // full-size target both come from what the card actually rendered.
+  // State, not a ref: cardRestTransform reads it during render to build
+  // each card's inline style, and a ref isn't safe to read there.
+  const [naturalSizes, setNaturalSizes] = useState<Record<string, { w: number; h: number }>>({});
 
   const camYaw = useRef(0);
   const camPitch = useRef(0);
@@ -188,8 +198,6 @@ export default function GridWalk({
       x: 0,
       y: 24,
       z: 0,
-      w: 940,
-      h: 640,
       eyebrow: "/results",
       tabColor: "#ff8000",
       title: "Results",
@@ -203,8 +211,6 @@ export default function GridWalk({
       x: 30,
       y: 17,
       z: 0,
-      w: 940,
-      h: 420,
       eyebrow: "/results",
       tabColor: "#ff8000",
       title: "Constructors",
@@ -217,8 +223,6 @@ export default function GridWalk({
       x: 42,
       y: 0,
       z: 0,
-      w: 660,
-      h: 460,
       eyebrow: "/results",
       tabColor: "#66d9ef",
       title: "Points Evolution",
@@ -231,8 +235,6 @@ export default function GridWalk({
       x: 30,
       y: -17,
       z: 0,
-      w: 940,
-      h: 640,
       eyebrow: "/positions",
       tabColor: "#3671c6",
       title: "Positions",
@@ -245,8 +247,6 @@ export default function GridWalk({
       x: 0,
       y: -24,
       z: 0,
-      w: 560,
-      h: 560,
       eyebrow: "/positions",
       tabColor: "#3671c6",
       title: "Finish Frequency",
@@ -259,8 +259,6 @@ export default function GridWalk({
       x: -30,
       y: -17,
       z: 0,
-      w: 560,
-      h: 560,
       eyebrow: "/positions",
       tabColor: "#00d2be",
       title: "Qualifying Frequency",
@@ -273,8 +271,6 @@ export default function GridWalk({
       x: -42,
       y: 0,
       z: 0,
-      w: 480,
-      h: 480,
       eyebrow: "/positions",
       tabColor: "#ff8000",
       title: "Driver Podiums",
@@ -298,8 +294,6 @@ export default function GridWalk({
       x: -30,
       y: 17,
       z: 0,
-      w: 480,
-      h: 440,
       eyebrow: "/positions",
       tabColor: "#f92672",
       title: "Constructor Podiums",
@@ -317,6 +311,32 @@ export default function GridWalk({
       ),
     },
   ];
+
+  // Measures every card's real natural size after each render. Runs with
+  // no dependency array (every commit), but only re-renders when a
+  // measurement actually changed, so it settles after at most one extra
+  // pass once a season's content is stable. useLayoutEffect (not
+  // useEffect) so the very first measurement — and the re-render it
+  // triggers to apply the correct previewScale — both happen before the
+  // browser paints, with no flash of unscaled, full-size cards.
+  useLayoutEffect(() => {
+    setNaturalSizes((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      sections.forEach((section) => {
+        const el = cardRefs.current[section.id];
+        if (!el) return;
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        const p = prev[section.id];
+        if (!p || p.w !== w || p.h !== h) {
+          next[section.id] = { w, h };
+          changed = true;
+        }
+      });
+      return changed ? next : prev;
+    });
+  });
 
   function travelTo(yaw: number, pitch: number) {
     travelTarget.current = { yaw: clamp(yaw, BOUND_YAW), pitch: clamp(pitch, BOUND_PITCH) };
@@ -374,6 +394,32 @@ export default function GridWalk({
     return rect;
   }
 
+  // Lets go of "focused on one card" without touching the zoom at all —
+  // called the moment a drag turns into a real move while diving (see
+  // onPointerMove below). Camera rotation keeps running under the still-
+  // zoomed stage exactly as it would at rest, which is what produces the
+  // "pan around a zoomed-in canvas" feel: rotation and the flat zoom were
+  // always two independent layers, so releasing focus needs no new math,
+  // just un-dimming the other cards and dropping which one is "active".
+  // syncChrome (driven off the zoom level, not activeId) keeps the Back
+  // button and headline/brand correct through this.
+  function releaseFocus() {
+    setActiveId(null);
+  }
+
+  // Back button and headline/brand used to be toggled once, keyed off
+  // activeId/diving. Now that releaseFocus can clear activeId while
+  // staying zoomed in, that chrome has to track the actual zoom level
+  // continuously instead — called every tick from animate(). Written as a
+  // direct DOM write (like applyCamera/applyZoom2d above), not React
+  // state, so it costs nothing to run every frame.
+  function syncChrome() {
+    const zoomed = zoom2d.current > 1.01 || zoom2dTarget.current !== null;
+    backBtnRef.current?.classList.toggle("show", zoomed);
+    brandRef.current?.classList.toggle("gw-hide", zoomed);
+    headlineRef.current?.classList.toggle("gw-hide", zoomed);
+  }
+
   useEffect(() => {
     const wrap = wrapRef.current;
     const rig = rigRef.current;
@@ -384,7 +430,11 @@ export default function GridWalk({
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     function onPointerDown(e: PointerEvent) {
-      if (diving) return;
+      // Used to bail out entirely while diving — the camera was "inside"
+      // a focused card, not free to pan. Now that diving is just "the
+      // same canvas, zoomed in," a drag is always allowed to start; if it
+      // turns into a real move, onPointerMove's releaseFocus() call below
+      // lets go of "focused" while leaving the zoom exactly where it is.
       dragging.current = true;
       dragMoved.current = false;
       travelTarget.current = null;
@@ -409,7 +459,10 @@ export default function GridWalk({
       if (!dragging.current) return;
       const dx = e.clientX - startX.current;
       const dy = e.clientY - startY.current;
-      if (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD) dragMoved.current = true;
+      if (!dragMoved.current && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+        dragMoved.current = true;
+        if (diving) releaseFocus();
+      }
 
       const nextYaw = clamp(startYaw.current + dx * YAW_K, BOUND_YAW);
       const nextPitch = clamp(startPitch.current + dy * PITCH_K, BOUND_PITCH);
@@ -479,6 +532,8 @@ export default function GridWalk({
         }
       }
 
+      syncChrome();
+
       if (distortLayer) {
         const targetDistort = reduceMotion ? 8 : Math.min(95, 10 + pointerSpeed.current * 1.6);
         distortScale.current += (targetDistort - distortScale.current) * 0.12;
@@ -520,15 +575,21 @@ export default function GridWalk({
   // previewScale folded in as part of the same transform — this is the
   // only thing that makes a card's always-full-size content look small
   // at rest. previewScale targets the same rest WIDTH (PREVIEW_TARGET_W)
-  // for every card, so height varies with each card's own aspect ratio
-  // instead of every card being forced square.
+  // for every card, off its MEASURED natural width (naturalSizes, set by
+  // the useLayoutEffect above), so height varies with each card's own
+  // real aspect ratio instead of every card being forced square — and a
+  // 24-round heatmap keeps its true width instead of being squeezed to
+  // fit. Before the first measurement lands, naturalW falls back to
+  // PREVIEW_TARGET_W (previewScale 1) — harmless, since useLayoutEffect
+  // corrects it before the browser ever paints the unscaled size.
   function cardRestTransform(section: SectionDef): string {
-    const previewScale = PREVIEW_TARGET_W / section.w;
+    const naturalW = naturalSizes[section.id]?.w ?? PREVIEW_TARGET_W;
+    const previewScale = PREVIEW_TARGET_W / naturalW;
     return `translate(-50%, -50%) rotateY(${section.x}deg) rotateX(${-section.y}deg) translateZ(${-(SPHERE_R + section.z)}px) scale(${previewScale})`;
   }
 
   function cardPlaceStyle(section: SectionDef): React.CSSProperties {
-    return { transform: cardRestTransform(section), width: section.w, height: section.h };
+    return { transform: cardRestTransform(section) };
   }
 
   // Dive-in / dive-out. There is no FLIP and no reparenting: diving sets
@@ -539,23 +600,35 @@ export default function GridWalk({
   // bar at the bottom stays usable mid-dive: clicking a different jump
   // pill or card calls this again to retarget straight to it, without a
   // dive-out step first.
+  // Zooms to the card's own natural size — no viewport-fit cap, so a
+  // 24-round heatmap can end up wider than the screen (panning, not
+  // shrinking, is how the rest of it gets reached; see releaseFocus
+  // below). zoom2dTarget is NOT a flat PREVIEW_TARGET_W/naturalW inverse:
+  // that only undoes the CSS scale() previewScale applied. centeredRect
+  // (measured "cold", at zoom2d===1) also already carries this card's own
+  // 3D-perspective keystone — an off-centre card's "centred" bounding box
+  // is the AABB of a slightly skewed quad, not a clean uniform scale of
+  // its natural box, so its width and height ratios to natural size
+  // disagree. There's no single scale factor that undoes a skew exactly,
+  // so this takes the geometric mean of the two axis ratios as the one
+  // number the flat 2D zoom() can use — close to true natural size for a
+  // near-centre card, still "full, readable size" rather than noticeably
+  // stretched for one further round the sphere.
   function diveInto(section: SectionDef) {
     if (dragMoved.current) return;
     if (diving && activeId === section.id) return;
 
-    const fitScale = Math.min(1, (window.innerWidth * 0.92) / section.w, (window.innerHeight * 0.9) / section.h);
-    const targetWidth = section.w * fitScale;
-    const targetHeight = section.h * fitScale;
     const centeredRect = measureCenteredRect(section);
     if (!centeredRect) return;
     zoomOriginX.current = centeredRect.left + centeredRect.width / 2;
     zoomOriginY.current = centeredRect.top + centeredRect.height / 2;
-    // The sphere's perspective keystones a card more the further its
-    // angle is from dead ahead — width and height foreshorten by
-    // different amounts, so a card near the edge of the sphere doesn't
-    // measure at its natural aspect ratio even once centred. Taking
-    // whichever axis needs the smaller zoom keeps every card on-screen.
-    const target = Math.min(targetWidth / centeredRect.width, targetHeight / centeredRect.height);
+
+    const natural = naturalSizes[section.id];
+    const naturalW = natural?.w ?? centeredRect.width;
+    const naturalH = natural?.h ?? centeredRect.height;
+    const wRatio = naturalW / centeredRect.width;
+    const hRatio = naturalH / centeredRect.height;
+    const target = Math.sqrt(wRatio * hRatio);
     zoom2dTarget.current = target;
     zoomPivotK.current = target;
 
@@ -564,7 +637,7 @@ export default function GridWalk({
   }
 
   function diveOut() {
-    if (!diving) return;
+    if (zoom2d.current <= 1.001 && zoom2dTarget.current === null) return;
     // Only the flat zoom reverses — the rotation stays exactly where it
     // is, so the sphere settles back to the same place the card was
     // dived into from, the same way "jump to" leaves the camera wherever
@@ -592,7 +665,7 @@ export default function GridWalk({
 
       <div className="gw-stage" ref={stageRef}>
         <div className="gw-rig" ref={rigRef}>
-          <div className={"gw-headline" + (diving ? " gw-hide" : "")} style={placeStyle(0, 0)}>
+          <div className="gw-headline" ref={headlineRef} style={placeStyle(0, 0)}>
             <h1>Grid Walk</h1>
             <p>{season} season — drag to look around, click a card to dive in.</p>
           </div>
@@ -666,7 +739,8 @@ export default function GridWalk({
 
       <button
         type="button"
-        className={"gw-back-btn" + (diving ? " show" : "")}
+        className="gw-back-btn"
+        ref={backBtnRef}
         onClick={diveOut}
         aria-label="Back to Grid Walk"
       >
@@ -681,9 +755,14 @@ export default function GridWalk({
           on this page, since NavBar hides itself on "/") needs to stay
           reachable the whole time. Just the brand mark hides while diving
           — the Back button sits in the same top-left corner and would
-          otherwise overlap it. */}
+          otherwise overlap it. The Back button, brand and headline are
+          all kept in sync with the current zoom level by syncChrome(),
+          called every tick, rather than by activeId/diving here — a dive
+          can release its "focused card" while staying zoomed in (see
+          releaseFocus), and this chrome needs to track the zoom, not
+          that. */}
       <div className="gw-topbar">
-        <div className={"gw-brand" + (diving ? " gw-hide" : "")}>
+        <div className="gw-brand" ref={brandRef}>
           <span className="gw-brand-mark" aria-hidden="true">
             <svg width="22" height="14" viewBox="0 0 22 14" fill="currentColor">
               <path d="M0 14L6 0h4L4 14H0z" />
@@ -722,7 +801,7 @@ export default function GridWalk({
           <button
             type="button"
             className="gw-jump-pill gw-jump-reset"
-            onClick={() => (diving ? diveOut() : travelTo(0, 0))}
+            onClick={() => (zoom2d.current > 1.001 || zoom2dTarget.current !== null ? diveOut() : travelTo(0, 0))}
           >
             <span className="gw-reset-dot" aria-hidden="true" />
             Reset view

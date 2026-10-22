@@ -23,7 +23,12 @@ language.
   toward the card and zooms the whole scene at once, so the whole picture
   grows together and the other cards visibly recede, the way zooming into
   one frame on a shared board does; a Back button (or another "Jump to"
-  pill, or Reset) reverses the same zoom. The top and bottom bars —
+  pill, or Reset) reverses the same zoom. Each card sizes itself from its
+  own content rather than a fixed preview box, so a wide table still shows
+  at its natural width, and diving in zooms all the way to that natural
+  size rather than stopping at a viewport-fit cap. Once zoomed in, dragging
+  still rotates the camera, so you can pan straight across to another card
+  without backing out first. The top and bottom bars —
   including the icon-only theme and palette toggles, which only live here
   and in the main nav bar, all pinned to the same height as the About
   button and season switcher — stay on screen and usable throughout.
