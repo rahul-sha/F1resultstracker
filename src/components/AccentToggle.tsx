@@ -31,7 +31,7 @@ function readStoredAccent(): Accent {
   return stored && ORDER.includes(stored) ? stored : "monokai";
 }
 
-export default function AccentToggle() {
+export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean }) {
   const [accent, setAccent] = useState<Accent>(readStoredAccent);
   const [mounted, setMounted] = useState(false);
 
@@ -47,6 +47,21 @@ export default function AccentToggle() {
     setAccent(next);
     applyAccent(next);
     window.localStorage.setItem(STORAGE_KEY, next);
+  }
+
+  if (iconOnly) {
+    return (
+      <button
+        type="button"
+        onClick={cycle}
+        className="icon-toggle-btn flex items-center justify-center rounded-full"
+        style={{ background: "var(--surface-3)", color: "var(--text-primary)" }}
+        aria-label={`Cycle color palette (currently ${mounted ? LABEL[accent] : ""})`}
+        title={mounted ? LABEL[accent] : undefined}
+      >
+        <PaletteIcon />
+      </button>
+    );
   }
 
   return (

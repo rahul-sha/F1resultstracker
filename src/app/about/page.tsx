@@ -76,11 +76,25 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            41 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            42 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">42</span>
+                <b>Grid Walk: tidier topbar, clockwise cards</b>
+                <span>
+                  The About button, theme/palette toggles and season switcher were each a
+                  slightly different height &mdash; now pinned to the same 36px. The theme and
+                  palette toggles dropped their text labels for icon-only buttons. The three
+                  floating stat chips in the middle of the sphere (duplicates of numbers already
+                  shown on their own cards) were removed to keep that space clean. The eight cards
+                  now sit on a clean 8-point ring, 45&deg; apart, clockwise from the top, in the
+                  same order as the jump bar below &mdash; looking around the sphere now matches
+                  clicking through the pills left to right.
+                </span>
+              </li>
               <li>
                 <span className="seq">41</span>
                 <b>Grid Walk: one shared camera, not an isolated card</b>
