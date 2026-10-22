@@ -76,11 +76,27 @@ export default function AboutPage() {
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            43 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            44 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">44</span>
+                <b>Grid Walk: scroll and pinch zoom, cleaner cards</b>
+                <span>
+                  Scroll, trackpad pinch or a two-finger pinch now zooms Grid Walk in and out
+                  around the pointer, so how much you see is up to you. Diving into a card fits
+                  the whole card between the top and bottom bars instead of spilling past them.
+                  Cards no longer flash up full size and piled together while the page loads, no
+                  longer cut into each other on the sphere, and run clockwise in jump-bar order.
+                  The hover chips, coloured tabs and stat lines are gone; each card now carries
+                  the same title and subtitle as its section on the Results or Positions page.
+                  Also fixed squashed podium bars inside cards, a stray &ldquo;no podiums&rdquo;
+                  line on the Constructor Podiums card, the phone top bar wrapping onto two rows,
+                  and mixed heading capitalisation on the Positions page.
+                </span>
+              </li>
               <li>
                 <span className="seq">43</span>
                 <b>Grid Walk: full-size cards, free panning</b>

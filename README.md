@@ -12,31 +12,29 @@ language.
 - **Home / Grid Walk** (`/`) — the site's entry point: a drag-navigable
   3D scene rather than a page of links. The whole view sits "inside" a
   sphere; click and drag to look around (the content follows the cursor
-  direction). Eight cards sit on a clean 8-point ring, 45° apart, in
-  clockwise order matching the "Jump to" bar below — Results,
-  Constructors, Points Evolution, Positions, Finish Frequency, Qualifying
-  Frequency, Driver Podiums and Constructor Podiums — each one *is* its
-  real heatmap, chart, grid or podium bars for the selected season, shown
-  small and keeping its own natural width and height rather than a forced
-  square. Clicking a card, or its pill in the "Jump to" bar, doesn't open
-  a new page or swap in a separate detail view: one shared camera rotates
-  toward the card and zooms the whole scene at once, so the whole picture
-  grows together and the other cards visibly recede, the way zooming into
-  one frame on a shared board does; a Back button (or another "Jump to"
-  pill, or Reset) reverses the same zoom. Each card sizes itself from its
-  own content rather than a fixed preview box, so a wide table still shows
-  at its natural width, and diving in zooms all the way to that natural
-  size rather than stopping at a viewport-fit cap. Once zoomed in, dragging
-  still rotates the camera, so you can pan straight across to another card
-  without backing out first. The top and bottom bars —
-  including the icon-only theme and palette toggles, which only live here
-  and in the main nav bar, all pinned to the same height as the About
-  button and season switcher — stay on screen and usable throughout.
-  About stays its own page, linked from the top bar. A cursor-reactive
-  distortion effect ripples a faint ring pattern in the background, over
-  the same drifting glow used site-wide. Results and Positions keep their
-  own full pages too — Grid Walk's cards reuse the exact same data and
-  components rather than duplicating them.
+  direction), and scroll, pinch on a trackpad, or pinch with two fingers
+  on a phone to zoom in and out around the pointer. Eight cards sit on an
+  8-point ring, 45° apart, running clockwise from the top in the same
+  order as the "Jump to" bar below — Results, Constructors, Driver Points
+  Evolution, Positions, Finish Frequency, Qualifying Frequency, Driver
+  Podiums and Constructor Podiums. Each one *is* its real heatmap, chart,
+  grid or podium bars for the selected season, under the same title and
+  subtitle it has on its own page, sized from its own content and shown
+  small at rest within the same square footprint as the others. Cards
+  stay hidden until they have been measured, so they never flash up full
+  size on load. Clicking a card, or its pill in the "Jump to" bar,
+  rotates one shared camera toward it and zooms the whole scene so the
+  card fits between the top and bottom bars; the other cards dim and
+  recede, the way zooming into one frame on a shared board does. From
+  there, scroll or pinch for more detail, or drag to pan across to a
+  neighbouring card. Back zooms out again and Reset view also re-centres
+  the ring. The top and bottom bars — including the icon-only theme and
+  palette toggles, all pinned to the same height as the About button and
+  season switcher — stay on screen and usable throughout. A
+  cursor-reactive distortion effect ripples a faint ring pattern in the
+  background, over the same drifting glow used site-wide. Results and
+  Positions keep their own full pages too — Grid Walk's cards reuse the
+  exact same data and components rather than duplicating them.
 - **Results** (`/results`) — every driver's points for each round of a
   season, shaded by magnitude, with a season points total bar per driver,
   and a matching per-race heatmap for Constructors underneath. Pole

@@ -34,15 +34,15 @@ async function QualifyingPositionsSection({ season }: { season: number }) {
   }
 
   return (
-    <section id="positions-qualifying" data-rail-label="Qualifying frequency">
+    <section id="positions-qualifying" data-rail-label="Qualifying Frequency">
       <div className="flex items-start justify-between gap-4">
         <div className="section-header">
           <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-            Qualifying frequency
+            Qualifying Frequency
           </h2>
           <p className="text-sm">How often each driver has qualified in each grid position.</p>
         </div>
-        <ShareButton targetId="positions-qualifying" fileName={`f1-qualifying-frequency-${season}`} label="the Qualifying frequency grid" />
+        <ShareButton targetId="positions-qualifying" fileName={`f1-qualifying-frequency-${season}`} label="the Qualifying Frequency grid" />
       </div>
       <QualifyingPositionsGrid summary={summary} />
       <p className="graphic-caption">
@@ -61,15 +61,15 @@ async function FinishPositionsSections({ season }: { season: number }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <section id="positions-finish" data-rail-label="Finish frequency">
+      <section id="positions-finish" data-rail-label="Finish Frequency">
         <div className="flex items-start justify-between gap-4">
           <div className="section-header">
             <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-              Finish frequency
+              Finish Frequency
             </h2>
             <p className="text-sm">How often each driver has finished in each position.</p>
           </div>
-          <ShareButton targetId="positions-finish" fileName={`f1-finish-frequency-${season}`} label="the Finish frequency grid" />
+          <ShareButton targetId="positions-finish" fileName={`f1-finish-frequency-${season}`} label="the Finish Frequency grid" />
         </div>
         <FinishPositionsGrid summary={summary} />
         <p className="graphic-caption">Includes a DNF count for each driver.</p>
@@ -79,15 +79,15 @@ async function FinishPositionsSections({ season }: { season: number }) {
         <QualifyingPositionsSection season={season} />
       </Suspense>
 
-      <section id="positions-podiums" data-rail-label="Podium finishes">
+      <section id="positions-podiums" data-rail-label="Podium Finishes">
         <div className="flex items-start justify-between gap-4">
           <div className="section-header">
             <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-              Podium finishes
+              Podium Finishes
             </h2>
             <p className="text-sm">1st/2nd/3rd place finishes per driver and team.</p>
           </div>
-          <ShareButton targetId="positions-podiums" fileName={`f1-podium-finishes-${season}`} label="the Podium finishes chart" />
+          <ShareButton targetId="positions-podiums" fileName={`f1-podium-finishes-${season}`} label="the Podium Finishes chart" />
         </div>
         <PodiumBars
           drivers={summary.driverPodiums.map((d) => ({
@@ -130,7 +130,7 @@ export default async function PositionsPage({
         </div>
 
         <div className="flex flex-col gap-8">
-          <div id="positions-heatmap" data-rail-label="Positions heatmap">
+          <div id="positions-heatmap" data-rail-label="Positions Heatmap">
             <Suspense
               fallback={
                 <p className="text-sm" style={{ color: "var(--text-secondary)" }}>

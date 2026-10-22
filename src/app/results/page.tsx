@@ -121,7 +121,7 @@ export default async function ResultsPage({
           <ShareButton targetId="results-heatmap" fileName={`f1-results-${season}`} label="the Results heatmap" />
         </div>
 
-        <div id="results-heatmap" data-rail-label="Results heatmap">
+        <div id="results-heatmap" data-rail-label="Results Heatmap">
           <Suspense
             fallback={
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
@@ -148,7 +148,7 @@ export default async function ResultsPage({
           </Suspense>
         </section>
 
-        <div id="results-evolution-drivers" data-rail-label="Points evolution" className="mt-8">
+        <div id="results-evolution-drivers" data-rail-label="Points Evolution" className="mt-8">
           <Suspense fallback={<p className="text-sm">Loading…</p>}>
             <DriverEvolutionSection season={season} />
           </Suspense>

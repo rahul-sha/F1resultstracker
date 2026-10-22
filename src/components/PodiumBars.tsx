@@ -92,6 +92,12 @@ export default function PodiumBars({
         </span>
       </div>
 
+      {drivers.length === 0 && teams.length === 0 ? (
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          No podium finishes yet this season.
+        </p>
+      ) : null}
+
       {drivers.length > 0 ? (
         <>
           <p className="podium-subhead">Drivers</p>
@@ -101,15 +107,11 @@ export default function PodiumBars({
             ))}
           </div>
         </>
-      ) : (
-        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-          No podium finishes yet this season.
-        </p>
-      )}
+      ) : null}
 
       {teams.length > 0 ? (
         <>
-          <div className="podium-divider" />
+          {drivers.length > 0 ? <div className="podium-divider" /> : null}
           <p className="podium-subhead">Teams</p>
           <div>
             {teams.map((t) => (
