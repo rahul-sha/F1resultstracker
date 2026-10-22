@@ -19,14 +19,19 @@ language.
   the top and bottom bars (never enlarged past its natural size). The
   centred card is at full strength and its neighbours peek in, dimmed, on
   either side. Browse by dragging or swiping (one card per flick), with
-  the side arrows, the ← → keys or the jump-bar pills. Scroll the mouse
+  the side arrows, the ← → keys or the jump-bar tabs. Scroll the mouse
   wheel or pinch (trackpad or two fingers) to zoom around the pointer,
   and drag to pan while zoomed in; a sideways trackpad swipe browses
   instead. Clicking the centred card jumps it to full size, and the Fit
   button (or Esc) brings it back. Cards stay hidden until measured, so
-  they never flash up full size on load. The top bar — About, the
-  icon-only theme and palette toggles, and the season switcher, all the
-  same height — stays on screen throughout, over the same drifting glow
+  they never flash up full size on load. On desktop a single glass nav bar
+  across the top holds the jump tabs plus About, the icon-only theme and
+  palette toggles, and the season switcher; the open card's tab rests at
+  the left of the tab strip, and scrolling the strip itself browses the
+  cards. Beside it, the logo is its own island of the same height that
+  takes you back to the first card, and the zoom controls sit in a small
+  pill in the bottom corner. On phones the controls stay at the top and
+  the jump tabs at the bottom. All of it sits over the same drifting glow
   used site-wide. Behind the cards sits a live grid drawn in the active
   theme's colours: it bends and glows in the accent colour around the
   cursor or a finger, sends a ring outwards on each click or tap, drifts

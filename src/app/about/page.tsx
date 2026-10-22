@@ -82,17 +82,33 @@ export default function AboutPage() {
               Retired the old Results and Positions pages once Grid Walk carried all of their
               graphics, redirecting their links home
             </li>
+            <li>
+              Moved Grid Walk&rsquo;s jump bar into a single top nav bar on desktop, with a
+              logo island that returns to the first card
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            47 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            48 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">48</span>
+                <b>One nav bar at the top</b>
+                <span>
+                  On desktop the &ldquo;Jump to&rdquo; tabs moved to the top and joined About, the
+                  theme and palette toggles, and the season switcher in one glass nav bar, styled
+                  like the original. The open card&rsquo;s tab slides to the left of the strip, and
+                  scrolling the strip itself browses the cards. The logo became its own matching
+                  island that takes you back to the first card, and the zoom controls moved to a
+                  small pill in the corner. Phones keep the bar at the bottom.
+                </span>
+              </li>
               <li>
                 <span className="seq">47</span>
                 <b>Old Results and Positions pages retired</b>
