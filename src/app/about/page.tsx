@@ -70,17 +70,33 @@ export default function AboutPage() {
               per data section — where clicking a card zooms the camera into it in place,
               growing the same card to fill the screen rather than opening a new page
             </li>
+            <li>
+              Rebuilt Grid Walk as a horizontal carousel with drag, swipe, scroll and pinch
+              zoom, fitting every card to the screen
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            44 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            45 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">45</span>
+                <b>Grid Walk becomes a carousel</b>
+                <span>
+                  The &ldquo;inside a sphere&rdquo; ring is gone: the eight cards now sit on one
+                  horizontal strip in jump-bar order, each fitted to the screen, with the centred
+                  card at full strength and its neighbours peeking in either side. Drag or swipe
+                  to browse one card at a time, or use the arrows, the arrow keys or the jump
+                  bar. Scroll or pinch still zooms, clicking the centred card jumps it to full
+                  size, and a Fit button brings it back.
+                </span>
+              </li>
               <li>
                 <span className="seq">44</span>
                 <b>Grid Walk: scroll and pinch zoom, cleaner cards</b>
