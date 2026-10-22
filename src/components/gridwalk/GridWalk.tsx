@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./gridwalk.css";
+import { createLiveGrid } from "./liveGrid";
 import SeasonSelector from "@/components/SeasonSelector";
 import ThemeToggle from "@/components/ThemeToggle";
 import AccentToggle from "@/components/AccentToggle";
@@ -57,6 +58,7 @@ export default function GridWalk({
   const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLCanvasElement>(null);
   const pillsRef = useRef<HTMLDivElement>(null);
   const zoomLevelRef = useRef<HTMLSpanElement>(null);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -448,8 +450,11 @@ export default function GridWalk({
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("resize", onResize);
 
+    const grid = gridRef.current ? createLiveGrid(gridRef.current) : null;
+
     let raf = 0;
-    function tick() {
+    function tick(now: number) {
+      grid?.draw(now, view.current);
       const t = target.current;
       if (t) {
         const v = view.current;
@@ -490,6 +495,7 @@ export default function GridWalk({
       window.removeEventListener("resize", onResize);
       window.clearTimeout(settleTimer);
       cancelAnimationFrame(raf);
+      grid?.destroy();
     };
     // Runs once: everything it reads that changes over time is a ref.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -499,6 +505,7 @@ export default function GridWalk({
     <div className="gw-wrap" ref={wrapRef}>
       <div className="gw-pulse-a" />
       <div className="gw-pulse-b" />
+      <canvas className="gw-grid" ref={gridRef} aria-hidden="true" />
 
       {/* "pending" is removed by the layout effect once every card has been
           measured and placed; React never rewrites this constant className. */}

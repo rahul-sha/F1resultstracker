@@ -74,17 +74,33 @@ export default function AboutPage() {
               Rebuilt Grid Walk as a horizontal carousel with drag, swipe, scroll and pinch
               zoom, fitting every card to the screen
             </li>
+            <li>
+              Drew a live grid behind Grid Walk in the theme&rsquo;s own colours that bends and
+              glows round the cursor, ripples on each press, and carries the odd telemetry pulse
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            45 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            46 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">46</span>
+                <b>A live grid behind Grid Walk</b>
+                <span>
+                  A faint grid now sits behind the carousel, drawn in the active theme&rsquo;s
+                  colours. It bends gently outwards and glows in the accent colour around the
+                  cursor or a finger, sends a ring of light outwards on each click or tap, drifts
+                  as you browse and zoom, and carries short accent &ldquo;telemetry&rdquo; streaks
+                  along its lines so the page always feels live. Reduced-motion settings keep it
+                  still.
+                </span>
+              </li>
               <li>
                 <span className="seq">45</span>
                 <b>Grid Walk becomes a carousel</b>

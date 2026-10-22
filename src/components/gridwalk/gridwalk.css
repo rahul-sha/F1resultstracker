@@ -63,6 +63,15 @@
   }
 }
 
+/* The live grid canvas (liveGrid.ts) sits over the glow, under the strip. */
+.gw-grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 /* The strip carries the one zoom/pan camera: translate(tx, TOP + ty)
    scale(k), written by GridWalk.tsx every frame, around a 0 0 origin. */
 .gw-strip {

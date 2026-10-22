@@ -27,7 +27,12 @@ language.
   they never flash up full size on load. The top bar — About, the
   icon-only theme and palette toggles, and the season switcher, all the
   same height — stays on screen throughout, over the same drifting glow
-  used site-wide. Results and Positions keep their own full pages too —
+  used site-wide. Behind the cards sits a live grid drawn in the active
+  theme's colours: it bends and glows in the accent colour around the
+  cursor or a finger, sends a ring outwards on each click or tap, drifts
+  with the strip as you browse and zoom, and carries the odd accent
+  "telemetry" streak along its lines (all motion switches off under
+  reduced-motion settings). Results and Positions keep their own full pages too —
   Grid Walk's cards reuse the exact same data and components rather than
   duplicating them.
 - **Results** (`/results`) — every driver's points for each round of a
