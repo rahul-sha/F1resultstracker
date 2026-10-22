@@ -3,16 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./gridwalk.css";
-import {
-  ResultsIcon,
-  ConstructorsIcon,
-  EvolutionIcon,
-  PositionsIcon,
-  FinishFreqIcon,
-  QualifyingFreqIcon,
-  DriverPodiumsIcon,
-  ConstructorPodiumsIcon,
-} from "@/components/nav-icons";
 import SeasonSelector from "@/components/SeasonSelector";
 import type { PointsGrid } from "@/lib/points-grid";
 import type { ConstructorPointsGrid } from "@/lib/constructor-points-grid";
@@ -56,8 +46,6 @@ type SectionDef = {
   eyebrow: string;
   tabColor: string;
   title: string;
-  desc: string;
-  icon: React.ReactNode;
   stat: string;
   statLabel: string;
   miniStats?: GridWalkMiniStat[];
@@ -78,11 +66,17 @@ const DIVE_EASE = "cubic-bezier(.22,.7,.2,1)";
 // measuring its rect and growing it — needs to exceed how long
 // TRAVEL_EASE actually takes to converge (see 3d-mockup-exploration
 // memory: ~750ms+ for a large yaw/pitch offset at this ease factor), or
-// the overlay snaps onto a rect the card hasn't finished traveling to —
-// it then visibly jumps to the wrong spot right as it starts growing,
-// which reads as a second element appearing rather than the same card
+// the dive snaps onto a rect the card hasn't finished traveling to — it
+// then visibly jumps to the wrong spot right as it starts growing, which
+// reads as a second element appearing rather than the same card
 // continuing to zoom.
 const DIVE_SETTLE_MS = 820;
+// A card's DOM is laid out at this size always — see the .gw-card rule's
+// comment. PREVIEW_SCALE is just what shrinks that natural size down to
+// a sphere-card-sized footprint at rest.
+const NATURAL_W = 720;
+const NATURAL_H = 800;
+const PREVIEW_SCALE = 190 / NATURAL_W;
 
 function clamp(v: number, b: number) {
   return Math.max(-b, Math.min(b, v));
@@ -97,15 +91,20 @@ function clamp(v: number, b: number) {
 // before touching either the translateZ sign or the drag-direction math,
 // since flipping one silently flips the other's apparent effect too.
 //
-// Diving into a card doesn't navigate to a new page: a fixed overlay,
-// rendered outside the 3D rig so it's never subject to its rotation, is
-// snapped (via getBoundingClientRect) onto the clicked card's on-screen
-// rect and then grown with a plain 2D CSS transition to near-fullscreen —
-// a FLIP technique that reads as the card itself zooming in, like a very
-// large photo, rather than a different element opening. Growing the
-// card's own DOM node in place (while still inside the rotated/perspective
-// rig) was tried first and produces severe skew at large sizes once the
-// card is magnified — see "grid-walk-8-section-redesign" memory.
+// Diving into a card doesn't navigate to a new page, and it doesn't swap a
+// small preview for a separate "full" element either — each card's DOM
+// always contains its real content (the actual heatmap/chart/bars), laid
+// out at a fixed natural size (NATURAL_W x NATURAL_H). At rest that's
+// shown shrunk via a scale() folded into the card's sphere-placement
+// transform; diving reparents the card to <body> (so it escapes the rig's
+// own 3D transform, which would otherwise hijack position: fixed) and
+// animates a FLIP transform (translate+scale only, computed from
+// getBoundingClientRect — see diveInto/diveOut) from that resting size up
+// to a near-fullscreen one. It's one continuous zoom of the same DOM
+// node the whole time, never two distinct objects crossfading — see
+// "grid-walk-8-section-redesign" memory for why the earlier box-morph
+// overlay version read as "opening a new element" even after its own
+// pop/timing bugs were fixed.
 export default function GridWalk({
   season,
   driverLeader,
@@ -121,11 +120,17 @@ export default function GridWalk({
   const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
   const rigRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const distortRef = useRef<HTMLDivElement>(null);
   const dispRef = useRef<SVGFEDisplacementMapElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const restRectRef = useRef<{ left: number; top: number; width: number; height: number } | null>(null);
+  // While a card is reparented to <body> for its dive, this remembers
+  // where it came from — both so diveOut can hand it back, and so a
+  // cleanup effect can do the same if the component unmounts mid-dive
+  // (otherwise React's own unmount would try to remove it from the rig,
+  // where it no longer physically is, and throw).
+  const reparented = useRef<{ el: HTMLDivElement; originalParent: HTMLElement } | null>(null);
 
   const camYaw = useRef(0);
   const camPitch = useRef(0);
@@ -150,7 +155,6 @@ export default function GridWalk({
 
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [overlayShown, setOverlayShown] = useState(false);
   const diving = activeId !== null;
 
   const sections: SectionDef[] = [
@@ -162,8 +166,6 @@ export default function GridWalk({
       eyebrow: "/results",
       tabColor: "#ff8000",
       title: "Results",
-      desc: "Points per Grand Prix, heatmapped across the season.",
-      icon: <ResultsIcon size={20} />,
       stat: driverLeader?.value.split(" — ")[1] ?? "—",
       statLabel: driverLeader?.value.split(" — ")[0] ?? "Leading driver",
       miniStats: topDrivers,
@@ -177,8 +179,6 @@ export default function GridWalk({
       eyebrow: "/results",
       tabColor: "#ff8000",
       title: "Constructors",
-      desc: "Team points per race, same grid.",
-      icon: <ConstructorsIcon size={20} />,
       stat: constructorLeader?.value.split(" — ")[1] ?? "—",
       statLabel: constructorLeader?.value.split(" — ")[0] ?? "Leading team",
       renderFull: () => <ConstructorPointsHeatmap grid={constructorGrid} />,
@@ -191,8 +191,6 @@ export default function GridWalk({
       eyebrow: "/results",
       tabColor: "#66d9ef",
       title: "Points Evolution",
-      desc: "Cumulative driver points race by race.",
-      icon: <EvolutionIcon size={20} />,
       stat: `${pointsGrid.rows.length}`,
       statLabel: "drivers tracked",
       renderFull: () => <DriverPointsEvolutionChart grid={pointsGrid} />,
@@ -205,8 +203,6 @@ export default function GridWalk({
       eyebrow: "/positions",
       tabColor: "#3671c6",
       title: "Positions",
-      desc: "Finishing and qualifying positions, driver by driver.",
-      icon: <PositionsIcon size={20} />,
       stat: `${finishSummary.maxPosition}`,
       statLabel: "grid slots tracked",
       renderFull: () => <PointsHeatmap grid={pointsGrid} mode="position" />,
@@ -219,8 +215,6 @@ export default function GridWalk({
       eyebrow: "/positions",
       tabColor: "#3671c6",
       title: "Finish Frequency",
-      desc: "How often each driver finishes in each position band.",
-      icon: <FinishFreqIcon size={20} />,
       stat: `${finishSummary.drivers.length}`,
       statLabel: "drivers tracked",
       renderFull: () => <FinishPositionsGrid summary={finishSummary} />,
@@ -233,8 +227,6 @@ export default function GridWalk({
       eyebrow: "/positions",
       tabColor: "#00d2be",
       title: "Qualifying Frequency",
-      desc: "How often each driver qualifies in each position band.",
-      icon: <QualifyingFreqIcon size={20} />,
       stat: `${qualifyingSummary.maxPosition}`,
       statLabel: "grid slots tracked",
       renderFull: () => <QualifyingPositionsGrid summary={qualifyingSummary} />,
@@ -247,8 +239,6 @@ export default function GridWalk({
       eyebrow: "/positions",
       tabColor: "#ff8000",
       title: "Driver Podiums",
-      desc: "Podium finishes, driver by driver.",
-      icon: <DriverPodiumsIcon size={20} />,
       stat: podiumLeader?.value.split(" — ")[1] ?? "—",
       statLabel: podiumLeader?.value.split(" — ")[0] ?? "Most podiums",
       miniStats: topPodiumDrivers,
@@ -272,8 +262,6 @@ export default function GridWalk({
       eyebrow: "/positions",
       tabColor: "#f92672",
       title: "Constructor Podiums",
-      desc: "Podium finishes, team by team.",
-      icon: <ConstructorPodiumsIcon size={20} />,
       stat: `${finishSummary.teamPodiums.length}`,
       statLabel: "teams on the podium",
       renderFull: () => (
@@ -288,8 +276,6 @@ export default function GridWalk({
       ),
     },
   ];
-
-  const activeSection = sections.find((s) => s.id === activeId) ?? null;
 
   function travelTo(yaw: number, pitch: number) {
     travelTarget.current = { yaw: clamp(yaw, BOUND_YAW), pitch: clamp(pitch, BOUND_PITCH) };
@@ -416,6 +402,20 @@ export default function GridWalk({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diving]);
 
+  // If the component unmounts mid-dive (e.g. a browser back navigation
+  // while a card is reparented to <body>), hand the card back to the rig
+  // first — otherwise React's own unmount would try to remove it from the
+  // rig, where it no longer physically lives, and throw.
+  useEffect(() => {
+    return () => {
+      const info = reparented.current;
+      if (info) {
+        info.originalParent.appendChild(info.el);
+        reparented.current = null;
+      }
+    };
+  }, []);
+
   // x/y here are each card's own yaw/pitch degrees on the sphere — unlike
   // the YAW_K/PITCH_K constants above, which only convert a drag's pixel
   // delta into a camera-rotation degree, placement needs real angular
@@ -427,6 +427,20 @@ export default function GridWalk({
     };
   }
 
+  // Same sphere placement as placeStyle, but with PREVIEW_SCALE folded in
+  // as part of the same transform — this is the only thing that makes a
+  // card's always-full-size content look small at rest. Kept as a
+  // separate function (rather than an extra placeStyle param) because
+  // this exact string, with this exact scale, is also what diveOut hands
+  // the card back to when a dive finishes — see cardRestTransform below.
+  function cardRestTransform(section: SectionDef): string {
+    return `translate(-50%, -50%) rotateY(${section.x}deg) rotateX(${-section.y}deg) translateZ(${-(SPHERE_R + section.z)}px) scale(${PREVIEW_SCALE})`;
+  }
+
+  function cardPlaceStyle(section: SectionDef): React.CSSProperties {
+    return { transform: cardRestTransform(section) };
+  }
+
   function diveInto(section: SectionDef) {
     if (dragMoved.current || diving) return;
     setActiveId(section.id);
@@ -434,64 +448,92 @@ export default function GridWalk({
 
     window.setTimeout(() => {
       const el = cardRefs.current[section.id];
-      const overlay = overlayRef.current;
-      if (!el || !overlay) return;
-      const rect = el.getBoundingClientRect();
-      restRectRef.current = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+      if (!el || !rigRef.current) return;
 
-      overlay.style.transition = "none";
-      overlay.style.left = `${rect.left}px`;
-      overlay.style.top = `${rect.top}px`;
-      overlay.style.width = `${rect.width}px`;
-      overlay.style.height = `${rect.height}px`;
-      setOverlayShown(true);
-      // The real card stays fully visible up to this exact instant (it
-      // isn't faded by React state — see the className below) so it
-      // visibly travels with the camera into place; only now, with the
-      // overlay sitting at the identical on-screen rect, do we swap which
-      // one is showing. That swap is invisible, so what the viewer sees is
-      // one continuous object that then grows — not a card disappearing
-      // and a different element opening in its place.
-      el.style.opacity = "0";
-      // Force layout so the browser registers the start rect before the
-      // transition below is applied — otherwise it would animate from
-      // whatever the overlay's previous (or default) box was instead.
-      void overlay.offsetHeight;
+      // Measure the card at its current, still-on-the-sphere on-screen
+      // rect ("First"), then reparent it to <body> at its real natural
+      // size ("Last" — nothing about its own layout changes, only where
+      // it lives in the DOM) and immediately apply a transform that makes
+      // it visually occupy exactly the First rect ("Invert"), before a
+      // single frame paints. Playing that transform back to identity is
+      // the "Play" step below.
+      const firstRect = el.getBoundingClientRect();
+      restRectRef.current = { left: firstRect.left, top: firstRect.top, width: firstRect.width, height: firstRect.height };
 
-      const targetW = Math.min(window.innerWidth * 0.92, 1100);
-      const targetH = Math.min(window.innerHeight * 0.82, 700);
+      reparented.current = { el, originalParent: rigRef.current };
+      document.body.appendChild(el);
+      el.classList.add("gw-card-diving");
+      el.style.transition = "none";
+      el.style.position = "fixed";
+      el.style.margin = "0";
+      el.style.zIndex = "45";
+      el.style.left = "0";
+      el.style.top = "0";
+
+      // Scale the card's own natural size to fit the viewport (never its
+      // width/height — those stay NATURAL_W/NATURAL_H always), then
+      // centre it. This is the only screen-size adaptation here, and it's
+      // still one uniform scale, so zooming back out to wherever the card
+      // sits at rest is one continuous transform the whole way, not two
+      // different kinds of animation stitched together.
+      const fitScale = Math.min(1, (window.innerWidth * 0.92) / NATURAL_W, (window.innerHeight * 0.9) / NATURAL_H);
+      const targetW = NATURAL_W * fitScale;
+      const targetH = NATURAL_H * fitScale;
       const targetL = (window.innerWidth - targetW) / 2;
       const targetT = (window.innerHeight - targetH) / 2;
 
-      overlay.style.transition = `left ${DIVE_MS}ms ${DIVE_EASE}, top ${DIVE_MS}ms ${DIVE_EASE}, width ${DIVE_MS}ms ${DIVE_EASE}, height ${DIVE_MS}ms ${DIVE_EASE}`;
-      overlay.style.left = `${targetL}px`;
-      overlay.style.top = `${targetT}px`;
-      overlay.style.width = `${targetW}px`;
-      overlay.style.height = `${targetH}px`;
+      const scale = firstRect.width / targetW;
+      const dx = firstRect.left + firstRect.width / 2 - (targetL + targetW / 2);
+      const dy = firstRect.top + firstRect.height / 2 - (targetT + targetH / 2);
+      el.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${scale.toFixed(4)})`;
+      // Force layout/paint before the "Play" step below, or the browser
+      // never registers this Invert transform as a starting point and the
+      // transition animates from whatever the element's previous
+      // transform was instead.
+      void el.offsetHeight;
+
+      stageRef.current?.classList.add("gw-dive-dim");
+
+      el.style.transition = `transform ${DIVE_MS}ms ${DIVE_EASE}, border-color 0.15s ease`;
+      el.style.transform = `translate(${targetL.toFixed(1)}px, ${targetT.toFixed(1)}px) scale(${fitScale.toFixed(4)})`;
     }, DIVE_SETTLE_MS);
   }
 
   function diveOut() {
-    const overlay = overlayRef.current;
+    const info = reparented.current;
     const rect = restRectRef.current;
-    if (!overlay || !rect) return;
+    if (!info || !rect) return;
+    const { el, originalParent } = info;
 
-    overlay.style.transition = `left ${DIVE_MS}ms ${DIVE_EASE}, top ${DIVE_MS}ms ${DIVE_EASE}, width ${DIVE_MS}ms ${DIVE_EASE}, height ${DIVE_MS}ms ${DIVE_EASE}`;
-    overlay.style.left = `${rect.left}px`;
-    overlay.style.top = `${rect.top}px`;
-    overlay.style.width = `${rect.width}px`;
-    overlay.style.height = `${rect.height}px`;
+    stageRef.current?.classList.remove("gw-dive-dim");
+
+    const current = el.getBoundingClientRect();
+    const scale = rect.width / current.width;
+    const dx = rect.left + rect.width / 2 - (current.left + current.width / 2);
+    const dy = rect.top + rect.height / 2 - (current.top + current.height / 2);
+
+    el.style.transition = `transform ${DIVE_MS}ms ${DIVE_EASE}, border-color 0.15s ease`;
+    el.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${scale.toFixed(4)})`;
 
     window.setTimeout(() => {
-      // Swap back the instant before the overlay goes away, at the same
-      // rect it grew from, so this reverses as the same invisible swap.
-      if (activeId) {
-        const el = cardRefs.current[activeId];
-        if (el) el.style.opacity = "";
-      }
-      setOverlayShown(false);
-      setActiveId(null);
+      // Hand the card back to the rig at its usual sphere position. The
+      // transform is set explicitly to the resting value (rather than
+      // cleared to "") because React's own diff against this same style
+      // prop sees no change across this render and won't reapply it
+      // otherwise, leaving whatever we last set here in place.
+      const section = sections.find((s) => s.id === activeId);
+      el.style.transition = "none";
+      el.style.position = "";
+      el.style.margin = "";
+      el.style.left = "";
+      el.style.top = "";
+      el.style.zIndex = "";
+      el.classList.remove("gw-card-diving");
+      if (section) el.style.transform = cardRestTransform(section);
+      originalParent.appendChild(el);
+      reparented.current = null;
       restRectRef.current = null;
+      setActiveId(null);
     }, DIVE_MS + 40);
   }
 
@@ -513,7 +555,7 @@ export default function GridWalk({
         </filter>
       </svg>
 
-      <div className="gw-stage">
+      <div className="gw-stage" ref={stageRef}>
         <div className="gw-rig" ref={rigRef}>
           <div className={"gw-headline" + (diving ? " gw-hide" : "")} style={placeStyle(0, 0)}>
             <h1>F1 Results Tracker</h1>
@@ -528,15 +570,13 @@ export default function GridWalk({
               }}
               className={
                 "gw-card" +
-                // The active card is left alone here (no opacity change) so
-                // it stays fully visible while the camera travels toward it
-                // — diveInto hides it imperatively, later, at the exact
-                // instant the overlay is ready to take its place. "Inert"
-                // only blocks clicks/hover during that travel.
+                // Applied for the whole dive (both the camera-travel wait
+                // and the grown view), so the active card can't be
+                // clicked/hovered again while that's in progress.
                 (section.id === activeId ? " gw-card-inert" : "") +
                 (diving && section.id !== activeId ? " gw-faded" : "")
               }
-              style={placeStyle(section.x, section.y, section.z)}
+              style={cardPlaceStyle(section)}
               onClick={() => diveInto(section)}
               onPointerEnter={() => setHoveredId(section.id)}
               onPointerLeave={() => setHoveredId((cur) => (cur === section.id ? null : cur))}
@@ -547,15 +587,16 @@ export default function GridWalk({
               }}
             >
               <span className="gw-card-tab" style={{ background: section.tabColor }} />
-              <div className="gw-card-eyebrow">
-                <span className="gw-card-eyebrow-dot" />
-                {section.eyebrow}
-              </div>
-              <span className="gw-card-icon">{section.icon}</span>
-              <h2>{section.title}</h2>
-              <p>{section.desc}</p>
-              <div className="gw-card-stat">
-                <b>{section.stat}</b> · {section.statLabel}
+              <div className="gw-card-inner">
+                <div className="gw-card-eyebrow">
+                  <span className="gw-card-eyebrow-dot" />
+                  {section.eyebrow}
+                </div>
+                <h2>{section.title}</h2>
+                <div className="gw-card-stat">
+                  <b>{section.stat}</b> · {section.statLabel}
+                </div>
+                {section.renderFull()}
               </div>
             </div>
           ))}
@@ -591,23 +632,6 @@ export default function GridWalk({
               )
           )}
         </div>
-      </div>
-
-      <div
-        className={"gw-overlay" + (overlayShown ? " show" : "")}
-        ref={overlayRef}
-      >
-        {activeSection && (
-          <div className="gw-overlay-inner">
-            <div className="gw-overlay-eyebrow">
-              <span className="gw-card-eyebrow-dot" />
-              {activeSection.eyebrow}
-            </div>
-            <h2>{activeSection.title}</h2>
-            <p className="gw-overlay-sub">{activeSection.desc}</p>
-            <div className="gw-overlay-body">{activeSection.renderFull()}</div>
-          </div>
-        )}
       </div>
 
       <button
@@ -649,7 +673,7 @@ export default function GridWalk({
               key={section.id}
               type="button"
               className="gw-jump-pill"
-              onClick={() => travelTo(section.x, section.y)}
+              onClick={() => diveInto(section)}
             >
               {section.title}
             </button>

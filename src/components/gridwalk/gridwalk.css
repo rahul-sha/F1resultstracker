@@ -1,6 +1,6 @@
 /* Grid Walk — the homepage's drag-navigable "inside a sphere" entry point.
-   Approved mockup: https://claude.ai/artifact/SHvgW42hZqafacxS6jMBvE
-   See project memory "3d-mockup-exploration" for the interaction history. */
+   Approved mockup: https://claude.ai/artifact/KQPHa7gWJUFP3w3bQacchy
+   See project memory "grid-walk-8-section-redesign" for the interaction history. */
 
 .gw-wrap {
   position: fixed;
@@ -83,6 +83,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: filter 0.45s ease;
+}
+
+/* "Depth of field": the scene itself blurs/dims behind a dived-into card,
+   reinforcing that the camera is looking closer at the same scene rather
+   than a new layer opening on top of it. */
+.gw-stage.gw-dive-dim {
+  filter: blur(14px) brightness(0.55);
 }
 
 .gw-rig {
@@ -122,21 +130,28 @@
   color: var(--text-secondary);
 }
 
+/* Each card's DOM always contains its real content (the actual heatmap,
+   chart or bars) at this fixed natural size — there is no separate small
+   preview that gets swapped for a different "full" element. At rest, a
+   card is simply that one object shown small, via a scale() folded into
+   its sphere-placement transform (see GridWalk.tsx's cardPlaceStyle);
+   diving removes that scale — the same mechanism, just more of it — so
+   it's one continuous zoom of the same content, never two distinct
+   objects crossfading. See "grid-walk-8-section-redesign" memory. */
 .gw-card {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 190px;
-  height: 206px;
-  padding: 1rem 1.05rem 0.9rem;
+  width: 720px;
+  height: 800px;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--surface-2) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
   border: 1px solid var(--border-hairline);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   cursor: pointer;
   backdrop-filter: blur(6px);
   overflow: hidden;
-  transition: border-color 0.15s ease, opacity 0.35s ease;
+  transition: border-color 0.15s ease, opacity 0.35s ease, box-shadow 0.3s ease;
 }
 
 .gw-card:hover {
@@ -153,68 +168,69 @@
   pointer-events: none;
 }
 
-/* The dived-into card itself is hidden imperatively (inline style, see
-   GridWalk.tsx) at the exact instant the overlay takes its place — not
-   here — so this only blocks it from being clicked/hovered again while
-   that handoff is in progress. */
+/* Applied to the active card for the whole dive (both the camera-travel
+   wait and the grown view) so it can't be clicked/hovered again while
+   that's in progress. */
 .gw-card-inert {
   pointer-events: none;
 }
 
+/* Applied only once the card has been reparented to <body> and is
+   animating to/from its full-screen size — see diveInto/diveOut. */
+.gw-card-diving {
+  cursor: default;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
 .gw-card-tab {
   position: absolute;
-  top: -7px;
-  left: 16px;
-  width: 24px;
-  height: 12px;
-  border-radius: 3px;
+  top: 0;
+  left: 48px;
+  width: 60px;
+  height: 7px;
+  border-radius: 0 0 4px 4px;
+}
+
+.gw-card-inner {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  padding: 1.5rem 1.6rem 1.8rem;
 }
 
 .gw-card-eyebrow {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 0.35rem;
-  font-size: 0.6rem;
+  gap: 8px;
+  margin-bottom: 0.4rem;
+  font-size: 0.78rem;
   letter-spacing: 0.1em;
   color: var(--text-muted);
 }
 
 .gw-card-eyebrow-dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   flex: none;
   border-radius: 50%;
   background: var(--accent);
 }
 
-.gw-card-icon {
-  color: var(--accent);
-  margin-bottom: 0.35rem;
-  display: inline-flex;
-}
-
-.gw-card h2 {
-  margin: 0 0 0.3rem;
-  font-size: 1rem;
-  font-weight: 600;
+.gw-card-inner h2 {
+  margin: 0 0 0.6rem;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-primary);
-}
-
-.gw-card p {
-  margin: 0 0 0.5rem;
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  line-height: 1.35;
 }
 
 .gw-card-stat {
-  font-size: 0.74rem;
-  color: var(--text-primary);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.1rem;
 }
 
 .gw-card-stat b {
-  font-size: 0.84rem;
+  font-size: 1rem;
   color: var(--text-primary);
 }
 
@@ -253,71 +269,14 @@
 }
 
 @media (max-width: 640px) {
-  .gw-card {
-    width: 150px;
-    height: 180px;
-    padding: 0.75rem 0.85rem;
-  }
-  .gw-card h2 {
-    font-size: 0.82rem;
-  }
-  .gw-card p {
-    font-size: 0.68rem;
-  }
   .gw-headline h1 {
     font-size: 1.4rem;
   }
 }
 
-/* The fixed overlay a dive grows into. It lives outside .gw-rig, so it's
-   never subject to the sphere's rotation/perspective — the FLIP technique
-   this relies on (snap onto the clicked card's rect, then transition plain
-   left/top/width/height) only works cleanly on an element with no 3D
-   transform of its own. See the component's top comment. */
-.gw-overlay {
-  position: fixed;
-  z-index: 40;
-  display: none;
-  border-radius: 14px;
-  background: var(--surface-2);
-  border: 1px solid var(--border-hairline);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
-}
-
-.gw-overlay.show {
-  display: block;
-}
-
-.gw-overlay-inner {
-  position: absolute;
-  inset: 0;
-  padding: 1.4rem 1.5rem 1.6rem;
-  overflow: auto;
-}
-
-.gw-overlay-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 0.2rem;
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
-  color: var(--on-accent-container);
-}
-
-.gw-overlay-inner h2 {
-  margin: 0 0 0.15rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.gw-overlay-sub {
-  margin: 0 0 1rem;
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
+/* No mobile size override needed for .gw-card: the dive's fitScale
+   (computed in GridWalk.tsx from the viewport) already shrinks the fixed
+   720x800 card to fit any screen, at rest and fully dived alike. */
 
 .gw-back-btn {
   position: fixed;
