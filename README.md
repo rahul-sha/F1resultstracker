@@ -16,16 +16,20 @@ language.
   Results, Constructors, Points Evolution, Positions, Finish Frequency,
   Qualifying Frequency, Driver Podiums and Constructor Podiums — each
   one *is* its real heatmap, chart, grid or podium bars for the selected
-  season, just shown small. Clicking a card, or its pill in the "Jump to"
-  bar, doesn't open a new page or swap in a separate detail view: the
-  same card simply grows to fill the screen in place, like zooming into a
-  photo, with the background blurring behind it; a Back button shrinks it
-  back down to exactly where it started. About stays its own page, linked
-  from the top bar. A cursor-reactive distortion effect ripples a faint
-  ring pattern in the background, over the same drifting glow used
-  site-wide. Results and Positions keep their own full pages too — Grid
-  Walk's cards reuse the exact same data and components rather than
-  duplicating them.
+  season, shown small and keeping its own natural width and height rather
+  than a forced square. Clicking a card, or its pill in the "Jump to" bar,
+  doesn't open a new page or swap in a separate detail view: one shared
+  camera rotates toward the card and zooms the whole scene at once, so
+  the whole picture grows together and the other cards visibly recede,
+  the way zooming into one frame on a shared board does; a Back button
+  (or another "Jump to" pill, or Reset) reverses the same zoom. The top
+  and bottom bars — including the theme toggle, which only lives here and
+  in the main nav bar — stay on screen and usable throughout. About stays
+  its own page, linked from the top bar. A cursor-reactive distortion
+  effect ripples a faint ring pattern in the background, over the same
+  drifting glow used site-wide. Results and Positions keep their own full
+  pages too — Grid Walk's cards reuse the exact same data and components
+  rather than duplicating them.
 - **Results** (`/results`) — every driver's points for each round of a
   season, shaded by magnitude, with a season points total bar per driver,
   and a matching per-race heatmap for Constructors underneath. Pole
