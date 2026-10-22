@@ -89,17 +89,31 @@ export default function AboutPage() {
               Moved Grid Walk&rsquo;s jump bar into a single top nav bar on desktop, with a
               logo island that returns to the first card
             </li>
+            <li>
+              Gave the phone&rsquo;s bottom jump bar the same nav-bar pill and swipeable,
+              left-aligned tabs
+            </li>
           </ul>
 
           <p>
             <strong>How this has progressed:</strong>
           </p>
           <p className="timeline-count">
-            50 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            51 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">51</span>
+                <b>The phone jump bar catches up</b>
+                <span>
+                  The bottom jump bar on phones now matches the desktop nav bar: one rounded pill
+                  with borderless tabs, the open card&rsquo;s tab resting at the left, and Fit
+                  after a divider. Swiping the tabs browses the cards, and whichever tab comes to
+                  rest at the left opens.
+                </span>
+              </li>
               <li>
                 <span className="seq">50</span>
                 <b>A quieter About page, and no more Auto theme</b>

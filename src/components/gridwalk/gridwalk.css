@@ -395,6 +395,15 @@
   color: var(--text-muted);
 }
 
+.gw-jumpbar-divider {
+  display: none;
+}
+
+/* ---- Phone bottom bar -------------------------------------------------
+   The same nav-bar look as the desktop top bar: one 48px pill (solid, as
+   blur is unreliable on phones), borderless 13px/600 tabs that snap so the
+   open card's tab rests at the left, and Fit after a divider. Swiping the
+   strip browses (see settleStrip). */
 @media (max-width: 640px) {
   .gw-topbar {
     padding-left: max(0.9rem, env(safe-area-inset-left, 0px));
@@ -404,8 +413,56 @@
     gap: 0.4rem;
   }
   .gw-jumpbar {
-    padding-left: max(0.9rem, env(safe-area-inset-left, 0px));
-    padding-right: max(0.9rem, env(safe-area-inset-right, 0px));
+    left: max(0.9rem, env(safe-area-inset-left, 0px));
+    right: max(0.9rem, env(safe-area-inset-right, 0px));
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    height: 48px;
+    box-sizing: border-box;
+    gap: 6px;
+    padding: 0 6px;
+    border-radius: 28px;
+    background: var(--surface-2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
+      inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
+  }
+  .gw-jumpbar-pills {
+    gap: 4px;
+    scroll-snap-type: x mandatory;
+    padding-right: calc(100% - 120px);
+    -webkit-mask-image: linear-gradient(to right, #000 80%, transparent);
+    mask-image: linear-gradient(to right, #000 80%, transparent);
+  }
+  .gw-jump-pill,
+  .gw-zoom-btn {
+    height: 36px;
+    padding: 0 14px;
+    border: 0;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .gw-jump-pill {
+    scroll-snap-align: start;
+  }
+  .gw-jump-pill.active {
+    background: var(--accent-container);
+    color: var(--on-accent-container);
+  }
+  .gw-zoom-btn {
+    color: var(--on-accent-container);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .gw-jumpbar-divider {
+    display: block;
+    flex: none;
+    width: 1px;
+    height: 22px;
+    background: var(--border-hairline);
+  }
+  .gw-dots {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
   .gw-jumpbar-label,
   .gw-arrow,
