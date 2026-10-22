@@ -24,7 +24,7 @@ function readStoredTheme(): Theme {
   return stored && ORDER.includes(stored) ? stored : "system";
 }
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ iconOnly = false }: { iconOnly?: boolean }) {
   const [theme, setTheme] = useState<Theme>(readStoredTheme);
   const [mounted, setMounted] = useState(false);
 
@@ -40,6 +40,21 @@ export default function ThemeToggle() {
     setTheme(next);
     applyTheme(next);
     window.localStorage.setItem(STORAGE_KEY, next);
+  }
+
+  if (iconOnly) {
+    return (
+      <button
+        type="button"
+        onClick={cycle}
+        className="icon-toggle-btn flex items-center justify-center rounded-full"
+        style={{ background: "var(--surface-3)", color: "var(--text-primary)" }}
+        aria-label={`Toggle color theme (currently ${mounted ? LABEL[theme] : ""})`}
+        title={mounted ? LABEL[theme] : undefined}
+      >
+        <ThemeIcon />
+      </button>
+    );
   }
 
   return (

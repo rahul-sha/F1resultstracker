@@ -179,11 +179,14 @@ export default function GridWalk({
   const [activeId, setActiveId] = useState<string | null>(null);
   const diving = activeId !== null;
 
+  // x/y place each card on an 8-point ring (45° apart, clockwise from the
+  // top), in the same order as the jump bar below — so looking around the
+  // sphere clockwise matches clicking through the jump pills left to right.
   const sections: SectionDef[] = [
     {
       id: "results",
-      x: -46,
-      y: 18,
+      x: 0,
+      y: 24,
       z: 0,
       w: 940,
       h: 640,
@@ -197,9 +200,9 @@ export default function GridWalk({
     },
     {
       id: "constructors",
-      x: -20,
-      y: 6,
-      z: 15,
+      x: 30,
+      y: 17,
+      z: 0,
       w: 940,
       h: 420,
       eyebrow: "/results",
@@ -211,9 +214,9 @@ export default function GridWalk({
     },
     {
       id: "evolution",
-      x: 10,
-      y: 22,
-      z: -8,
+      x: 42,
+      y: 0,
+      z: 0,
       w: 660,
       h: 460,
       eyebrow: "/results",
@@ -225,9 +228,9 @@ export default function GridWalk({
     },
     {
       id: "positions",
-      x: 38,
-      y: 9,
-      z: 10,
+      x: 30,
+      y: -17,
+      z: 0,
       w: 940,
       h: 640,
       eyebrow: "/positions",
@@ -239,9 +242,9 @@ export default function GridWalk({
     },
     {
       id: "finishfreq",
-      x: -33,
-      y: -20,
-      z: 5,
+      x: 0,
+      y: -24,
+      z: 0,
       w: 560,
       h: 560,
       eyebrow: "/positions",
@@ -253,9 +256,9 @@ export default function GridWalk({
     },
     {
       id: "qualifreq",
-      x: -2,
-      y: -9,
-      z: 20,
+      x: -30,
+      y: -17,
+      z: 0,
       w: 560,
       h: 560,
       eyebrow: "/positions",
@@ -267,9 +270,9 @@ export default function GridWalk({
     },
     {
       id: "podiumsD",
-      x: 24,
-      y: -26,
-      z: -5,
+      x: -42,
+      y: 0,
+      z: 0,
       w: 480,
       h: 480,
       eyebrow: "/positions",
@@ -292,9 +295,9 @@ export default function GridWalk({
     },
     {
       id: "podiumsT",
-      x: 48,
-      y: -6,
-      z: 12,
+      x: -30,
+      y: 17,
+      z: 0,
       w: 480,
       h: 440,
       eyebrow: "/positions",
@@ -575,12 +578,6 @@ export default function GridWalk({
     };
   }
 
-  const stats: { x: number; y: number; stat: GridWalkStat | null }[] = [
-    { x: -28, y: 25, stat: driverLeader },
-    { x: 28, y: 25, stat: constructorLeader },
-    { x: 0, y: -26, stat: podiumLeader },
-  ];
-
   return (
     <div className="gw-wrap" ref={wrapRef}>
       <div className="gw-pulse-a" />
@@ -664,15 +661,6 @@ export default function GridWalk({
                 );
               })
           )}
-
-          {stats.map(
-            ({ x, y, stat }, i) =>
-              stat && (
-                <div key={i} className={"gw-chip" + (diving ? " gw-hide" : "")} style={placeStyle(x, y, -40)}>
-                  {stat.label}: {stat.value}
-                </div>
-              )
-          )}
         </div>
       </div>
 
@@ -709,8 +697,8 @@ export default function GridWalk({
           <button type="button" className="gw-about-link" onClick={() => router.push("/about")}>
             About
           </button>
-          <ThemeToggle />
-          <AccentToggle />
+          <ThemeToggle iconOnly />
+          <AccentToggle iconOnly />
           <SeasonSelector initialSeason={season} />
         </div>
       </div>

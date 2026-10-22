@@ -230,21 +230,6 @@
   color: var(--text-primary);
 }
 
-.gw-chip {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  padding: 0.5rem 0.85rem;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--accent-container) 92%, transparent);
-  color: var(--on-accent-container);
-  font-size: 0.72rem;
-  font-weight: 600;
-  white-space: nowrap;
-  pointer-events: none;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-}
-
 .gw-quote {
   position: absolute;
   left: 50%;
@@ -307,6 +292,11 @@
   border-color: color-mix(in srgb, var(--accent) 60%, var(--border-hairline));
 }
 
+/* Rahul noticed the About pill, theme/palette toggles and season switcher
+   were all slightly different heights — each came from a different
+   component with its own padding/font-size. Pin every direct child of
+   this row to the same 36px height instead of trusting each one's own
+   padding to agree by coincidence. */
 .gw-topbar-right {
   display: flex;
   align-items: center;
@@ -315,8 +305,26 @@
   gap: 0.6rem;
 }
 
+.gw-topbar-right > * {
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.gw-topbar-right .icon-toggle-btn {
+  width: 36px;
+  padding: 0;
+}
+
+.gw-topbar-right .switcher-trigger {
+  height: 36px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .gw-about-link {
-  padding: 0.4rem 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.8rem;
   border-radius: 999px;
   border: 1px solid rgba(166, 226, 46, 0.35);
   background: color-mix(in srgb, var(--accent) 10%, var(--surface-2) 90%);
