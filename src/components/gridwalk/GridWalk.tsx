@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import "./gridwalk.css";
 import SeasonSelector from "@/components/SeasonSelector";
 import ThemeToggle from "@/components/ThemeToggle";
+import AccentToggle from "@/components/AccentToggle";
 import type { PointsGrid } from "@/lib/points-grid";
 import type { ConstructorPointsGrid } from "@/lib/constructor-points-grid";
 import type { FinishPositionSummary } from "@/lib/finish-positions";
@@ -709,6 +710,7 @@ export default function GridWalk({
             About
           </button>
           <ThemeToggle />
+          <AccentToggle />
           <SeasonSelector initialSeason={season} />
         </div>
       </div>
