@@ -60,6 +60,11 @@ export default function GridWalk({
   const stripRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLCanvasElement>(null);
   const pillsRef = useRef<HTMLDivElement>(null);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  // When the top tab strip was last scrolled by code rather than by hand,
+  // and the timer that waits for a hand scroll to come to rest.
+  const tabsProgrammaticAt = useRef(0);
+  const tabsSettle = useRef(0);
   const zoomLevelRef = useRef<HTMLSpanElement>(null);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -169,8 +174,8 @@ export default function GridWalk({
     const W = window.innerWidth;
     const H = window.innerHeight;
     const phone = W <= 640;
-    const TOP = phone ? 84 : 92;
-    const BOTTOM = phone ? 92 : 100;
+    const TOP = phone ? 84 : 96;
+    const BOTTOM = phone ? 92 : 76;
     const availH = Math.max(160, H - TOP - BOTTOM);
     const availW = W - (phone ? 48 : 180);
     metrics.current = { W, TOP, availH };
@@ -276,6 +281,41 @@ export default function GridWalk({
     const left = pill.offsetLeft - bar.clientWidth / 2 + pill.offsetWidth / 2;
     bar.scrollTo({ left, behavior: "smooth" });
   }, [focus]);
+
+  // Desktop top bar: the open card's tab rests at the left of the strip.
+  useEffect(() => {
+    const track = tabsRef.current;
+    const tab = track?.children[focus] as HTMLElement | undefined;
+    if (!track || !tab || !track.offsetParent) return;
+    tabsProgrammaticAt.current = Date.now();
+    track.scrollTo({ left: tab.offsetLeft - track.offsetLeft, behavior: "smooth" });
+  }, [focus]);
+
+  // Scrolling the tab strip by hand also browses: once it comes to rest,
+  // the tab sitting at the left opens.
+  function onTabsScroll() {
+    window.clearTimeout(tabsSettle.current);
+    tabsSettle.current = window.setTimeout(() => {
+      const track = tabsRef.current;
+      if (!track || Date.now() - tabsProgrammaticAt.current < 700) return;
+      let best = 0;
+      let bd = Infinity;
+      Array.from(track.children).forEach((el, i) => {
+        const d = Math.abs((el as HTMLElement).offsetLeft - track.offsetLeft - track.scrollLeft);
+        if (d < bd) {
+          bd = d;
+          best = i;
+        }
+      });
+      if (best !== focusRef.current) {
+        goTo(best);
+        dismissHint();
+      } else {
+        tabsProgrammaticAt.current = Date.now();
+        track.scrollTo({ left: (track.children[best] as HTMLElement).offsetLeft - track.offsetLeft, behavior: "smooth" });
+      }
+    }, 160);
+  }
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -549,7 +589,16 @@ export default function GridWalk({
       </div>
 
       <div className="gw-topbar">
-        <div className="gw-brand">
+        {/* The logo is its own island, and takes you back to the first card. */}
+        <button
+          type="button"
+          className="gw-brand"
+          aria-label="Grid Walk: back to the first card"
+          onClick={() => {
+            goTo(0);
+            dismissHint();
+          }}
+        >
           <span className="gw-brand-mark" aria-hidden="true">
             <svg width="22" height="14" viewBox="0 0 22 14" fill="currentColor">
               <path d="M0 14L6 0h4L4 14H0z" />
@@ -558,14 +607,38 @@ export default function GridWalk({
             </svg>
           </span>
           <span className="gw-brand-text">Grid Walk</span>
-        </div>
-        <div className="gw-topbar-right">
-          <button type="button" className="gw-about-link" onClick={() => router.push("/about")}>
-            About
-          </button>
-          <ThemeToggle iconOnly />
-          <AccentToggle iconOnly />
-          <SeasonSelector initialSeason={season} />
+        </button>
+        {/* On desktop this is one nav bar: the jump tabs, then About and the
+            toggles. On phones it dissolves (display: contents), the tabs are
+            hidden, and the controls sit on their own as before. */}
+        <div className="gw-navpill">
+          <nav className="gw-toptabs" aria-label="Jump to">
+            <div className="gw-toptabs-track" ref={tabsRef} onScroll={onTabsScroll}>
+              {sections.map((section, i) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  className={"gw-toptab" + (i === focus ? " active" : "")}
+                  aria-current={i === focus ? "true" : undefined}
+                  onClick={() => {
+                    goTo(i);
+                    dismissHint();
+                  }}
+                >
+                  {section.title}
+                </button>
+              ))}
+            </div>
+          </nav>
+          <span className="gw-navpill-divider" aria-hidden="true" />
+          <div className="gw-topbar-right">
+            <button type="button" className="gw-about-link" onClick={() => router.push("/about")}>
+              About
+            </button>
+            <ThemeToggle iconOnly />
+            <AccentToggle iconOnly />
+            <SeasonSelector initialSeason={season} />
+          </div>
         </div>
       </div>
 
