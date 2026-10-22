@@ -46,7 +46,7 @@ language.
 
 Every page sits over a soft gradient glow built from the active theme's
 own colours, rather than a single flat background — it drifts slowly
-rather than sitting still. The nav bar, each page's title/subtitle card,
+rather than sitting still. The Grid Walk bars and logo, each page's title/subtitle card,
 and the About page sit on a blurred, translucent glass surface so that
 glow shows through them (solid below 640px, where backdrop blur isn't
 reliable); table cards elsewhere are solid. Every page's title/subtitle
@@ -54,18 +54,15 @@ card is a fixed width and height, so the content underneath always
 starts at the same position regardless of how long that page's
 subtitle runs.
 
-Pick a season from the selector, built into the nav bar at every screen
-size — shown as a calendar icon next to the year. The app defaults to
+Pick a season from the selector in Grid Walk's top bar — shown as a
+calendar icon next to the year. The app defaults to
 the current calendar year. Only seasons 2020 onwards are supported.
 
 ## Navigation
 
-A single floating nav bar is used on the About page — Home and About
-tabs, the season selector beside them, and a hamburger button that grows
-the bar itself into a panel holding the theme and palette toggles. It sits
-at the bottom of the viewport on narrow screens and at the top on wider
-ones. The home page hides this bar entirely — Grid Walk's own top bar and
-jump bar are the navigation there.
+Grid Walk's own top bar and jump bar are the navigation on the home page.
+The About page has no nav bar at all — just the Grid Walk logo as a glass
+island (top left on desktop, bottom centre on phones) that links back home.
 
 ## Getting started
 
@@ -93,8 +90,10 @@ overrides are mapped locally in `src/lib/circuits.ts`,
 ## Theming
 
 Four colour palettes — Monokai (default), Coffee, Ember and Dracula — each
-togglable from the nav bar's hamburger menu and persisted in `localStorage`.
-All four have both a light and a dark variant. All colour in the UI, including the heatmap
+togglable from Grid Walk's top bar and persisted in `localStorage`.
+All four have both a light and a dark variant; the theme button flips
+between Light and Dark (there's no Auto option), starting from whatever the
+device shows until it's first clicked. All colour in the UI, including the heatmap
 shading, comes from theme CSS custom properties (see `src/app/globals.css`),
 so nothing is hardcoded to a single palette. The icon-only theme and
 palette buttons spin their icon and send out an accent ring on each
