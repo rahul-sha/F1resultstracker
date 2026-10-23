@@ -131,6 +131,23 @@ so nothing is hardcoded to a single palette. The icon-only theme and
 palette buttons spin their icon and send out an accent ring on each
 click, so every change has visible feedback.
 
+## Install as an app
+
+Grid Walk is a Progressive Web App (PWA): a web app manifest
+(`public/manifest.webmanifest`), a set of home-screen icons
+(`public/icons/`, `public/apple-touch-icon.png`), a themed status bar, and a
+minimal service worker (`public/sw.js`, no caching — it only exists so
+browsers recognise the app as installable) let Chrome, Edge and Safari
+offer "Install" or "Add to Home Screen" instead of only opening a browser
+tab.
+
+- **Android (Chrome):** open the site, tap the **⋮** menu, then **Add to
+  Home screen** / **Install app**.
+- **iPhone/iPad (Safari):** open the site, tap the **Share** icon, then
+  **Add to Home Screen**.
+- **Desktop (Chrome/Edge):** open the site, click the install icon at the
+  right of the address bar (or the **⋮** menu → **Install Grid Walk…**).
+
 ## Tech stack
 
 - Next.js (App Router) + TypeScript
