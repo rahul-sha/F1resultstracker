@@ -171,22 +171,27 @@
   outline-offset: 2px;
 }
 
-@keyframes gw-freq-fade-in {
-  from {
-    opacity: 0;
-    transform: scale(1.01);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
+/* Both the finish and qualifying tables stay mounted and share this one
+   grid cell, so the stage is always as tall as the taller table and the
+   toggle only ever crossfades the two — swapping which one is visible
+   never has to wait on a remeasure, which could briefly show the card
+   at the wrong height (and the live grid behind it) mid-swap. */
 .gw-freq-stage {
-  animation: gw-freq-fade-in 0.22s ease;
+  display: grid;
+}
+.gw-freq-pane {
+  grid-area: 1 / 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+.gw-freq-pane.active {
+  opacity: 1;
+  pointer-events: auto;
 }
 @media (prefers-reduced-motion: reduce) {
-  .gw-freq-stage {
-    animation: none;
+  .gw-freq-pane {
+    transition: none;
   }
 }
 

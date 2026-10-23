@@ -161,12 +161,17 @@ export default function GridWalk({
         </button>
       ),
       render: () => (
-        <div className="gw-freq-stage" key={freqView}>
-          {freqView === "finish" ? (
+        // Both tables stay mounted and overlap in the same grid cell, so
+        // the container is always as tall as the taller one and swapping
+        // only ever crossfades — it never collapses to find its new
+        // height the way a single remounted view briefly did.
+        <div className="gw-freq-stage">
+          <div className={"gw-freq-pane" + (freqView === "finish" ? " active" : "")} aria-hidden={freqView !== "finish"}>
             <FinishPositionsGrid summary={finishSummary} />
-          ) : (
+          </div>
+          <div className={"gw-freq-pane" + (freqView === "quali" ? " active" : "")} aria-hidden={freqView !== "quali"}>
             <QualifyingPositionsGrid summary={qualifyingSummary} />
-          )}
+          </div>
         </div>
       ),
     },
