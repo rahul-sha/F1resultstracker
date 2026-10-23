@@ -34,6 +34,10 @@ type SectionDef = {
   // The jump tabs/pills need a label that covers a card stacking two
   // halves (e.g. a driver and a team graphic) — falls back to title.
   navLabel?: string;
+  // Extra control(s) shown beside the title/subtitle (e.g. a toggle
+  // between two graphics sharing the card) — pointer-events are re-enabled
+  // for these since .gw-card-inner otherwise disables them.
+  headerActions?: () => React.ReactNode;
   render: () => React.ReactNode;
 };
 
@@ -90,6 +94,7 @@ export default function GridWalk({
 
   const [focus, setFocus] = useState(0);
   const [hintGone, setHintGone] = useState(false);
+  const [freqView, setFreqView] = useState<"finish" | "quali">("finish");
 
   const sections: SectionDef[] = [
     {
@@ -134,16 +139,36 @@ export default function GridWalk({
       render: () => <PointsHeatmap grid={pointsGrid} mode="position" />,
     },
     {
-      id: "finishfreq",
-      title: "Finish Frequency",
-      subtitle: "How often each driver has finished in each position.",
-      render: () => <FinishPositionsGrid summary={finishSummary} />,
-    },
-    {
-      id: "qualifreq",
-      title: "Qualifying Frequency",
-      subtitle: "How often each driver has qualified in each grid position.",
-      render: () => <QualifyingPositionsGrid summary={qualifyingSummary} />,
+      id: "freq",
+      title: freqView === "finish" ? "Finish Frequency" : "Qualifying Frequency",
+      subtitle:
+        freqView === "finish"
+          ? "How often each driver has finished in each position."
+          : "How often each driver has qualified in each grid position.",
+      headerActions: () => (
+        <button
+          type="button"
+          className="gw-freq-toggle"
+          onClick={(e) => {
+            e.stopPropagation();
+            setFreqView((v) => (v === "finish" ? "quali" : "finish"));
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 5.5h8.5L8 3M14 10.5H5.5L8 13" />
+          </svg>
+          {freqView === "finish" ? "Qualifying" : "Race"}
+        </button>
+      ),
+      render: () => (
+        <div className="gw-freq-stage" key={freqView}>
+          {freqView === "finish" ? (
+            <FinishPositionsGrid summary={finishSummary} />
+          ) : (
+            <QualifyingPositionsGrid summary={qualifyingSummary} />
+          )}
+        </div>
+      ),
     },
     {
       id: "podiumsD",
@@ -677,11 +702,14 @@ export default function GridWalk({
               }}
             >
               <div className="gw-card-inner">
-                <div className="section-header">
-                  <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-                    {section.title}
-                  </h2>
-                  <p className="text-sm">{section.subtitle}</p>
+                <div className={"section-header" + (section.headerActions ? " gw-card-head" : "")}>
+                  <div>
+                    <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+                      {section.title}
+                    </h2>
+                    <p className="text-sm">{section.subtitle}</p>
+                  </div>
+                  {section.headerActions?.()}
                 </div>
                 {section.render()}
               </div>

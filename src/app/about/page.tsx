@@ -61,11 +61,21 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            53 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            54 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">54</span>
+                <b>Finish and Qualifying Frequency share a card with a toggle</b>
+                <span>
+                  Unlike the other three merged pairs, these two don&rsquo;t stack: a pill button
+                  in the card&rsquo;s header swaps the table between Finish Frequency and
+                  Qualifying Frequency in place, with a short fade, so the card is never taller
+                  than one table. The carousel is down to five cards.
+                </span>
+              </li>
               <li>
                 <span className="seq">53</span>
                 <b>Driver and team graphics now share a card</b>
