@@ -321,8 +321,13 @@ export default function GridWalk({
     target.current = { k, tx: e.clientX - (e.clientX - v.tx) * f, ty: ly - (ly - v.ty) * f };
   }
 
-  // Re-measure after every commit (a season switch changes card sizes);
-  // at fit zoom, keep the focused card centred.
+  // Re-measure only when something can actually change a card's natural
+  // size: the initial mount, a season switch (new data grids), or the
+  // finish/qualifying toggle. Without a dependency array this used to
+  // re-run after every commit, including every focus change while
+  // dragging — forcing a synchronous reflow of every card (now some of
+  // them stack two full tables) on each one. At fit zoom, keep the
+  // focused card centred.
   useLayoutEffect(() => {
     layout();
     if (Math.abs(view.current.k - 1) < 0.02 && !target.current) {
@@ -330,7 +335,8 @@ export default function GridWalk({
     }
     apply();
     stripRef.current?.classList.remove("pending");
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [season, freqView]);
 
   // Both tab strips (the desktop top bar and the phone bottom bar) rest the
   // open card's tab at their left edge. Only the visible one moves.
