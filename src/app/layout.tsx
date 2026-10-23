@@ -16,9 +16,12 @@ export default function RootLayout({
       <head>
         <script
           // Runs before paint so the stored theme choice applies without a
-          // light-mode flash on first load.
+          // light-mode flash on first load. It also mirrors each stored
+          // choice into its cookie (f1-theme / f1-accent) when that cookie
+          // is missing, so a visitor from before the cookies existed gets
+          // server-picked card images from their next visit on.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("f1-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);}var a=localStorage.getItem("f1-accent");if(a==="coffee"||a==="red"||a==="dracula"){document.documentElement.setAttribute("data-accent",a);}}catch(e){}})();`,
+            __html: `(function(){try{var c=document.cookie;function k(n,v){if(c.indexOf(n+"=")<0){document.cookie=n+"="+v+"; path=/; max-age=31536000; samesite=lax";}}var t=localStorage.getItem("f1-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);k("f1-theme",t);}var a=localStorage.getItem("f1-accent");if(a==="coffee"||a==="red"||a==="dracula"){document.documentElement.setAttribute("data-accent",a);k("f1-accent",a);}}catch(e){}})();`,
           }}
         />
       </head>

@@ -1,27 +1,39 @@
 #!/usr/bin/env node
 // Captures a static image of each Grid Walk card's content, for every
-// theme x palette combination, for the current season only. These stand
-// in for the live-rendered card content (tables/charts/bars) on the home
-// page — by far the single biggest cost to the GPU on every drag frame
-// (see "grid-walk-blur-gpu-cost" project memory, from a real device
-// trace). GridWalk.tsx falls back to live rendering for any season this
-// hasn't been run for, or any image that's missing, so a partial or
-// stale run never breaks the page.
+// theme x palette combination, for one season (or every supported one).
+// Visitors only ever see these images: live rendering of the cards
+// (tables/charts/bars) is by far the single biggest cost to the GPU on
+// every drag frame (see "grid-walk-blur-gpu-cost" project memory, from a
+// real device trace), so it now happens only here, in capture mode.
 //
-// Run against a server already serving the built app (see the
+// Alongside the images each season gets a manifest.json recording every
+// image's natural CSS-pixel size, which the page uses to lay the cards out
+// before any image has loaded. Images are lossless WebP: a third the size
+// of PNG for this flat-colour content, with nothing lost.
+//
+// Usage (against a server already serving the built app — see the
 // "capture-card-snapshots" GitHub Actions workflow for the full
-// build-and-serve sequence), or locally: npm run build && npm run start
-// -- -p 3100, then node scripts/capture-card-snapshots.mjs.
+// build-and-serve sequence, or locally: npm run build && npm run start
+// -- -p 3100):
+//   node scripts/capture-card-snapshots.mjs            # current season
+//   node scripts/capture-card-snapshots.mjs 2024       # one season
+//   node scripts/capture-card-snapshots.mjs all        # 2020 to current
 import { chromium } from "@playwright/test";
-import { mkdir } from "node:fs/promises";
+import sharp from "sharp";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.SNAPSHOT_PORT || "3100";
 const BASE_URL = `http://localhost:${PORT}`;
-const SEASON = Number(process.argv[2]) || new Date().getFullYear();
-const OUT_ROOT = path.join(__dirname, "..", "public", "card-snapshots", String(SEASON));
+const FIRST_SEASON = 2020;
+const CURRENT_SEASON = new Date().getFullYear();
+const ARG = process.argv[2];
+const SEASONS =
+  ARG === "all"
+    ? Array.from({ length: CURRENT_SEASON - FIRST_SEASON + 1 }, (_, i) => FIRST_SEASON + i)
+    : [Number(ARG) || CURRENT_SEASON];
 
 const ACCENTS = ["monokai", "coffee", "red", "dracula"];
 const THEMES = ["light", "dark"];
@@ -48,18 +60,27 @@ async function focusTab(page, tabIndex) {
   await page.waitForTimeout(FOCUS_SETTLE_MS);
 }
 
-async function main() {
-  // Unset in CI (a freshly `playwright install`ed browser is used there);
-  // only needed to point at a specific local Chromium build.
-  const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined });
+// Screenshot the element and save it as lossless WebP; return its natural
+// (untransformed) CSS-pixel size for the manifest.
+async function capture(el, file) {
+  const png = await el.screenshot({ type: "png" });
+  await sharp(png).webp({ lossless: true }).toFile(file);
+  return el.evaluate((node) => ({ w: node.offsetWidth, h: node.offsetHeight }));
+}
+
+async function captureSeason(browser, season) {
+  const outRoot = path.join(__dirname, "..", "public", "card-snapshots", String(season));
+  const sizes = {};
 
   for (const accent of ACCENTS) {
     for (const theme of THEMES) {
-      const dir = path.join(OUT_ROOT, `${accent}-${theme}`);
+      const dir = path.join(outRoot, `${accent}-${theme}`);
       await mkdir(dir, { recursive: true });
 
+      // Tall enough that every card sits at its natural size (no fit-down
+      // scaling), so the 2x capture really is 2x the content.
       const page = await browser.newPage({
-        viewport: { width: 1800, height: 1200 },
+        viewport: { width: 1800, height: 1400 },
         deviceScaleFactor: 2,
       });
       await page.addInitScript(
@@ -69,21 +90,21 @@ async function main() {
         },
         { accent, theme }
       );
-      // noSnapshot=1 forces GridWalk to render cards live even for the
-      // snapshot season — otherwise this script would screenshot the very
-      // snapshot <img> it's meant to be regenerating.
-      await page.goto(`${BASE_URL}/?season=${SEASON}&noSnapshot=1`, { waitUntil: "networkidle" });
+      // noSnapshot=1 puts the page in capture mode: cards render live at
+      // natural size — otherwise this script would screenshot the very
+      // images it is meant to be regenerating.
+      await page.goto(`${BASE_URL}/?season=${season}&noSnapshot=1`, { waitUntil: "networkidle" });
       await page.waitForTimeout(600);
 
       for (const { id, tabIndex } of PLAIN_SECTIONS) {
         await focusTab(page, tabIndex);
         const el = await page.$(`.gw-snap-target[data-section="${id}"]`);
         if (!el) {
-          console.warn(`skip ${accent}-${theme}/${id}: not found on page`);
+          console.warn(`skip ${season}/${accent}-${theme}/${id}: not found on page`);
           continue;
         }
-        await el.screenshot({ path: path.join(dir, `${id}.png`), type: "png" });
-        console.log(`${accent}-${theme}/${id}.png`);
+        sizes[id] = await capture(el, path.join(dir, `${id}.webp`));
+        console.log(`${season}/${accent}-${theme}/${id}.webp`);
       }
 
       for (const { id, tabIndex, views } of TOGGLED_SECTIONS) {
@@ -95,11 +116,11 @@ async function main() {
           }
           const el = await page.$(`.gw-snap-target[data-section="${id}"]`);
           if (!el) {
-            console.warn(`skip ${accent}-${theme}/${id}-${view}: not found on page`);
+            console.warn(`skip ${season}/${accent}-${theme}/${id}-${view}: not found on page`);
             break;
           }
-          await el.screenshot({ path: path.join(dir, `${id}-${view}.png`), type: "png" });
-          console.log(`${accent}-${theme}/${id}-${view}.png`);
+          sizes[`${id}-${view}`] = await capture(el, path.join(dir, `${id}-${view}.webp`));
+          console.log(`${season}/${accent}-${theme}/${id}-${view}.webp`);
         }
       }
 
@@ -107,8 +128,19 @@ async function main() {
     }
   }
 
+  const manifest = { season, capturedAt: new Date().toISOString(), sizes };
+  await writeFile(path.join(outRoot, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
+  console.log(`Done: season ${season}`);
+}
+
+async function main() {
+  // Unset in CI (a freshly `playwright install`ed browser is used there);
+  // only needed to point at a specific local Chromium build.
+  const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined });
+  for (const season of SEASONS) {
+    await captureSeason(browser, season);
+  }
   await browser.close();
-  console.log(`Done: season ${SEASON}`);
 }
 
 main().catch((err) => {

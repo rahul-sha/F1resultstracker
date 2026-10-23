@@ -22,13 +22,22 @@ language.
   for the selected season, under the same title and subtitle it has on
   its own page. Every card is the same height, with its content scaled to
   fill that height and the card as wide as that makes it, then the whole
-  strip is fitted to the space between the top and bottom bars. For the
-  current season each card shows a pre-rendered image of its content
-  (regenerated every Monday by `capture-card-snapshots.yml`, which runs
-  `scripts/capture-card-snapshots.mjs` against the built site with
-  `?noSnapshot=1` so it captures the live tables, not its own previous
-  images); every other season, and any card whose image is missing,
-  renders live. The
+  strip is fitted to the space between the top and bottom bars. Every card,
+  for every season, is a pre-rendered lossless WebP image of its content
+  under `public/card-snapshots/<season>/<palette>-<theme>/`, with a
+  `manifest.json` per season recording each image's natural size so the
+  cards can be laid out before anything has loaded. Visitors never render a
+  card live and never receive the season's data grids. The images are made
+  by `scripts/capture-card-snapshots.mjs` (`capture-card-snapshots.yml`
+  runs it every Monday for the current season; pass a year or `all` to
+  capture finished seasons once), which loads the built site with
+  `?noSnapshot=1`, the one mode in which cards still render live, so it
+  captures the real tables rather than its own previous images. The
+  visitor's theme and palette are kept in cookies (`f1-theme`, `f1-accent`)
+  as well as `localStorage`, so the server picks the right image on first
+  paint; with no theme chosen yet a `<picture>` media query follows the
+  device. The other seven colour combinations for the open season are
+  prefetched when the browser is idle; other seasons load when picked. The
   centred card is at full strength and its neighbours peek in, dimmed, on
   either side. Browse by dragging or swiping (one card per flick), with
   the side arrows, the ← → keys or the jump-bar tabs. Scroll the mouse
@@ -109,7 +118,8 @@ overrides are mapped locally in `src/lib/circuits.ts`,
 ## Theming
 
 Four colour palettes — Monokai (default), Coffee, Ember and Dracula — each
-togglable from Grid Walk's top bar and persisted in `localStorage`.
+togglable from Grid Walk's top bar and persisted in `localStorage` (and a
+cookie, for the server-picked card images).
 All four have both a light and a dark variant; the theme button flips
 between Light and Dark (there's no Auto option), starting from whatever the
 device shows until it's first clicked. All colour in the UI, including the heatmap

@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { ThemeIcon } from "./nav-icons";
+import { THEME_COOKIE, persistCookie, type Theme } from "@/lib/variant-constants";
 
-type Theme = "light" | "dark";
-
-const STORAGE_KEY = "f1-theme";
+const STORAGE_KEY = THEME_COOKIE;
 const ORDER: Theme[] = ["light", "dark"];
 const LABEL: Record<Theme, string> = { light: "Light", dark: "Dark" };
 
@@ -42,6 +41,9 @@ export default function ThemeToggle({ iconOnly = false }: { iconOnly?: boolean }
     setTheme(next);
     applyTheme(next);
     window.localStorage.setItem(STORAGE_KEY, next);
+    // The cookie lets the server pick the right card images on the next
+    // load, so the page never paints the wrong theme's image first.
+    persistCookie(THEME_COOKIE, next);
     setPulse((p) => p + 1);
   }
 

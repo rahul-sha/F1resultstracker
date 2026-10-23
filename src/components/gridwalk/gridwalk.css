@@ -156,6 +156,18 @@
   transform-origin: 0 0;
 }
 
+/* A card whose image has not been captured yet, at the size it will be. */
+.gw-snap-missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--surface-3);
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+}
+
 /* Capture mode (noSnapshot=1): natural-size cards for the snapshot script. */
 .gw-capture .gw-card {
   height: auto;
