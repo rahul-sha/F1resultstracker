@@ -283,24 +283,25 @@ export default function GridWalk({
   // Measures each card's natural size and writes every slot's position and
   // fitted scale straight to the DOM (no state: it's re-run on resize and
   // after every render, and React never sets these styles itself).
-  // Every card is the same fixed size (see .gw-card); its content keeps its
-  // own proportions and is scaled to fit the frame below the header,
-  // centred, with space left around it rather than cropped.
+  // Every card is the same height (see .gw-card); its content keeps its
+  // own proportions and is scaled so it exactly fills the frame's height
+  // below the header, and the card takes whatever width that gives it.
   function fitContent(card: HTMLElement) {
     const fit = card.querySelector<HTMLElement>(".gw-fit");
     const frame = fit?.parentElement;
     if (!fit || !frame) return;
     if (forceLive) {
       fit.style.transform = "";
+      frame.style.width = "";
       return;
     }
-    const fw = frame.clientWidth;
     const fh = frame.clientHeight;
     const cw = fit.offsetWidth;
     const ch = fit.offsetHeight;
-    if (!cw || !ch || !fw || !fh) return;
-    const fs = Math.min(fw / cw, fh / ch);
-    fit.style.transform = `translate(${(fw - cw * fs) / 2}px, ${(fh - ch * fs) / 2}px) scale(${fs})`;
+    if (!cw || !ch || !fh) return;
+    const fs = fh / ch;
+    fit.style.transform = `scale(${fs})`;
+    frame.style.width = `${cw * fs}px`;
   }
 
   function layout() {

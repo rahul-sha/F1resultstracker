@@ -104,8 +104,9 @@
   position: absolute;
   left: 0;
   top: 0;
-  /* One size for every card; content is fitted inside .gw-frame. */
-  width: 920px;
+  /* One height for every card; content is scaled to fill .gw-frame's
+     height and the card is as wide as that makes it. */
+  width: max-content;
   height: 900px;
   display: flex;
   flex-direction: column;
@@ -157,7 +158,6 @@
 
 /* Capture mode (noSnapshot=1): natural-size cards for the snapshot script. */
 .gw-capture .gw-card {
-  width: max-content;
   height: auto;
   display: block;
 }
