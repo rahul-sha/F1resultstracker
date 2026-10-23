@@ -61,11 +61,45 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            57 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            60 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">60</span>
+                <b>Same-height cards and a Drivers/Teams toggle</b>
+                <span>
+                  Every card is now the same height, with its content scaled to fill that height
+                  and the card as wide as that makes it, so the strip no longer mixes tall, short,
+                  wide and narrow cards. The first card swaps its stacked driver and team tables
+                  for the same in-place toggle Finish/Qualifying already had.
+                </span>
+              </li>
+              <li>
+                <span className="seq">59</span>
+                <b>Cards as pictures for the current season</b>
+                <span>
+                  A real performance trace from a laptop showed the graphics card busy for most of
+                  every drag, and the heaviest cards (the big tables and line charts) were the
+                  reason. For the current season the cards now show a pre-rendered image of their
+                  content instead of the live table or chart, regenerated every Monday after the
+                  race; every other season still renders live, and so does anything whose image is
+                  missing. The images are captured from the live site itself, so the capture runs
+                  with the swap switched off, or it would photograph its own old output.
+                </span>
+              </li>
+              <li>
+                <span className="seq">58</span>
+                <b>No more blur</b>
+                <span>
+                  The same trace pointed at the blurred glow blobs behind every page and the frosted
+                  nav bar and About cards: blur is expensive to draw and was being redrawn on every
+                  frame, even where the blobs were completely hidden. All of it is gone in favour of
+                  plain translucent surfaces. Two earlier rounds that trimmed the live grid&rsquo;s
+                  redraw work turned out to be chasing the wrong cost and made no felt difference.
+                </span>
+              </li>
               <li>
                 <span className="seq">57</span>
                 <b>A lighter Points Evolution chart</b>
