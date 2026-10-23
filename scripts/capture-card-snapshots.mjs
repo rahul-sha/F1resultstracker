@@ -25,7 +25,25 @@ const OUT_ROOT = path.join(__dirname, "..", "public", "card-snapshots", String(S
 
 const ACCENTS = ["monokai", "coffee", "red", "dracula"];
 const THEMES = ["light", "dark"];
-const PLAIN_SECTIONS = ["results", "evolution", "positions", "podiumsD"];
+// Index within GridWalk's `sections` array (and so its `.gw-toptab` nav
+// tabs) — each must be focused via its tab before its card is screenshot,
+// since an unfocused card sits dimmed and off-centre in the carousel.
+const PLAIN_SECTIONS = [
+  { id: "results", tabIndex: 0 },
+  { id: "evolution", tabIndex: 1 },
+  { id: "positions", tabIndex: 2 },
+  { id: "podiumsD", tabIndex: 4 },
+];
+const FREQ_TAB_INDEX = 3;
+// .gw-slot's opacity transition (0.35s) plus the camera-pan/zoom-reset
+// animation goTo() triggers both need to fully settle before a screenshot.
+const FOCUS_SETTLE_MS = 900;
+
+async function focusTab(page, tabIndex) {
+  const tabs = await page.$$(".gw-toptab");
+  await tabs[tabIndex].click();
+  await page.waitForTimeout(FOCUS_SETTLE_MS);
+}
 
 async function main() {
   // Unset in CI (a freshly `playwright install`ed browser is used there);
@@ -48,10 +66,14 @@ async function main() {
         },
         { accent, theme }
       );
-      await page.goto(`${BASE_URL}/?season=${SEASON}`, { waitUntil: "networkidle" });
+      // noSnapshot=1 forces GridWalk to render cards live even for the
+      // snapshot season — otherwise this script would screenshot the very
+      // snapshot <img> it's meant to be regenerating.
+      await page.goto(`${BASE_URL}/?season=${SEASON}&noSnapshot=1`, { waitUntil: "networkidle" });
       await page.waitForTimeout(600);
 
-      for (const id of PLAIN_SECTIONS) {
+      for (const { id, tabIndex } of PLAIN_SECTIONS) {
+        await focusTab(page, tabIndex);
         const el = await page.$(`.gw-snap-target[data-section="${id}"]`);
         if (!el) {
           console.warn(`skip ${accent}-${theme}/${id}: not found on page`);
@@ -61,6 +83,7 @@ async function main() {
         console.log(`${accent}-${theme}/${id}.png`);
       }
 
+      await focusTab(page, FREQ_TAB_INDEX);
       const freqEl = await page.$('.gw-snap-target[data-section="freq"]');
       if (freqEl) {
         await freqEl.screenshot({ path: path.join(dir, "freq-finish.png"), type: "png" });

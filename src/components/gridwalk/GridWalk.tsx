@@ -119,9 +119,16 @@ export default function GridWalk({
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-accent"] });
     return () => observer.disconnect();
   }, []);
+  // The capture script that GENERATES these snapshot images loads this
+  // same page — without this escape hatch it would capture the snapshot
+  // <img> it's meant to be replacing, baking any past mistake in forever.
+  const [forceLive, setForceLive] = useState(false);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("noSnapshot") === "1") setForceLive(true);
+  }, []);
   const snapshotSeason = 2026;
   function snapshotSrc(sectionId: string) {
-    if (season !== snapshotSeason || !variant) return null;
+    if (forceLive || season !== snapshotSeason || !variant) return null;
     const name = sectionId === "freq" ? `freq-${freqView}` : sectionId;
     return `/card-snapshots/${snapshotSeason}/${variant.accent}-${variant.theme}/${name}.png`;
   }
