@@ -138,6 +138,8 @@
    re-enables pointer-events since .gw-card-inner turns them off so the
    whole card can act as one click target for diving. */
 .gw-card-head {
+  display: flex !important;
+  width: 100%;
   flex-direction: row !important;
   justify-content: space-between;
   align-items: flex-start;
