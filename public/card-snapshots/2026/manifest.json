@@ -1,0 +1,34 @@
+{
+  "season": 2026,
+  "capturedAt": "2026-10-23T13:09:13.181Z",
+  "sizes": {
+    "evolution": {
+      "w": 720,
+      "h": 1121
+    },
+    "positions": {
+      "w": 1127,
+      "h": 928
+    },
+    "podiumsD": {
+      "w": 658,
+      "h": 664
+    },
+    "results-drivers": {
+      "w": 1127,
+      "h": 928
+    },
+    "results-teams": {
+      "w": 1127,
+      "h": 928
+    },
+    "freq-finish": {
+      "w": 1264,
+      "h": 916
+    },
+    "freq-quali": {
+      "w": 1264,
+      "h": 916
+    }
+  }
+}

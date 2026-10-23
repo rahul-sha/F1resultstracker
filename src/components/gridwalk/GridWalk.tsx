@@ -18,13 +18,36 @@ import ConstructorPointsEvolutionChart from "@/components/ConstructorPointsEvolu
 import FinishPositionsGrid from "@/components/FinishPositionsGrid";
 import QualifyingPositionsGrid from "@/components/QualifyingPositionsGrid";
 import PodiumBars from "@/components/PodiumBars";
+import {
+  ACCENTS,
+  THEMES,
+  SNAPSHOT_NAMES,
+  isAccent,
+  isTheme,
+  snapshotPath,
+  type Accent,
+  type SnapshotName,
+  type Theme,
+} from "@/lib/variant-constants";
 
-export interface GridWalkProps {
-  season: number;
+// The season's data grids, only ever present in capture mode (see
+// page.tsx): visitors get pre-rendered images and never receive these.
+export interface GridWalkData {
   pointsGrid: PointsGrid;
   constructorGrid: ConstructorPointsGrid;
   finishSummary: FinishPositionSummary;
   qualifyingSummary: QualifyingPositionSummary;
+}
+
+export interface GridWalkProps {
+  season: number;
+  live: GridWalkData | null;
+  // Natural CSS-pixel size of each snapshot image, from the season's
+  // manifest; null when the season has never been captured.
+  sizes: Record<string, { w: number; h: number }> | null;
+  // The visitor's persisted theme/palette, read from cookies on the
+  // server. Theme null = nothing chosen yet, follow the device.
+  initialVariant: { accent: Accent; theme: Theme | null };
 }
 
 type SectionDef = {
@@ -38,7 +61,12 @@ type SectionDef = {
   // between two graphics sharing the card) — pointer-events are re-enabled
   // for these since .gw-card-inner otherwise disables them.
   headerActions?: () => React.ReactNode;
-  render: () => React.ReactNode;
+  // The snapshot image(s) standing in for this card's content. A toggled
+  // card lists one per view, all kept mounted and crossfaded, so swapping
+  // never waits on a load or collapses the card's height.
+  snapshots: { name: SnapshotName; active: boolean }[];
+  // Live rendering, capture mode only.
+  render: (data: GridWalkData) => React.ReactNode;
 };
 
 type View = { k: number; tx: number; ty: number };
@@ -56,13 +84,7 @@ const DRAG_THRESHOLD = 6;
 // At k=1 the strip always settles with one card centred; each card is
 // fitted to the space between the top bar and the jump bar, never
 // enlarged past its natural size. See "grid-walk-carousel-mockup" memory.
-export default function GridWalk({
-  season,
-  pointsGrid,
-  constructorGrid,
-  finishSummary,
-  qualifyingSummary,
-}: GridWalkProps) {
+export default function GridWalk({ season, live, sizes, initialVariant }: GridWalkProps) {
   const router = useRouter();
   const wrapRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -100,60 +122,109 @@ export default function GridWalk({
   // Pre-rendered card snapshots: a card's own content (tables/charts/bars)
   // is the single biggest cost to the GPU on every drag frame, far more
   // than the live grid ever was (see "grid-walk-blur-gpu-cost" memory —
-  // confirmed from a real device trace). For the current season only, a
-  // weekly-regenerated image stands in for that content; every other
-  // season still renders live, so nothing here can go stale or missing
-  // mid-season. `null` means "not yet known" (SSR has no access to
-  // localStorage), so the first paint always renders live and swaps in
-  // the image a tick later — never the other way round.
-  const [variant, setVariant] = useState<{ accent: string; theme: string } | null>(null);
+  // confirmed from a real device trace). So visitors never get live
+  // content at all: every card, every season, is an image captured by
+  // scripts/capture-card-snapshots.mjs (weekly for the current season,
+  // once for the finished ones). The server already knows the visitor's
+  // theme and palette from cookies, so the first paint is the right
+  // image; the attributes on <html> are then watched so a toggle swaps
+  // the images straight away. With no theme cookie yet (first ever
+  // visit), a <picture> media query lets the browser follow the device.
+  const [variant, setVariant] = useState<{ accent: Accent; theme: Theme | null }>(initialVariant);
   useEffect(() => {
     function read() {
       const root = document.documentElement;
-      setVariant({
-        accent: root.getAttribute("data-accent") || "monokai",
-        theme: root.getAttribute("data-theme") || "light",
-      });
+      const accent = root.getAttribute("data-accent");
+      const theme = root.getAttribute("data-theme");
+      setVariant({ accent: isAccent(accent) ? accent : "monokai", theme: isTheme(theme) ? theme : null });
     }
     read();
     const observer = new MutationObserver(read);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-accent"] });
     return () => observer.disconnect();
   }, []);
-  // The capture script that GENERATES these snapshot images loads this
-  // same page — without this escape hatch it would capture the snapshot
-  // <img> it's meant to be replacing, baking any past mistake in forever.
-  // Safe to read on the client's first render: `variant` is still null
-  // then, so server and client both render live content either way.
-  const [forceLive] = useState(
-    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("noSnapshot") === "1"
-  );
-  const snapshotSeason = 2026;
-  function snapshotSrc(sectionId: string) {
-    if (forceLive || season !== snapshotSeason || !variant) return null;
-    return `/card-snapshots/${snapshotSeason}/${variant.accent}-${variant.theme}/${snapshotName(sectionId)}.png`;
-  }
-  function snapshotName(sectionId: string) {
-    if (sectionId === "freq") return `freq-${freqView}`;
-    if (sectionId === "results") return `results-${resultsView}`;
-    return sectionId;
-  }
-  // Natural (unscaled) CSS-pixel size of each card's rendered content —
-  // theme/accent-invariant (only colour changes), measured once from the
-  // live content. Keeps layout() measuring the same size whichever way a
-  // card is currently rendered, live or snapshot.
-  const SNAPSHOT_SIZE: Record<string, { w: number; h: number }> = {
-    "results-drivers": { w: 1121, h: 924 },
-    "results-teams": { w: 1121, h: 924 },
-    evolution: { w: 603, h: 938 },
-    positions: { w: 1118, h: 921 },
-    "freq-finish": { w: 1264, h: 916 },
-    "freq-quali": { w: 1264, h: 916 },
-    podiumsD: { w: 658, h: 665 },
-  };
-  // A snapshot that 404s (not yet generated for this combination) falls
-  // back to live rendering rather than showing a broken image.
+  // Capture mode: page.tsx only supplies the live data grids when the
+  // page is loaded with ?noSnapshot=1 by the capture script — without
+  // this the script would photograph the very images it is regenerating.
+  const forceLive = live !== null;
+
+  // Once the cards are up, warm the browser's cache with this season's
+  // images for the other seven theme/palette combinations, so toggling
+  // either is instant. Other seasons load when picked and stay cached.
+  useEffect(() => {
+    if (forceLive || !sizes) return;
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
+    const cancel = window.cancelIdleCallback ?? window.clearTimeout;
+    const handle = idle(() => {
+      for (const accent of ACCENTS) {
+        for (const theme of THEMES) {
+          for (const name of SNAPSHOT_NAMES) {
+            if (!sizes[name]) continue;
+            const img = new Image();
+            img.src = snapshotPath(season, accent, theme, name);
+          }
+        }
+      }
+    });
+    return () => cancel(handle);
+  }, [season, sizes, forceLive]);
+
+  // An image that fails to load (a combination not captured yet) shows a
+  // quiet placeholder at the card's size rather than a broken image.
   const [failedSnapshots, setFailedSnapshots] = useState<Set<string>>(new Set());
+  const FALLBACK_SIZE = { w: 900, h: 700 };
+
+  function renderSnapshot(name: SnapshotName) {
+    const size = sizes?.[name] ?? FALLBACK_SIZE;
+    if (!sizes?.[name]) {
+      return (
+        <div className="gw-snap-missing" style={{ width: size.w, height: size.h }}>
+          <span>{season} images are not ready yet</span>
+        </div>
+      );
+    }
+    const light = snapshotPath(season, variant.accent, "light", name);
+    const dark = snapshotPath(season, variant.accent, "dark", name);
+    const chosen = variant.theme ? snapshotPath(season, variant.accent, variant.theme, name) : light;
+    if (failedSnapshots.has(chosen)) {
+      return (
+        <div className="gw-snap-missing" style={{ width: size.w, height: size.h }}>
+          <span>Image unavailable</span>
+        </div>
+      );
+    }
+    const img = (
+      <img
+        src={chosen}
+        alt=""
+        width={size.w}
+        height={size.h}
+        draggable={false}
+        onError={() => setFailedSnapshots((prev) => new Set(prev).add(chosen))}
+      />
+    );
+    if (variant.theme) return img;
+    return (
+      <picture key={`${variant.accent}-auto`}>
+        <source media="(prefers-color-scheme: dark)" srcSet={dark} />
+        {img}
+      </picture>
+    );
+  }
+
+  function renderCardBody(section: SectionDef) {
+    if (live) return section.render(live);
+    if (section.snapshots.length === 1) return renderSnapshot(section.snapshots[0].name);
+    return (
+      <div className="gw-freq-stage">
+        {section.snapshots.map((s) => (
+          <div key={s.name} className={"gw-freq-pane" + (s.active ? " active" : "")} aria-hidden={!s.active}>
+            {renderSnapshot(s.name)}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const sections: SectionDef[] = [
     {
@@ -180,7 +251,11 @@ export default function GridWalk({
           {resultsView === "drivers" ? "Teams" : "Drivers"}
         </button>
       ),
-      render: () => (
+      snapshots: [
+        { name: "results-drivers", active: resultsView === "drivers" },
+        { name: "results-teams", active: resultsView === "teams" },
+      ],
+      render: ({ pointsGrid, constructorGrid }) => (
         <div className="gw-freq-stage">
           <div className={"gw-freq-pane" + (resultsView === "drivers" ? " active" : "")} aria-hidden={resultsView !== "drivers"}>
             <PointsHeatmap grid={pointsGrid} />
@@ -195,7 +270,8 @@ export default function GridWalk({
       id: "evolution",
       title: "Driver Points Evolution",
       subtitle: "Cumulative points scored by each driver across the season.",
-      render: () => (
+      snapshots: [{ name: "evolution", active: true }],
+      render: ({ pointsGrid, constructorGrid }) => (
         <>
           <DriverPointsEvolutionChart grid={pointsGrid} />
           <div className="section-header gw-subsection-header">
@@ -212,7 +288,8 @@ export default function GridWalk({
       id: "positions",
       title: "Positions",
       subtitle: "Where each driver finished in every Grand Prix.",
-      render: () => <PointsHeatmap grid={pointsGrid} mode="position" />,
+      snapshots: [{ name: "positions", active: true }],
+      render: ({ pointsGrid }) => <PointsHeatmap grid={pointsGrid} mode="position" />,
     },
     {
       id: "freq",
@@ -237,7 +314,11 @@ export default function GridWalk({
           {freqView === "finish" ? "Qualifying" : "Race"}
         </button>
       ),
-      render: () => (
+      snapshots: [
+        { name: "freq-finish", active: freqView === "finish" },
+        { name: "freq-quali", active: freqView === "quali" },
+      ],
+      render: ({ finishSummary, qualifyingSummary }) => (
         // Both tables stay mounted and overlap in the same grid cell, so
         // the container is always as tall as the taller one and swapping
         // only ever crossfades — it never collapses to find its new
@@ -256,7 +337,8 @@ export default function GridWalk({
       id: "podiumsD",
       title: "Driver Podiums",
       subtitle: "1st/2nd/3rd place finishes per driver.",
-      render: () => (
+      snapshots: [{ name: "podiumsD", active: true }],
+      render: ({ finishSummary }) => (
         <>
           <PodiumBars
             drivers={finishSummary.driverPodiums.map((d) => ({
@@ -438,7 +520,7 @@ export default function GridWalk({
     apply();
     stripRef.current?.classList.remove("pending");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [season, freqView, resultsView, forceLive, variant, failedSnapshots]);
+  }, [season, freqView, resultsView, forceLive, sizes, failedSnapshots]);
 
   // Both tab strips (the desktop top bar and the phone bottom bar) rest the
   // open card's tab at their left edge. Only the visible one moves.
@@ -620,6 +702,9 @@ export default function GridWalk({
     // pinch arrives as ctrl+wheel with small deltas, hence its higher rate.
     function onWheel(e: WheelEvent) {
       if (onChrome(e)) {
+        // The season menu is the one thing on the bars that scrolls
+        // itself; the browser must keep that wheel.
+        if (e.target instanceof Element && e.target.closest(".switcher-menu")) return;
         e.preventDefault();
         if (e.target instanceof Element && e.target.closest(".gw-toptabs-track")) onTabsWheel(e);
         return;
@@ -826,22 +911,7 @@ export default function GridWalk({
                 </div>
                 <div className="gw-frame">
                   <div className="gw-fit gw-snap-target" data-section={section.id}>
-                    {(() => {
-                      const src = snapshotSrc(section.id);
-                      const size = SNAPSHOT_SIZE[snapshotName(section.id)];
-                      if (!src || !size || failedSnapshots.has(src)) return section.render();
-                      return (
-                        <img
-                          key={src}
-                          src={src}
-                          alt=""
-                          width={size.w}
-                          height={size.h}
-                          draggable={false}
-                          onError={() => setFailedSnapshots((prev) => new Set(prev).add(src))}
-                        />
-                      );
-                    })()}
+                    {renderCardBody(section)}
                   </div>
                 </div>
               </div>

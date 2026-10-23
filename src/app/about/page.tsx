@@ -61,11 +61,27 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            60 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            61 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">61</span>
+                <b>Pictures only, for every season</b>
+                <span>
+                  Visitors never get a live card any more: every card for every season from 2020
+                  on is a pre-captured image, and the data behind the tables is no longer sent to
+                  the browser at all. Finished seasons were captured once; the current one is
+                  still re-captured every Monday. Your theme and palette are now remembered in a
+                  cookie as well, so the server sends the right image first time, and a first
+                  visit follows the device&rsquo;s light or dark setting. The other seven colour
+                  combinations for the season you are looking at download quietly in the
+                  background, so toggling is instant. Images moved from PNG to lossless WebP at a
+                  third of the size. Also fixed: the season menu would not scroll, because the
+                  card zoom was swallowing the mouse wheel over it.
+                </span>
+              </li>
               <li>
                 <span className="seq">60</span>
                 <b>Same-height cards and a Drivers/Teams toggle</b>

@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { PaletteIcon } from "./nav-icons";
+import { ACCENT_COOKIE, persistCookie, type Accent } from "@/lib/variant-constants";
 
-type Accent = "monokai" | "coffee" | "red" | "dracula";
-
-const STORAGE_KEY = "f1-accent";
+const STORAGE_KEY = ACCENT_COOKIE;
 const ORDER: Accent[] = ["monokai", "coffee", "red", "dracula"];
 const LABEL: Record<Accent, string> = {
   monokai: "Monokai",
@@ -50,6 +49,8 @@ export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean 
     setAccent(next);
     applyAccent(next);
     window.localStorage.setItem(STORAGE_KEY, next);
+    // Mirrored into a cookie so the server picks the right card images.
+    persistCookie(ACCENT_COOKIE, next);
     setPulse((p) => p + 1);
   }
 

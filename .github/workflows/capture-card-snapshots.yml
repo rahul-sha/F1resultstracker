@@ -2,15 +2,16 @@ name: Capture Grid Walk card snapshots
 
 # Runs manually or weekly, shortly after the season-data snapshot job (see
 # snapshot-season.yml) so a completed race weekend's results are already
-# committed by the time these images are captured from them. Regenerates
-# the current season's card images only — see
-# scripts/capture-card-snapshots.mjs and the "grid-walk-blur-gpu-cost"
-# project memory for why these exist.
+# committed by the time these images are captured from them. The weekly
+# run regenerates the current season only; finished seasons are captured
+# once, by hand ("all" or a year). Visitors only ever see these images —
+# see scripts/capture-card-snapshots.mjs and the "grid-walk-blur-gpu-cost"
+# project memory for why.
 on:
   workflow_dispatch:
     inputs:
       season:
-        description: "Season year to capture (e.g. 2026). Leave blank for the current season."
+        description: "Season year to capture (e.g. 2024), or 'all' for every season from 2020. Leave blank for the current season."
         required: false
         type: string
   schedule:
@@ -69,4 +70,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update ${{ steps.season.outputs.season }} Grid Walk card snapshots"
-          file_pattern: "public/card-snapshots/${{ steps.season.outputs.season }}/**"
+          file_pattern: "public/card-snapshots/**"
