@@ -23,7 +23,6 @@
 .gw-pulse-b {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
   pointer-events: none;
   opacity: 0.5;
 }
@@ -309,8 +308,6 @@
   color: var(--text-primary);
   cursor: pointer;
   background: color-mix(in srgb, var(--surface-2) 80%, transparent);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
     inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
   transition: background 0.2s ease;
@@ -589,8 +586,6 @@
     padding: 0 6px;
     border-radius: 28px;
     background: color-mix(in srgb, var(--surface-2) 80%, transparent);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
       inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
   }
@@ -683,8 +678,6 @@
     padding: 6px 8px;
     border-radius: 28px;
     background: color-mix(in srgb, var(--surface-2) 80%, transparent);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
       inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
   }
