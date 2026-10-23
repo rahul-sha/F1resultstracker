@@ -24,6 +24,7 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
   const col: { line: RGB; accent: RGB } = { line: [128, 128, 128], accent: [128, 128, 128] };
   const ptr = { x: -9999, y: -9999, sx: -9999, sy: -9999, on: 0, want: 0 };
   let cam: Camera = { k: 1, tx: 0, ty: 0 };
+  let lastCam: Camera = { k: 1, tx: 0, ty: 0 };
   const waves: { x: number; y: number; t: number }[] = [];
   const comets: { horiz: boolean; line: number; dir: number; p: number; len: number; v: number; tail: number }[] = [];
   let nextComet = 0;
@@ -41,10 +42,12 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     return [d[0], d[1], d[2]];
   }
   const rgba = (c: RGB, a: number) => `rgba(${c[0]},${c[1]},${c[2]},${a.toFixed(3)})`;
+  let themeDirty = false;
   function readTheme() {
     const cs = getComputedStyle(root);
     col.line = rgb(cs.getPropertyValue("--text-muted"));
     col.accent = rgb(cs.getPropertyValue("--accent"));
+    themeDirty = true;
   }
   const observer = new MutationObserver(readTheme);
   observer.observe(root, { attributes: true, attributeFilter: ["data-theme", "data-accent"] });
@@ -126,16 +129,29 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     return { sp, ox, oy };
   }
 
-  function gridPath(major: boolean) {
+  // `box` restricts both which lines are built and how far along each one
+  // is walked, to a screen-space rectangle. The maths is identical to the
+  // unbounded case — a box is only ever passed for the glow/wave passes,
+  // whose gradients already fade to nothing past their own radius, so the
+  // pixels outside the box were going to render as transparent anyway.
+  // Skipping them here just saves the per-point disp() work and path
+  // building for segments nobody would see.
+  const MARGIN = BULGE * 2.2 + 10;
+  function gridPath(major: boolean, box?: { x0: number; y0: number; x1: number; y1: number }) {
     const { sp, ox, oy } = frame();
     const step = 14;
     // Majors are every fourth line, anchored to the camera so they move too.
     const bi = Math.floor((cam.tx * 0.3) / sp);
     const bj = Math.floor((cam.ty * 0.3) / sp);
+    const x0 = box ? Math.max(-step, box.x0 - MARGIN) : -step;
+    const x1 = box ? Math.min(GW + step, box.x1 + MARGIN) : GW + step;
+    const y0 = box ? Math.max(-step, box.y0 - MARGIN) : -step;
+    const y1 = box ? Math.min(GH + step, box.y1 + MARGIN) : GH + step;
     ctx.beginPath();
     for (let i = -1, x = ox - sp; x < GW + sp; x += sp, i++) {
       if ((((i - bi) % 4) + 4) % 4 === 0 !== major) continue;
-      for (let n = 0, y = -step; y <= GH + step; y += step, n++) {
+      if (box && (x < x0 || x > x1)) continue;
+      for (let n = 0, y = y0; y <= y1; y += step, n++) {
         disp(x, y);
         if (n) ctx.lineTo(P[0], P[1]);
         else ctx.moveTo(P[0], P[1]);
@@ -143,7 +159,8 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     }
     for (let j = -1, y = oy - sp; y < GH + sp; y += sp, j++) {
       if ((((j - bj) % 4) + 4) % 4 === 0 !== major) continue;
-      for (let n = 0, x = -step; x <= GW + step; x += step, n++) {
+      if (box && (y < y0 || y > y1)) continue;
+      for (let n = 0, x = x0; x <= x1; x += step, n++) {
         disp(x, y);
         if (n) ctx.lineTo(P[0], P[1]);
         else ctx.moveTo(P[0], P[1]);
@@ -151,10 +168,10 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     }
   }
 
-  function strokeGrid() {
-    gridPath(false);
+  function strokeGrid(box?: { x0: number; y0: number; x1: number; y1: number }) {
+    gridPath(false, box);
     ctx.stroke();
-    gridPath(true);
+    gridPath(true, box);
     ctx.stroke();
   }
 
@@ -168,6 +185,9 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     nextComet = now + 700 + Math.random() * 1500;
   }
 
+  // True once the pointer glow, any rings/comets and the camera have all
+  // settled, so there is nothing left for this frame to change on screen.
+  let wasIdle = false;
   function draw(now: number, camera: Camera) {
     cam = camera;
     const dt = Math.min(0.05, (now - (last || now)) / 1000);
@@ -179,6 +199,14 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
       waves[i].t += dt;
       if (waves[i].t > WAVE_LIFE) waves.splice(i, 1);
     }
+
+    const camStill = cam.k === lastCam.k && cam.tx === lastCam.tx && cam.ty === lastCam.ty;
+    const dueComet = !reduce.matches && now > nextComet;
+    const idle = ptr.on < 0.002 && waves.length === 0 && comets.length === 0 && camStill && !dueComet && !themeDirty;
+    lastCam = cam;
+    if (idle && wasIdle) return;
+    wasIdle = idle;
+    themeDirty = false;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, GW, GH);
@@ -193,6 +221,8 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     ctx.stroke();
 
     // Accent glow round the pointer: the same lines restroked through a radial gradient.
+    // Bounded to the glow's own radius — the gradient is 0% opacity past
+    // R * 1.2 anyway, so there's nothing to see further out.
     if (ptr.on > 0.01) {
       const g = ctx.createRadialGradient(ptr.sx, ptr.sy, 0, ptr.sx, ptr.sy, R * 1.2);
       g.addColorStop(0, rgba(col.accent, 0.85 * ptr.on));
@@ -200,11 +230,12 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
       g.addColorStop(1, rgba(col.accent, 0));
       ctx.strokeStyle = g;
       ctx.lineWidth = 1.25;
-      strokeGrid();
+      strokeGrid({ x0: ptr.sx - R * 1.2, y0: ptr.sy - R * 1.2, x1: ptr.sx + R * 1.2, y1: ptr.sy + R * 1.2 });
       ctx.lineWidth = 1;
     }
 
-    // Each press sends an accent ring outwards through the grid.
+    // Each press sends an accent ring outwards through the grid, bounded to
+    // the ring's current reach (it only grows out to WAVE_LIFE seconds).
     for (const w of waves) {
       const rad = w.t * WAVE_SPEED;
       const fade = 1 - w.t / WAVE_LIFE;
@@ -213,7 +244,7 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
       g.addColorStop(0.5, rgba(col.accent, 0.7 * fade));
       g.addColorStop(1, rgba(col.accent, 0));
       ctx.strokeStyle = g;
-      strokeGrid();
+      strokeGrid({ x0: w.x - rad - 50, y0: w.y - rad - 50, x1: w.x + rad + 50, y1: w.y + rad + 50 });
     }
 
     // Telemetry pulses: short accent streaks running along grid lines.

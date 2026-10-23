@@ -988,6 +988,7 @@ body::after {
     align-items: start;
   }
 }
+.about-main,
 .about-side {
   display: flex;
   flex-direction: column;
@@ -1156,6 +1157,16 @@ body::after {
   font-size: 11.5px;
   color: var(--text-muted);
   margin: 0 0 10px;
+}
+
+/* A short demo clip embedded in a card, e.g. "How this has progressed". */
+.about-media {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid var(--border-hairline);
+  margin: 0 0 14px;
 }
 
 /* The page's own scroll bar is hidden for a cleaner look — scrolling

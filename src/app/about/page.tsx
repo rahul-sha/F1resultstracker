@@ -1,3 +1,4 @@
+import Image from "next/image";
 import HomeLogo from "@/components/HomeLogo";
 
 export const metadata = { title: "About | Grid Walk" };
@@ -23,87 +24,59 @@ export default function AboutPage() {
       </div>
 
       <div className="about-layout">
+        <div className="about-main">
         <section id="about-project" data-rail-label="About this project" className="about table-card">
           <h2 className="mb-2.5 text-sm font-semibold">About this project</h2>
           <p>
-            This is a personal F1 results tracker built by one person, with Claude (Anthropic&apos;s
-            AI coding assistant) doing the actual design and development work — writing the code,
-            mocking up and iterating on the design, fixing bugs, and wiring up the data pipeline.
-            That person directs the project: setting what to build, reviewing every design before
-            it goes live, and giving the feedback that shapes it.
-          </p>
-          <p>
-            <strong>Why this page exists:</strong> it felt right to be upfront about that division
-            of work, and to credit the data and tools this site runs on.
+            A personal F1 results tracker, directed by one person and built by Claude
+            (Anthropic&rsquo;s AI coding assistant) — every design reviewed and approved before it
+            goes live.
           </p>
 
           <p>
             <strong>What Claude did here:</strong>
           </p>
           <ul>
-            <li>
-              Designed and built the Results, Positions, and Finish Positions pages, including the
-              heatmap, hover details, and the Material 3 visual style
-            </li>
-            <li>Built the season/colour theme system (Monokai, Coffee, Ember, Dracula)</li>
-            <li>
-              Wired up the F1 data pipeline, fixed data bugs (flags, team names), and built the
-              historical-season caching that avoids hitting the live API repeatedly
-            </li>
-            <li>Every design change was mocked up and approved before going live — this page included</li>
-            <li>Replaced the mobile top bar with a bottom dock nav, and added icons to the desktop nav items</li>
-            <li>Fixed a Positions-page scrolling bug and tightened phone-side page margins</li>
-            <li>Unified the desktop and mobile nav into one bar, the same design at every size</li>
-            <li>
-              Added a scroll-aware section rail, a sprint marker you can actually see, and an
-              overscroll gesture that springs to the next page
-            </li>
-            <li>
-              Added a share button to every graphic, so it can be saved, copied or shared
-              straight from the page
-            </li>
-            <li>
-              Added cumulative Driver and Constructors Points Evolution charts to the Results
-              page, each full width with smoothly curved lines, a points-total pill beside every
-              driver and team instead of a numeric y-axis, and the plot&apos;s width scaling to
-              fit its container rather than a fixed size
-            </li>
-            <li>
-              Grew Grid Walk from three cards (Results, Positions, About) into eight — one
-              per data section — where clicking a card zooms the camera into it in place,
-              growing the same card to fill the screen rather than opening a new page
-            </li>
-            <li>
-              Rebuilt Grid Walk as a horizontal carousel with drag, swipe, scroll and pinch
-              zoom, fitting every card to the screen
-            </li>
-            <li>
-              Drew a live grid behind Grid Walk in the theme&rsquo;s own colours that bends and
-              glows round the cursor, ripples on each press, and carries the odd telemetry pulse
-            </li>
-            <li>
-              Retired the old Results and Positions pages once Grid Walk carried all of their
-              graphics, redirecting their links home
-            </li>
-            <li>
-              Moved Grid Walk&rsquo;s jump bar into a single top nav bar on desktop, with a
-              logo island that returns to the first card
-            </li>
-            <li>
-              Gave the phone&rsquo;s bottom jump bar the same nav-bar pill and swipeable,
-              left-aligned tabs
-            </li>
+            <li>Designed and built the whole site — heatmaps, charts, theming and navigation</li>
+            <li>Wired up the F1 data pipeline, with caching and a live-API fallback</li>
+            <li>Rebuilt the homepage as Grid Walk, a draggable, zoomable carousel with a live background</li>
+            <li>Keeps refining the design and fixing bugs as they turn up</li>
           </ul>
 
-          <p>
-            <strong>How this has progressed:</strong>
+          <p style={{ marginTop: 18 }}>
+            This is an independent fan project — not affiliated with Formula 1, the FIA, or any
+            team.
           </p>
+        </section>
+
+        <section id="about-timeline" data-rail-label="How this has progressed" className="about table-card">
+          <h2 className="mb-2.5 text-sm font-semibold">How this has progressed</h2>
+          <Image
+            src="/grid-walk-demo.gif"
+            alt="Dragging between Grid Walk's cards, then clicking one to zoom it to full size"
+            className="about-media"
+            width={820}
+            height={513}
+            unoptimized
+            loading="lazy"
+          />
           <p className="timeline-count">
-            51 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            52 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">52</span>
+                <b>Smoother dragging on Grid Walk</b>
+                <span>
+                  Scrolling and dragging on Grid Walk felt choppy because the live background
+                  grid was redrawing its pointer glow and press-ripple across the entire screen on
+                  every single frame, even though they only show up near the cursor. Bounded both
+                  to the small area they actually light up, and skip the frame entirely once the
+                  page is sitting still. Same look, far less work per frame.
+                </span>
+              </li>
               <li>
                 <span className="seq">51</span>
                 <b>The phone jump bar catches up</b>
@@ -463,59 +436,8 @@ export default function AboutPage() {
               </li>
             </ul>
           </div>
-
-          <p>
-            <strong>Design inspiration:</strong>
-          </p>
-          <div className="credit-grid">
-            <div className="credit">
-              <CreditIcon title="Generic icon — no official Tableau logo used">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M5 19V11M12 19V5M19 19V13" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>Mateusz Karmalski</b>
-                <a
-                  href="https://public.tableau.com/app/profile/mateusz.karmalski/viz/F1ResultsTracker/Results"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  &quot;F1 Results Tracker&quot; on Tableau Public
-                </a>{" "}
-                — the results-heatmap layout this site is based on
-              </span>
-            </div>
-            <div className="credit">
-              <CreditIcon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M4 7a8 8 0 1116 0M4 7v10a8 8 0 0016 0V7" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>Material 3</b>Google&apos;s open design system — the tonal surfaces, pill shapes and
-                layout language this site follows
-              </span>
-            </div>
-            <div className="credit">
-              <CreditIcon>
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2.2" />
-                  <path d="M12 8v4l3 2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                </svg>
-              </CreditIcon>
-              <span>
-                <b>Monokai</b>Colour scheme by Wimer Hazenberg — our default theme borrows its name
-                and palette
-              </span>
-            </div>
-          </div>
-
-          <p style={{ marginTop: 18 }}>
-            This is an independent fan project — not affiliated with Formula 1, the FIA, or any
-            team.
-          </p>
         </section>
+        </div>
 
         <aside className="about-side">
           <section id="about-me" data-rail-label="About me" className="about table-card">
@@ -529,9 +451,86 @@ export default function AboutPage() {
             </p>
           </section>
 
+          <section id="about-design" data-rail-label="Design inspiration" className="about table-card">
+            <h2 className="mb-2.5 text-sm font-semibold">Design inspiration</h2>
+            <div className="credit-grid">
+              <div className="credit">
+                <CreditIcon title="Generic icon — no official Tableau logo used">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M5 19V11M12 19V5M19 19V13" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Mateusz Karmalski</b>
+                  <a
+                    href="https://public.tableau.com/app/profile/mateusz.karmalski/viz/F1ResultsTracker/Results"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    &quot;F1 Results Tracker&quot; on Tableau Public
+                  </a>{" "}
+                  — the results-heatmap layout this site is based on
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 7a8 8 0 1116 0M4 7v10a8 8 0 0016 0V7" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Material 3</b>Google&apos;s open design system — the tonal surfaces, pill shapes and
+                  layout language this site follows
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2.2" />
+                    <path d="M12 8v4l3 2" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Monokai</b>Colour scheme by Wimer Hazenberg — our default theme borrows its name
+                  and palette
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon title="Generic icon — no official Dracula logo used">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 3c3 3 5 6.2 5 9.5a5 5 0 01-10 0C7 9.2 9 6 12 3z"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Dracula</b>
+                  <a href="https://draculatheme.com" target="_blank" rel="noopener">
+                    The Dracula Theme
+                  </a>{" "}
+                  by Zeno Rocha and contributors — our Dracula palette borrows its name and colours
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2v6M12 22c-4 0-6-2.5-6-6 0-3 2-4 2-7 2 1 3 3 3 5 1-2 1-5-1-8 4 2 6 6 6 10 0 3.5-2 6-4 6z" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Coffee &amp; Ember</b>Original palettes created for this site, not borrowed from
+                  elsewhere
+                </span>
+              </div>
+            </div>
+          </section>
+
           <section id="about-tools" data-rail-label="Data & tools" className="about table-card">
             <h2 className="mb-2.5 text-sm font-semibold">Data &amp; tools this site is built on</h2>
-            <div className="credit-grid credit-grid-single">
+            <div className="credit-grid">
               <div className="credit">
                 <CreditIcon>
                   <svg viewBox="0 0 24 24" fill="none">
@@ -540,7 +539,11 @@ export default function AboutPage() {
                   </svg>
                 </CreditIcon>
                 <span>
-                  <b>Jolpica F1 API</b>Race, standings &amp; results data
+                  <b>Jolpica F1 API</b>
+                  Race, standings &amp; results data —{" "}
+                  <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noopener">
+                    View on GitHub
+                  </a>
                 </span>
               </div>
               <div className="credit">
@@ -561,6 +564,16 @@ export default function AboutPage() {
                 </CreditIcon>
                 <span>
                   <b>Next.js &amp; React</b>App framework
+                </span>
+              </div>
+              <div className="credit">
+                <CreditIcon>
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M4 18h4l2-10 3 14 2-9h5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </CreditIcon>
+                <span>
+                  <b>Tailwind CSS</b>Styling
                 </span>
               </div>
               <div className="credit">
@@ -599,8 +612,7 @@ export default function AboutPage() {
                   <b>Source code</b>
                   <a href="https://github.com/rahul-sha/F1resultstracker" target="_blank" rel="noopener">
                     View on GitHub
-                  </a>{" "}
-                  — private for now, may open up later
+                  </a>
                 </span>
               </div>
             </div>
