@@ -115,7 +115,11 @@ click, so every change has visible feedback.
 
 - Next.js (App Router) + TypeScript
 - Tailwind CSS v4
-- Server Components for data fetching, no client-side data store
+- Server Components for data fetching, no client-side data store. The Points
+Evolution chart (`PointsEvolutionChart.tsx`) hit-tests its nearest point from
+a single listener over the whole plot rather than giving every data point
+its own invisible hit target, which used to add well over a thousand extra
+SVG shapes to that one card
 
 ## Security
 

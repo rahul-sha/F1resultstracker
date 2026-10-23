@@ -158,6 +158,56 @@ export default function PointsEvolutionChart({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- y() is a pure function of axisMax/chartHeight, already deps
   }, [series, axisMax, chartHeight, bubbleTopY]);
 
+  // One hover listener over the whole plot instead of an invisible hit
+  // circle on every point (every driver/constructor × every round) — that
+  // used to add hundreds of extra SVG shapes to this chart alone, which
+  // got expensive to repaint as Grid Walk scales the card in and out.
+  // Finds the nearest round from the pointer's x, then whichever series'
+  // point is closest to its y, same result as the old per-point targets.
+  function handlePlotHover(e: React.MouseEvent<SVGRectElement>) {
+    const svg = e.currentTarget.ownerSVGElement;
+    const rect = svg?.getBoundingClientRect();
+    if (!rect || rect.width === 0 || rect.height === 0) return;
+    const scaleX = plotWidth / rect.width;
+    const scaleY = chartHeight / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    const roundIndex = Math.max(0, Math.min(roundCount, Math.round((mx - PAD_LEFT / 2) / roundWidth)));
+
+    let bestSeries: EvolutionSeriesInput | null = null;
+    let bestValue = 0;
+    let bestDist = Infinity;
+    for (const s of series) {
+      const value = s.cumulative[roundIndex];
+      if (value == null) continue;
+      const dist = Math.abs(y(value) - my);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestSeries = s;
+        bestValue = value;
+      }
+    }
+    if (!bestSeries || bestDist > 24) {
+      hide();
+      return;
+    }
+    const col = columns[roundIndex];
+    show(
+      e,
+      <>
+        <div className="heatmap-tooltip-title">{bestSeries.label}</div>
+        <div className="heatmap-tooltip-row">
+          <span>Round {col.round}</span>
+          <b>{col.abbreviation}</b>
+        </div>
+        <div className="heatmap-tooltip-row">
+          <span>Cumulative points</span>
+          <b>{bestValue}</b>
+        </div>
+      </>
+    );
+  }
+
   return (
     <div className="table-card">
       <div className="flex" ref={rowRef}>
@@ -210,34 +260,15 @@ export default function PointsEvolutionChart({
               ))
             )}
 
-            {drawOrder.map((s) =>
-              s.cumulative.map((value, i) => (
-                <circle
-                  key={`${s.id}-${i}-hit`}
-                  cx={x(i)}
-                  cy={y(value)}
-                  r={6}
-                  fill="transparent"
-                  onMouseEnter={(e) =>
-                    show(
-                      e,
-                      <>
-                        <div className="heatmap-tooltip-title">{s.label}</div>
-                        <div className="heatmap-tooltip-row">
-                          <span>Round {columns[i].round}</span>
-                          <b>{columns[i].abbreviation}</b>
-                        </div>
-                        <div className="heatmap-tooltip-row">
-                          <span>Cumulative points</span>
-                          <b>{value}</b>
-                        </div>
-                      </>
-                    )
-                  }
-                  onMouseLeave={hide}
-                />
-              ))
-            )}
+            <rect
+              x={0}
+              y={0}
+              width={plotWidth}
+              height={chartHeight}
+              fill="transparent"
+              onMouseMove={handlePlotHover}
+              onMouseLeave={hide}
+            />
           </svg>
 
           <div style={{ position: "relative", width: plotWidth, height: FLAG_ROW_HEIGHT }}>

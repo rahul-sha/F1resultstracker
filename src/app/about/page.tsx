@@ -61,11 +61,22 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            56 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            57 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">57</span>
+                <b>A lighter Points Evolution chart</b>
+                <span>
+                  Each point on the Points Evolution lines used to carry its own invisible circle
+                  just to catch the mouse for its tooltip &mdash; across every driver, every team
+                  and every round, that added well over a thousand shapes to one card. Swapped it
+                  for a single listener that works out the nearest point itself, same tooltips,
+                  about half the shapes, and a noticeably smoother drag through that card.
+                </span>
+              </li>
               <li>
                 <span className="seq">56</span>
                 <b>Dragging smooth again on the heavier cards</b>
