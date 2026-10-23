@@ -40,7 +40,10 @@ language.
   cursor or a finger, sends a ring outwards on each click or tap, drifts
   with the strip as you browse and zoom, and carries the odd accent
   "telemetry" streak along its lines (all motion switches off under
-  reduced-motion settings). Grid Walk is now the only home for this data:
+  reduced-motion settings); its pointer glow and press-ripples are only
+  ever redrawn over the small area they actually light up, and the frame
+  is skipped entirely once nothing is moving, so dragging and scrolling
+  stay smooth. Grid Walk is now the only home for this data:
   the old standalone Results and Positions pages were removed, and their
   addresses redirect to the home page.
 - **About** (`/about`) — who built this and how, credits, and a progress
