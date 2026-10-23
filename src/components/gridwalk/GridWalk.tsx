@@ -95,6 +95,7 @@ export default function GridWalk({
   const [focus, setFocus] = useState(0);
   const [hintGone, setHintGone] = useState(false);
   const [freqView, setFreqView] = useState<"finish" | "quali">("finish");
+  const [resultsView, setResultsView] = useState<"drivers" | "teams">("drivers");
 
   // Pre-rendered card snapshots: a card's own content (tables/charts/bars)
   // is the single biggest cost to the GPU on every drag frame, far more
@@ -130,15 +131,20 @@ export default function GridWalk({
   const snapshotSeason = 2026;
   function snapshotSrc(sectionId: string) {
     if (forceLive || season !== snapshotSeason || !variant) return null;
-    const name = sectionId === "freq" ? `freq-${freqView}` : sectionId;
-    return `/card-snapshots/${snapshotSeason}/${variant.accent}-${variant.theme}/${name}.png`;
+    return `/card-snapshots/${snapshotSeason}/${variant.accent}-${variant.theme}/${snapshotName(sectionId)}.png`;
+  }
+  function snapshotName(sectionId: string) {
+    if (sectionId === "freq") return `freq-${freqView}`;
+    if (sectionId === "results") return `results-${resultsView}`;
+    return sectionId;
   }
   // Natural (unscaled) CSS-pixel size of each card's rendered content —
   // theme/accent-invariant (only colour changes), measured once from the
   // live content. Keeps layout() measuring the same size whichever way a
   // card is currently rendered, live or snapshot.
   const SNAPSHOT_SIZE: Record<string, { w: number; h: number }> = {
-    results: { w: 710, h: 961 },
+    "results-drivers": { w: 1121, h: 924 },
+    "results-teams": { w: 1121, h: 924 },
     evolution: { w: 603, h: 938 },
     positions: { w: 1118, h: 921 },
     "freq-finish": { w: 1264, h: 916 },
@@ -152,20 +158,37 @@ export default function GridWalk({
   const sections: SectionDef[] = [
     {
       id: "results",
-      title: "Drivers Results",
-      subtitle: "Points scored by each driver per Grand Prix.",
+      title: resultsView === "drivers" ? "Drivers Results" : "Team Results",
+      subtitle:
+        resultsView === "drivers"
+          ? "Points scored by each driver per Grand Prix."
+          : "Points scored by each team per Grand Prix.",
       navLabel: "Points Finishes",
+      headerActions: () => (
+        <button
+          type="button"
+          className="gw-freq-toggle"
+          data-toggle="results"
+          onClick={(e) => {
+            e.stopPropagation();
+            setResultsView((v) => (v === "drivers" ? "teams" : "drivers"));
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 5.5h8.5L8 3M14 10.5H5.5L8 13" />
+          </svg>
+          {resultsView === "drivers" ? "Teams" : "Drivers"}
+        </button>
+      ),
       render: () => (
-        <>
-          <PointsHeatmap grid={pointsGrid} />
-          <div className="section-header gw-subsection-header">
-            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-              Team Results
-            </h2>
-            <p className="text-sm">Points scored by each team per Grand Prix.</p>
+        <div className="gw-freq-stage">
+          <div className={"gw-freq-pane" + (resultsView === "drivers" ? " active" : "")} aria-hidden={resultsView !== "drivers"}>
+            <PointsHeatmap grid={pointsGrid} />
           </div>
-          <ConstructorPointsHeatmap grid={constructorGrid} />
-        </>
+          <div className={"gw-freq-pane" + (resultsView === "teams" ? " active" : "")} aria-hidden={resultsView !== "teams"}>
+            <ConstructorPointsHeatmap grid={constructorGrid} />
+          </div>
+        </div>
       ),
     },
     {
@@ -202,6 +225,7 @@ export default function GridWalk({
         <button
           type="button"
           className="gw-freq-toggle"
+          data-toggle="freq"
           onClick={(e) => {
             e.stopPropagation();
             setFreqView((v) => (v === "finish" ? "quali" : "finish"));
@@ -414,7 +438,7 @@ export default function GridWalk({
     apply();
     stripRef.current?.classList.remove("pending");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [season, freqView, forceLive, variant, failedSnapshots]);
+  }, [season, freqView, resultsView, forceLive, variant, failedSnapshots]);
 
   // Both tab strips (the desktop top bar and the phone bottom bar) rest the
   // open card's tab at their left edge. Only the visible one moves.
@@ -804,8 +828,7 @@ export default function GridWalk({
                   <div className="gw-fit gw-snap-target" data-section={section.id}>
                     {(() => {
                       const src = snapshotSrc(section.id);
-                      const name = section.id === "freq" ? `freq-${freqView}` : section.id;
-                      const size = SNAPSHOT_SIZE[name];
+                      const size = SNAPSHOT_SIZE[snapshotName(section.id)];
                       if (!src || !size || failedSnapshots.has(src)) return section.render();
                       return (
                         <img

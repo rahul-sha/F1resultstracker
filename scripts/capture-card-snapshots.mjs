@@ -29,12 +29,15 @@ const THEMES = ["light", "dark"];
 // tabs) — each must be focused via its tab before its card is screenshot,
 // since an unfocused card sits dimmed and off-centre in the carousel.
 const PLAIN_SECTIONS = [
-  { id: "results", tabIndex: 0 },
   { id: "evolution", tabIndex: 1 },
   { id: "positions", tabIndex: 2 },
   { id: "podiumsD", tabIndex: 4 },
 ];
-const FREQ_TAB_INDEX = 3;
+// Cards with an in-header toggle: both views captured, one image each.
+const TOGGLED_SECTIONS = [
+  { id: "results", tabIndex: 0, views: ["drivers", "teams"] },
+  { id: "freq", tabIndex: 3, views: ["finish", "quali"] },
+];
 // .gw-slot's opacity transition (0.35s) plus the camera-pan/zoom-reset
 // animation goTo() triggers both need to fully settle before a screenshot.
 const FOCUS_SETTLE_MS = 900;
@@ -83,17 +86,21 @@ async function main() {
         console.log(`${accent}-${theme}/${id}.png`);
       }
 
-      await focusTab(page, FREQ_TAB_INDEX);
-      const freqEl = await page.$('.gw-snap-target[data-section="freq"]');
-      if (freqEl) {
-        await freqEl.screenshot({ path: path.join(dir, "freq-finish.png"), type: "png" });
-        console.log(`${accent}-${theme}/freq-finish.png`);
-
-        await page.click(".gw-freq-toggle");
-        await page.waitForTimeout(300);
-        const freqEl2 = await page.$('.gw-snap-target[data-section="freq"]');
-        await freqEl2.screenshot({ path: path.join(dir, "freq-quali.png"), type: "png" });
-        console.log(`${accent}-${theme}/freq-quali.png`);
+      for (const { id, tabIndex, views } of TOGGLED_SECTIONS) {
+        await focusTab(page, tabIndex);
+        for (const [n, view] of views.entries()) {
+          if (n > 0) {
+            await page.click(`.gw-freq-toggle[data-toggle="${id}"]`);
+            await page.waitForTimeout(300);
+          }
+          const el = await page.$(`.gw-snap-target[data-section="${id}"]`);
+          if (!el) {
+            console.warn(`skip ${accent}-${theme}/${id}-${view}: not found on page`);
+            break;
+          }
+          await el.screenshot({ path: path.join(dir, `${id}-${view}.png`), type: "png" });
+          console.log(`${accent}-${theme}/${id}-${view}.png`);
+        }
       }
 
       await page.close();
