@@ -61,11 +61,20 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            52 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            53 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">53</span>
+                <b>Drivers Results and Team Results share a card</b>
+                <span>
+                  The first two Grid Walk cards (driver points and team points) are now one card,
+                  stacked with a hairline divider between them, so the carousel is down to seven
+                  cards. Renamed them Drivers Results and Team Results while merging.
+                </span>
+              </li>
               <li>
                 <span className="seq">52</span>
                 <b>Smoother dragging on Grid Walk</b>
