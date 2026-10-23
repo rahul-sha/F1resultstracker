@@ -90,15 +90,20 @@ export default function GridWalk({
   const sections: SectionDef[] = [
     {
       id: "results",
-      title: "Results",
+      title: "Drivers Results",
       subtitle: "Points scored by each driver per Grand Prix.",
-      render: () => <PointsHeatmap grid={pointsGrid} />,
-    },
-    {
-      id: "constructors",
-      title: "Constructors",
-      subtitle: "Points scored by each team per Grand Prix.",
-      render: () => <ConstructorPointsHeatmap grid={constructorGrid} />,
+      render: () => (
+        <>
+          <PointsHeatmap grid={pointsGrid} />
+          <div className="section-header gw-subsection-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Team Results
+            </h2>
+            <p className="text-sm">Points scored by each team per Grand Prix.</p>
+          </div>
+          <ConstructorPointsHeatmap grid={constructorGrid} />
+        </>
+      ),
     },
     {
       id: "evolution",
