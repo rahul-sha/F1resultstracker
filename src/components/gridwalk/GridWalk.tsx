@@ -31,6 +31,9 @@ type SectionDef = {
   id: string;
   title: string;
   subtitle: string;
+  // The jump tabs/pills need a label that covers a card stacking two
+  // halves (e.g. a driver and a team graphic) — falls back to title.
+  navLabel?: string;
   render: () => React.ReactNode;
 };
 
@@ -93,6 +96,7 @@ export default function GridWalk({
       id: "results",
       title: "Drivers Results",
       subtitle: "Points scored by each driver per Grand Prix.",
+      navLabel: "Points Finishes",
       render: () => (
         <>
           <PointsHeatmap grid={pointsGrid} />
@@ -726,7 +730,7 @@ export default function GridWalk({
                     dismissHint();
                   }}
                 >
-                  {section.title}
+                  {section.navLabel ?? section.title}
                 </button>
               ))}
             </div>
@@ -824,7 +828,7 @@ export default function GridWalk({
                 dismissHint();
               }}
             >
-              {section.title}
+              {section.navLabel ?? section.title}
             </button>
           ))}
         </div>
