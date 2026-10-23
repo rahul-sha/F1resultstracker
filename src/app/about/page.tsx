@@ -63,11 +63,15 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            61 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            62 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">62</span>
+                <b>Cards rise into place on load</b>
+              </li>
               <li>
                 <span className="seq">61</span>
                 <b>Pictures only, for every season</b>

@@ -45,7 +45,10 @@ language.
   and drag to pan while zoomed in; a sideways trackpad swipe browses
   instead. Clicking the centred card jumps it to full size, and the Fit
   button (or Esc) brings it back. Cards stay hidden until measured, so
-  they never flash up full size on load. On desktop a single translucent nav bar
+  they never flash up full size on load; once measured they rise into
+  place and fade in, left to right, a beat apart (only `translate` and
+  `opacity` move, it runs once per visit rather than on every season or
+  theme switch, and it is off under reduced-motion settings). On desktop a single translucent nav bar
   across the top holds the jump tabs plus About, the icon-only theme and
   palette toggles, and the season switcher; the open card's tab rests at
   the left of the tab strip, and scrolling the mouse wheel over it or

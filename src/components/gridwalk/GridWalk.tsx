@@ -526,6 +526,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
     }
     apply();
     stripRef.current?.classList.remove("pending");
+    stripRef.current?.classList.add("entered");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [season, freqView, resultsView, forceLive, sizes, failedSnapshots]);
 
@@ -895,6 +896,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
                 cardRefs.current[i] = el;
               }}
               className="gw-card"
+              style={{ "--enter-i": i } as React.CSSProperties}
               role="button"
               tabIndex={0}
               aria-label={`${section.title}: ${section.subtitle}`}
