@@ -68,11 +68,13 @@ export default function AboutPage() {
             <ul className="timeline">
               <li>
                 <span className="seq">53</span>
-                <b>Drivers Results and Team Results share a card</b>
+                <b>Driver and team graphics now share a card</b>
                 <span>
-                  The first two Grid Walk cards (driver points and team points) are now one card,
-                  stacked with a hairline divider between them, so the carousel is down to seven
-                  cards. Renamed them Drivers Results and Team Results while merging.
+                  Three Grid Walk pairs are each one stacked card now, with a hairline divider
+                  between the driver half and the team half: Drivers Results with Team Results
+                  (renamed while merging), Driver Points Evolution with Constructor Points
+                  Evolution (the constructor chart is back after being dropped in round 47), and
+                  Driver Podiums with Constructor Podiums. The carousel is down to six cards.
                 </span>
               </li>
               <li>

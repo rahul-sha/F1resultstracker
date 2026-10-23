@@ -14,6 +14,7 @@ import type { QualifyingPositionSummary } from "@/lib/qualifying-positions";
 import PointsHeatmap from "@/components/PointsHeatmap";
 import ConstructorPointsHeatmap from "@/components/ConstructorPointsHeatmap";
 import DriverPointsEvolutionChart from "@/components/DriverPointsEvolutionChart";
+import ConstructorPointsEvolutionChart from "@/components/ConstructorPointsEvolutionChart";
 import FinishPositionsGrid from "@/components/FinishPositionsGrid";
 import QualifyingPositionsGrid from "@/components/QualifyingPositionsGrid";
 import PodiumBars from "@/components/PodiumBars";
@@ -109,7 +110,18 @@ export default function GridWalk({
       id: "evolution",
       title: "Driver Points Evolution",
       subtitle: "Cumulative points scored by each driver across the season.",
-      render: () => <DriverPointsEvolutionChart grid={pointsGrid} />,
+      render: () => (
+        <>
+          <DriverPointsEvolutionChart grid={pointsGrid} />
+          <div className="section-header gw-subsection-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Constructor Points Evolution
+            </h2>
+            <p className="text-sm">Cumulative points scored by each team across the season.</p>
+          </div>
+          <ConstructorPointsEvolutionChart grid={constructorGrid} />
+        </>
+      ),
     },
     {
       id: "positions",
@@ -134,30 +146,31 @@ export default function GridWalk({
       title: "Driver Podiums",
       subtitle: "1st/2nd/3rd place finishes per driver.",
       render: () => (
-        <PodiumBars
-          drivers={finishSummary.driverPodiums.map((d) => ({
-            label: d.code,
-            team: d.constructorName,
-            color: d.color,
-            podiums: d.podiums,
-          }))}
-          teams={[]}
-        />
-      ),
-    },
-    {
-      id: "podiumsT",
-      title: "Constructor Podiums",
-      subtitle: "1st/2nd/3rd place finishes per team.",
-      render: () => (
-        <PodiumBars
-          drivers={[]}
-          teams={finishSummary.teamPodiums.map((t) => ({
-            label: t.constructorName,
-            color: t.color,
-            podiums: t.podiums,
-          }))}
-        />
+        <>
+          <PodiumBars
+            drivers={finishSummary.driverPodiums.map((d) => ({
+              label: d.code,
+              team: d.constructorName,
+              color: d.color,
+              podiums: d.podiums,
+            }))}
+            teams={[]}
+          />
+          <div className="section-header gw-subsection-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Constructor Podiums
+            </h2>
+            <p className="text-sm">1st/2nd/3rd place finishes per team.</p>
+          </div>
+          <PodiumBars
+            drivers={[]}
+            teams={finishSummary.teamPodiums.map((t) => ({
+              label: t.constructorName,
+              color: t.color,
+              podiums: t.podiums,
+            }))}
+          />
+        </>
       ),
     },
   ];

@@ -10,13 +10,15 @@ language.
 ## Pages
 
 - **Home / Grid Walk** (`/`) — the site's entry point: the season's
-  seven graphics laid out on one horizontal carousel strip, in the same
-  order as the "Jump to" bar below — Drivers Results & Team Results (one
-  card, stacked with a divider), Driver Points Evolution, Positions,
-  Finish Frequency, Qualifying Frequency, Driver Podiums and Constructor
-  Podiums. Each card *is* the real heatmap, chart, grid or podium bars
-  for the selected season, under the same title and subtitle it has on
-  its own page, fitted to the space between
+  six graphics laid out on one horizontal carousel strip, in the same
+  order as the "Jump to" bar below. Three of the six are stacked pairs,
+  each a driver half and a team half sharing one card with a divider:
+  Drivers Results & Team Results, Driver Points Evolution & Constructor
+  Points Evolution, and Driver Podiums & Constructor Podiums. The other
+  three are Positions, Finish Frequency and Qualifying Frequency. Each
+  card *is* the real heatmap, chart, grid or podium bars for the
+  selected season, under the same title and subtitle it has on its own
+  page, fitted to the space between
   the top and bottom bars (never enlarged past its natural size). The
   centred card is at full strength and its neighbours peek in, dimmed, on
   either side. Browse by dragging or swiping (one card per flick), with
