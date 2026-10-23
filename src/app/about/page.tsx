@@ -1,5 +1,6 @@
 import Image from "next/image";
 import HomeLogo from "@/components/HomeLogo";
+import LiveGridBackground from "@/components/gridwalk/LiveGridBackground";
 
 export const metadata = { title: "About | Grid Walk" };
 
@@ -14,6 +15,7 @@ function CreditIcon({ children, title }: { children: React.ReactNode; title?: st
 export default function AboutPage() {
   return (
     <div className="px-[10px] py-6 sm:p-6">
+      <LiveGridBackground />
       <HomeLogo />
       <div className="about-page-wrap">
       <div className="page-header">
@@ -69,351 +71,118 @@ export default function AboutPage() {
               <li>
                 <span className="seq">61</span>
                 <b>Pictures only, for every season</b>
-                <span>
-                  Visitors never get a live card any more: every card for every season from 2020
-                  on is a pre-captured image, and the data behind the tables is no longer sent to
-                  the browser at all. Finished seasons were captured once; the current one is
-                  still re-captured every Monday. Your theme and palette are now remembered in a
-                  cookie as well, so the server sends the right image first time, and a first
-                  visit follows the device&rsquo;s light or dark setting. The other seven colour
-                  combinations for the season you are looking at download quietly in the
-                  background, so toggling is instant. Images moved from PNG to lossless WebP at a
-                  third of the size. Also fixed: the season menu would not scroll, because the
-                  card zoom was swallowing the mouse wheel over it; and switching season without
-                  a fresh load cropped the cards, because the browser kept the previous
-                  season&rsquo;s image proportions until the new image had loaded, so each card
-                  was measured at the wrong height.
-                </span>
               </li>
               <li>
                 <span className="seq">60</span>
                 <b>Same-height cards and a Drivers/Teams toggle</b>
-                <span>
-                  Every card is now the same height, with its content scaled to fill that height
-                  and the card as wide as that makes it, so the strip no longer mixes tall, short,
-                  wide and narrow cards. The first card swaps its stacked driver and team tables
-                  for the same in-place toggle Finish/Qualifying already had.
-                </span>
               </li>
               <li>
                 <span className="seq">59</span>
                 <b>Cards as pictures for the current season</b>
-                <span>
-                  A real performance trace from a laptop showed the graphics card busy for most of
-                  every drag, and the heaviest cards (the big tables and line charts) were the
-                  reason. For the current season the cards now show a pre-rendered image of their
-                  content instead of the live table or chart, regenerated every Monday after the
-                  race; every other season still renders live, and so does anything whose image is
-                  missing. The images are captured from the live site itself, so the capture runs
-                  with the swap switched off, or it would photograph its own old output.
-                </span>
               </li>
               <li>
                 <span className="seq">58</span>
                 <b>No more blur</b>
-                <span>
-                  The same trace pointed at the blurred glow blobs behind every page and the frosted
-                  nav bar and About cards: blur is expensive to draw and was being redrawn on every
-                  frame, even where the blobs were completely hidden. All of it is gone in favour of
-                  plain translucent surfaces. Two earlier rounds that trimmed the live grid&rsquo;s
-                  redraw work turned out to be chasing the wrong cost and made no felt difference.
-                </span>
               </li>
               <li>
                 <span className="seq">57</span>
                 <b>A lighter Points Evolution chart</b>
-                <span>
-                  Each point on the Points Evolution lines used to carry its own invisible circle
-                  just to catch the mouse for its tooltip &mdash; across every driver, every team
-                  and every round, that added well over a thousand shapes to one card. Swapped it
-                  for a single listener that works out the nearest point itself, same tooltips,
-                  about half the shapes, and a noticeably smoother drag through that card.
-                </span>
               </li>
               <li>
                 <span className="seq">56</span>
                 <b>Dragging smooth again on the heavier cards</b>
-                <span>
-                  Rounds 53 and 54 made two of Grid Walk&rsquo;s cards noticeably heavier
-                  (Results now stacks two full tables, and Finish/Qualifying keeps both tables
-                  mounted at once). That exposed a card-measuring step that was re-running on
-                  every single focus change while dragging, forcing the browser to redo a full
-                  page layout each time &mdash; harmless on light cards, but a real stutter on
-                  the heavier ones. It now only re-measures when a card&rsquo;s size can actually
-                  change: a season switch or the Finish/Qualifying toggle.
-                </span>
               </li>
               <li>
                 <span className="seq">55</span>
                 <b>No more background flash on the toggle card</b>
-                <span>
-                  Swapping Finish and Qualifying frequency used to briefly show the live grid
-                  behind the card while the new table was measured. Both tables now stay mounted
-                  and share the same spot, so the toggle only ever crossfades between them.
-                </span>
               </li>
               <li>
                 <span className="seq">54</span>
                 <b>Finish and Qualifying Frequency share a card with a toggle</b>
-                <span>
-                  Unlike the other three merged pairs, these two don&rsquo;t stack: a pill button
-                  in the card&rsquo;s header swaps the table between Finish Frequency and
-                  Qualifying Frequency in place, with a short fade, so the card is never taller
-                  than one table. The carousel is down to five cards.
-                </span>
               </li>
               <li>
                 <span className="seq">53</span>
                 <b>Driver and team graphics now share a card</b>
-                <span>
-                  Three Grid Walk pairs are each one stacked card now, with a hairline divider
-                  between the driver half and the team half: Drivers Results with Team Results
-                  (renamed while merging), Driver Points Evolution with Constructor Points
-                  Evolution (the constructor chart is back after being dropped in round 47), and
-                  Driver Podiums with Constructor Podiums. The carousel is down to six cards.
-                </span>
               </li>
               <li>
                 <span className="seq">52</span>
                 <b>Smoother dragging on Grid Walk</b>
-                <span>
-                  Scrolling and dragging on Grid Walk felt choppy because the live background
-                  grid was redrawing its pointer glow and press-ripple across the entire screen on
-                  every single frame, even though they only show up near the cursor. Bounded both
-                  to the small area they actually light up, and skip the frame entirely once the
-                  page is sitting still. Same look, far less work per frame.
-                </span>
               </li>
               <li>
                 <span className="seq">51</span>
                 <b>The phone jump bar catches up</b>
-                <span>
-                  The bottom jump bar on phones now matches the desktop nav bar: one rounded pill
-                  with borderless tabs, the open card&rsquo;s tab resting at the left, and Fit
-                  after a divider. Swiping the tabs browses the cards, and whichever tab comes to
-                  rest at the left opens.
-                </span>
               </li>
               <li>
                 <span className="seq">50</span>
                 <b>A quieter About page, and no more Auto theme</b>
-                <span>
-                  The About page dropped its nav bar entirely: just the Grid Walk logo, as a glass
-                  island at the top left on desktop and the bottom on phones, taking you back home.
-                  The theme button now simply flips between Light and Dark, starting from whatever
-                  your device shows.
-                </span>
               </li>
               <li>
                 <span className="seq">49</span>
                 <b>Top bar fixes and button feedback</b>
-                <span>
-                  Scrolling or dragging the top tab strip now works in both directions, so you
-                  can always get back from the last card, and presses, drags or scrolls on the
-                  bars no longer move or zoom the cards underneath. The theme and palette buttons
-                  now spin their icon and send out an accent ring on every click.
-                </span>
               </li>
               <li>
                 <span className="seq">48</span>
                 <b>One nav bar at the top</b>
-                <span>
-                  On desktop the &ldquo;Jump to&rdquo; tabs moved to the top and joined About, the
-                  theme and palette toggles, and the season switcher in one glass nav bar, styled
-                  like the original. The open card&rsquo;s tab slides to the left of the strip, and
-                  scrolling the strip itself browses the cards. The logo became its own matching
-                  island that takes you back to the first card, and the zoom controls moved to a
-                  small pill in the corner. Phones keep the bar at the bottom.
-                </span>
               </li>
               <li>
                 <span className="seq">47</span>
                 <b>Old Results and Positions pages retired</b>
-                <span>
-                  With every graphic now living on Grid Walk&rsquo;s cards, the standalone Results
-                  and Positions pages are gone, along with the section rail and pull-to-next-page
-                  gesture that only served them. Old links to either page land on Grid Walk
-                  instead.
-                </span>
               </li>
               <li>
                 <span className="seq">46</span>
                 <b>A live grid behind Grid Walk</b>
-                <span>
-                  A faint grid now sits behind the carousel, drawn in the active theme&rsquo;s
-                  colours. It bends gently outwards and glows in the accent colour around the
-                  cursor or a finger, sends a ring of light outwards on each click or tap, drifts
-                  as you browse and zoom, and carries short accent &ldquo;telemetry&rdquo; streaks
-                  along its lines so the page always feels live. Reduced-motion settings keep it
-                  still.
-                </span>
               </li>
               <li>
                 <span className="seq">45</span>
                 <b>Grid Walk becomes a carousel</b>
-                <span>
-                  The &ldquo;inside a sphere&rdquo; ring is gone: the eight cards now sit on one
-                  horizontal strip in jump-bar order, each fitted to the screen, with the centred
-                  card at full strength and its neighbours peeking in either side. Drag or swipe
-                  to browse one card at a time, or use the arrows, the arrow keys or the jump
-                  bar. Scroll or pinch still zooms, clicking the centred card jumps it to full
-                  size, and a Fit button brings it back.
-                </span>
               </li>
               <li>
                 <span className="seq">44</span>
                 <b>Grid Walk: scroll and pinch zoom, cleaner cards</b>
-                <span>
-                  Scroll, trackpad pinch or a two-finger pinch now zooms Grid Walk in and out
-                  around the pointer, so how much you see is up to you. Diving into a card fits
-                  the whole card between the top and bottom bars instead of spilling past them.
-                  Cards no longer flash up full size and piled together while the page loads, no
-                  longer cut into each other on the sphere, and run clockwise in jump-bar order.
-                  The hover chips, coloured tabs and stat lines are gone; each card now carries
-                  the same title and subtitle as its section on the Results or Positions page.
-                  Also fixed squashed podium bars inside cards, a stray &ldquo;no podiums&rdquo;
-                  line on the Constructor Podiums card, the phone top bar wrapping onto two rows,
-                  and mixed heading capitalisation on the Positions page.
-                </span>
               </li>
               <li>
                 <span className="seq">43</span>
                 <b>Grid Walk: full-size cards, free panning</b>
-                <span>
-                  Each of the eight cards used to shrink to fit a fixed preview box; now every
-                  card sizes itself from its own content, so a wide 24-column heatmap stays at
-                  its natural width instead of being squeezed down. Diving into a card zooms all
-                  the way to that natural size &mdash; crisp and fully readable &mdash; rather
-                  than stopping at a viewport-fit cap. And once zoomed in, the camera keeps
-                  rotating with a drag, so you can pan across to a neighbouring card without
-                  backing out first.
-                </span>
               </li>
               <li>
                 <span className="seq">42</span>
                 <b>Grid Walk: tidier topbar, clockwise cards</b>
-                <span>
-                  The About button, theme/palette toggles and season switcher were each a
-                  slightly different height &mdash; now pinned to the same 36px. The theme and
-                  palette toggles dropped their text labels for icon-only buttons. The three
-                  floating stat chips in the middle of the sphere (duplicates of numbers already
-                  shown on their own cards) were removed to keep that space clean. The eight cards
-                  now sit on a clean 8-point ring, 45&deg; apart, clockwise from the top, in the
-                  same order as the jump bar below &mdash; looking around the sphere now matches
-                  clicking through the pills left to right.
-                </span>
               </li>
               <li>
                 <span className="seq">41</span>
                 <b>Grid Walk: one shared camera, not an isolated card</b>
-                <span>
-                  Diving into a card used to grow just that one card while the rest of the scene
-                  sat still (blurred) &mdash; visually calm, but a different kind of motion from
-                  Rahul&apos;s actual reference: a Miro board, where zooming into one frame scales
-                  the whole canvas together and its neighbours visibly recede. Reworked the dive
-                  to do exactly that &mdash; one camera, rotating toward the card and zooming the
-                  whole scene at once &mdash; so no card ever grows on its own any more. The top
-                  and bottom bars (including the theme toggle, now reachable from this page for
-                  the first time) stay on screen and usable through a dive, and every card now
-                  keeps its own natural width and height instead of being squeezed into one
-                  square-ish box. Mocked up against the real Miro reference and approved before
-                  shipping.
-                </span>
               </li>
               <li>
                 <span className="seq">40</span>
                 <b>Grid Walk: one continuous zoom, not two</b>
-                <span>
-                  Diving into a card used to rotate the camera toward it first and only start
-                  growing it once that settled &mdash; a single object, but still two animations
-                  stitched together. It now starts growing the instant you click, with the camera
-                  reorienting invisibly in the background rather than beforehand, so it reads as
-                  one continuous zoom the whole way &mdash; closer to zooming into a photo on a
-                  shared board than opening something new. Also fixed the zoom math itself, which
-                  assumed it was scaling from a card&apos;s corner when it was actually scaling
-                  from its centre; most of the time this only nudged the start position by a few
-                  pixels, but it&apos;s now exact for every card. Mocked up and approved before
-                  shipping.
-                </span>
               </li>
               <li>
                 <span className="seq">39</span>
                 <b>Grid Walk: true one-object zoom</b>
-                <span>
-                  Reworked how a Grid Walk card zooms in: each card&apos;s real content &mdash;
-                  the actual heatmap, chart or bars, not a separate mini preview &mdash; is always
-                  there, just shown small at rest; diving simply removes that scale, so it&apos;s
-                  one continuous object the whole time rather than a small card swapping for a
-                  different detail view. The &ldquo;Jump to&rdquo; bar&apos;s section buttons now
-                  dive straight into that section too, instead of only moving the camera there.
-                  Mocked up and approved before shipping.
-                </span>
               </li>
               <li>
                 <span className="seq">38</span>
                 <b>Grid Walk: eight sections, zoom-in cards</b>
-                <span>
-                  Replaced Grid Walk&apos;s three page-cards (Results, Positions, About) with
-                  eight section cards &mdash; Results, Constructors, Points Evolution, Positions,
-                  Finish Frequency, Qualifying Frequency, Driver Podiums and Constructor
-                  Podiums &mdash; each showing the real heatmap, chart or grid from that section.
-                  Clicking one no longer navigates to a new page: the same card grows in place
-                  to fill the screen, like zooming into a photo, then shrinks back on Back.
-                  About moved to a link in the top bar since it stays its own page. Also
-                  restored the sphere&apos;s visible curvature, which had flattened out while
-                  fixing an earlier layout bug. Mocked up and iterated live with Rahul across
-                  several rounds before being wired to real data and shipped.
-                </span>
               </li>
               <li>
                 <span className="seq">37</span>
                 <b>Grid Walk: a 3D home page</b>
-                <span>
-                  Replaced the plain redirect-to-Results homepage with a drag-navigable 3D
-                  scene: cards for Results, Positions and About sit on the inside of a sphere,
-                  with inertia, a cursor-reactive ripple background, and live leader stats for
-                  the selected season. Results, Positions and About are unchanged underneath —
-                  this only adds a new front door. Mocked up and iterated live with Rahul before
-                  being wired to real data and shipped.
-                </span>
               </li>
               <li>
                 <span className="seq">36</span>
                 <b>Evolution charts: full width, full field, curved lines</b>
-                <span>
-                  Fixed a mobile layout bug on both evolution charts, split them back into
-                  separate full-width sections, grew the chart height so every driver and team
-                  gets its own points pill instead of cropping the field, made the plot&apos;s
-                  width responsive instead of fixed (which was leaving a gap next to the points
-                  column),
-                  and switched to smoothly curved lines instead of straight segments. Dropped the
-                  scroll-triggered draw-in animation entirely in favour of a static chart.
-                </span>
               </li>
               <li>
                 <span className="seq">35</span>
                 <b>No-axis evolution charts, points bubbles</b>
-                <span>
-                  Replaced the numeric y-axis on both evolution charts with a small points-total
-                  pill at the end of each line, nudged apart with a leader line when two drivers
-                  are close.
-                </span>
               </li>
               <li>
                 <span className="seq">34</span>
                 <b>Constructors evolution chart, scroll animation</b>
-                <span>
-                  A matching Constructors Points Evolution chart sits beside the driver one instead
-                  of full width, and both now draw themselves in, round by round, as you scroll to them.
-                </span>
               </li>
               <li>
                 <span className="seq">33</span>
                 <b>Driver Points Evolution chart</b>
-                <span>
-                  A cumulative points line chart under the Results heatmap, one line per driver
-                  with race flags along the x-axis.
-                </span>
               </li>
               <li>
                 <span className="seq">32</span>
@@ -423,18 +192,10 @@ export default function AboutPage() {
               <li>
                 <span className="seq">31</span>
                 <b>Share button on every graphic</b>
-                <span>
-                  A share icon beside each heatmap, grid and chart turns it into a PNG right in the
-                  browser &mdash; save it, copy it, or open the native share sheet on phone and Mac.
-                </span>
               </li>
               <li>
                 <span className="seq">30</span>
                 <b>Sprint marker, header cards, section rail &amp; overscroll navigation</b>
-                <span>
-                  Fixed the sprint-race marker, gave page titles a matching glass card, added a
-                  scroll-aware section rail, and made reaching the page bottom spring to the next page.
-                </span>
               </li>
               <li>
                 <span className="seq">29</span>

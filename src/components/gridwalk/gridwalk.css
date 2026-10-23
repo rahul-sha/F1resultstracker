@@ -71,6 +71,14 @@
   pointer-events: none;
 }
 
+/* LiveGridBackground.tsx: the same canvas reused on a normal, scrolling
+   page (About) instead of Grid Walk's own fixed .gw-wrap — pinned to the
+   viewport itself, behind the page's content and its glow blobs. */
+.live-grid-fixed {
+  position: fixed;
+  z-index: -1;
+}
+
 /* The strip carries the one zoom/pan camera: translate(tx, TOP + ty)
    scale(k), written by GridWalk.tsx every frame, around a 0 0 origin. */
 .gw-strip {

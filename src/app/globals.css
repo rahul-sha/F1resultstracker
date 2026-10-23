@@ -416,6 +416,15 @@ body::after {
   }
 }
 
+/* About now carries its own cursor-reactive live grid (LiveGridBackground.tsx).
+   These blobs lost the blur() that used to soften their edges (round 58, GPU
+   cost) and read as flat shapes once something else is visible behind them,
+   so this page hides them rather than layering both effects. */
+body:has(.about-page-wrap)::before,
+body:has(.about-page-wrap)::after {
+  display: none;
+}
+
 /* Scrollbars themed to match the active surface, everywhere — the page
    itself and any inner scroll area (the results table, the timeline inset,
    the season switcher menu) — instead of the browser's unstyled default. */
