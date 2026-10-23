@@ -11,17 +11,24 @@ language.
 
 - **Home / Grid Walk** (`/`) — the site's entry point: the season's
   five graphics laid out on one horizontal carousel strip, in the same
-  order as the "Jump to" bar below. Three are stacked pairs, each a
-  driver half and a team half sharing one card with a divider: Drivers
-  Results & Team Results, Driver Points Evolution & Constructor Points
-  Evolution, and Driver Podiums & Constructor Podiums. One is a toggled
-  pair instead: Finish Frequency and Qualifying Frequency share a card
-  with a pill button in its header that swaps between the two tables in
-  place rather than stacking them. The last is Positions on its own.
-  Each card *is* the real heatmap, chart, grid or podium bars for the
-  selected season, under the same title and subtitle it has on its own
-  page, fitted to the space between
-  the top and bottom bars (never enlarged past its natural size). The
+  order as the "Jump to" bar below. Two are stacked pairs, each a
+  driver half and a team half sharing one card with a divider: Driver
+  Points Evolution & Constructor Points Evolution, and Driver Podiums &
+  Constructor Podiums. Two are toggled pairs instead: Drivers Results and
+  Team Results, and Finish Frequency and Qualifying Frequency, each
+  sharing a card with a pill button in its header that swaps between the
+  two tables in place rather than stacking them. The last is Positions on
+  its own. Each card *is* the real heatmap, chart, grid or podium bars
+  for the selected season, under the same title and subtitle it has on
+  its own page. Every card is the same height, with its content scaled to
+  fill that height and the card as wide as that makes it, then the whole
+  strip is fitted to the space between the top and bottom bars. For the
+  current season each card shows a pre-rendered image of its content
+  (regenerated every Monday by `capture-card-snapshots.yml`, which runs
+  `scripts/capture-card-snapshots.mjs` against the built site with
+  `?noSnapshot=1` so it captures the live tables, not its own previous
+  images); every other season, and any card whose image is missing,
+  renders live. The
   centred card is at full strength and its neighbours peek in, dimmed, on
   either side. Browse by dragging or swiping (one card per flick), with
   the side arrows, the ← → keys or the jump-bar tabs. Scroll the mouse
@@ -29,7 +36,7 @@ language.
   and drag to pan while zoomed in; a sideways trackpad swipe browses
   instead. Clicking the centred card jumps it to full size, and the Fit
   button (or Esc) brings it back. Cards stay hidden until measured, so
-  they never flash up full size on load. On desktop a single glass nav bar
+  they never flash up full size on load. On desktop a single translucent nav bar
   across the top holds the jump tabs plus About, the icon-only theme and
   palette toggles, and the season switcher; the open card's tab rests at
   the left of the tab strip, and scrolling the mouse wheel over it or
@@ -38,7 +45,7 @@ language.
   takes you back to the first card, and the zoom controls sit in a small
   pill in the bottom corner. On phones the controls stay at the top and
   the jump tabs sit at the bottom in a matching nav-bar pill (solid
-  rather than blurred), with Fit after a divider; the open card's tab
+  rather than translucent), with Fit after a divider; the open card's tab
   rests at the left, and swiping the tabs browses the cards. All of it sits over the same drifting glow
   used site-wide. Behind the cards sits a live grid drawn in the active
   theme's colours: it bends and glows in the accent colour around the
@@ -59,9 +66,9 @@ language.
 Every page sits over a soft gradient glow built from the active theme's
 own colours, rather than a single flat background — it drifts slowly
 rather than sitting still. The Grid Walk bars and logo, each page's title/subtitle card,
-and the About page sit on a blurred, translucent glass surface so that
-glow shows through them (solid below 640px, where backdrop blur isn't
-reliable); table cards elsewhere are solid. Every page's title/subtitle
+and the About page sit on a plain translucent surface (no blur: a real
+device trace showed backdrop and glow blur costing the GPU on every
+frame); table cards elsewhere are solid. Every page's title/subtitle
 card is a fixed width and height, so the content underneath always
 starts at the same position regardless of how long that page's
 subtitle runs.
@@ -73,7 +80,7 @@ the current calendar year. Only seasons 2020 onwards are supported.
 ## Navigation
 
 Grid Walk's own top bar and jump bar are the navigation on the home page.
-The About page has no nav bar at all — just the Grid Walk logo as a glass
+The About page has no nav bar at all — just the Grid Walk logo as a translucent
 island (top left on desktop, bottom centre on phones) that links back home.
 
 ## Getting started

@@ -18,6 +18,7 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
   const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
   let dpr = 1;
+  let fullDpr = 1;
   let GW = 0;
   let GH = 0;
   let SP = 40;
@@ -53,14 +54,29 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
   observer.observe(root, { attributes: true, attributeFilter: ["data-theme", "data-accent"] });
   darkQuery.addEventListener("change", readTheme);
 
+  function applyDpr(target: number) {
+    dpr = target;
+    cv.width = Math.round(GW * dpr);
+    cv.height = Math.round(GH * dpr);
+  }
+
   function size() {
-    dpr = Math.min(2, window.devicePixelRatio || 1);
+    fullDpr = Math.min(2, window.devicePixelRatio || 1);
     GW = window.innerWidth;
     GH = window.innerHeight;
     SP = GW <= 640 ? 32 : 40;
-    cv.width = GW * dpr;
-    cv.height = GH * dpr;
+    applyDpr(fullDpr);
   }
+
+  // While the camera is actively moving (a drag or a pinch), the canvas
+  // redraws its whole base layer every frame — on a retina screen that's
+  // up to 4x the pixels of a standard one, re-rasterised to the GPU every
+  // time. Panning is fast motion, where the eye can't resolve that detail
+  // anyway, so we drop to 1x only for the moving stretch and snap back to
+  // full sharpness a beat after it settles, rather than living with the
+  // softer grid permanently.
+  const LOWRES_SETTLE_MS = 180;
+  let lastMoveAt = -Infinity;
 
   // Mouse hover and touch both count; touch fades out on lift.
   function onMove(e: PointerEvent) {
@@ -137,9 +153,37 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
   // Skipping them here just saves the per-point disp() work and path
   // building for segments nobody would see.
   const MARGIN = BULGE * 2.2 + 10;
+  const FINE_STEP = 14;
+  // Outside the pointer bulge and any wave front, disp() always returns the
+  // point unchanged, so a line there is dead straight — a few coarse points
+  // draw exactly the same pixels as many fine ones, for a fraction of the
+  // per-point disp() and path-building cost. Only the base (unboxed) pass
+  // walks a whole screen's worth of line, so only it bothers with this.
+  // Kept well under the smallest hot box a fresh wave can have (a ring
+  // spawns at ~140px wide) so a coarse jump can never leap clean over one.
+  const COARSE_STEP = 50;
+  const hotBoxes: { x0: number; y0: number; x1: number; y1: number }[] = [];
+  function collectHotBoxes() {
+    hotBoxes.length = 0;
+    if (reduce.matches) return;
+    if (ptr.on > 0.01) {
+      hotBoxes.push({ x0: ptr.sx - R * 1.6, y0: ptr.sy - R * 1.6, x1: ptr.sx + R * 1.6, y1: ptr.sy + R * 1.6 });
+    }
+    for (const w of waves) {
+      const rad = w.t * WAVE_SPEED;
+      hotBoxes.push({ x0: w.x - rad - 70, y0: w.y - rad - 70, x1: w.x + rad + 70, y1: w.y + rad + 70 });
+    }
+  }
+  function isHot(x: number, y: number): boolean {
+    for (const b of hotBoxes) {
+      if (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1) return true;
+    }
+    return false;
+  }
   function gridPath(major: boolean, box?: { x0: number; y0: number; x1: number; y1: number }) {
     const { sp, ox, oy } = frame();
-    const step = 14;
+    const step = FINE_STEP;
+    if (!box) collectHotBoxes();
     // Majors are every fourth line, anchored to the camera so they move too.
     const bi = Math.floor((cam.tx * 0.3) / sp);
     const bj = Math.floor((cam.ty * 0.3) / sp);
@@ -151,19 +195,31 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     for (let i = -1, x = ox - sp; x < GW + sp; x += sp, i++) {
       if ((((i - bi) % 4) + 4) % 4 === 0 !== major) continue;
       if (box && (x < x0 || x > x1)) continue;
-      for (let n = 0, y = y0; y <= y1; y += step, n++) {
+      let first = true;
+      for (let y = y0; y <= y1; ) {
         disp(x, y);
-        if (n) ctx.lineTo(P[0], P[1]);
-        else ctx.moveTo(P[0], P[1]);
+        if (first) {
+          ctx.moveTo(P[0], P[1]);
+          first = false;
+        } else {
+          ctx.lineTo(P[0], P[1]);
+        }
+        y += !box && !isHot(x, y) ? COARSE_STEP : step;
       }
     }
     for (let j = -1, y = oy - sp; y < GH + sp; y += sp, j++) {
       if ((((j - bj) % 4) + 4) % 4 === 0 !== major) continue;
       if (box && (y < y0 || y > y1)) continue;
-      for (let n = 0, x = x0; x <= x1; x += step, n++) {
+      let first = true;
+      for (let x = x0; x <= x1; ) {
         disp(x, y);
-        if (n) ctx.lineTo(P[0], P[1]);
-        else ctx.moveTo(P[0], P[1]);
+        if (first) {
+          ctx.moveTo(P[0], P[1]);
+          first = false;
+        } else {
+          ctx.lineTo(P[0], P[1]);
+        }
+        x += !box && !isHot(x, y) ? COARSE_STEP : step;
       }
     }
   }
@@ -207,6 +263,11 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     if (idle && wasIdle) return;
     wasIdle = idle;
     themeDirty = false;
+
+    if (!camStill) lastMoveAt = now;
+    const wantLow = fullDpr > 1 && now - lastMoveAt < LOWRES_SETTLE_MS;
+    if (wantLow && dpr !== 1) applyDpr(1);
+    else if (!wantLow && dpr !== fullDpr) applyDpr(fullDpr);
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, GW, GH);

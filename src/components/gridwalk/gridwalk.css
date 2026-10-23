@@ -23,7 +23,6 @@
 .gw-pulse-b {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
   pointer-events: none;
   opacity: 0.5;
 }
@@ -105,7 +104,12 @@
   position: absolute;
   left: 0;
   top: 0;
+  /* One height for every card; content is scaled to fill .gw-frame's
+     height and the card is as wide as that makes it. */
   width: max-content;
+  height: 900px;
+  display: flex;
+  flex-direction: column;
   transform-origin: 0 0;
   border-radius: 14px;
   background: var(--surface-2);
@@ -131,6 +135,41 @@
 .gw-card-inner {
   padding: 1.5rem 1.6rem 1.8rem;
   pointer-events: none;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gw-frame {
+  flex: 1 1 0;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.gw-fit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: max-content;
+  transform-origin: 0 0;
+}
+
+/* Capture mode (noSnapshot=1): natural-size cards for the snapshot script. */
+.gw-capture .gw-card {
+  height: auto;
+  display: block;
+}
+.gw-capture .gw-card-inner {
+  display: block;
+}
+.gw-capture .gw-frame {
+  position: static;
+  overflow: visible;
+}
+.gw-capture .gw-fit {
+  position: static;
 }
 
 /* A card whose header carries a control (the finish/qualifying toggle) —
@@ -309,8 +348,6 @@
   color: var(--text-primary);
   cursor: pointer;
   background: color-mix(in srgb, var(--surface-2) 80%, transparent);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
     inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
   transition: background 0.2s ease;
@@ -589,8 +626,6 @@
     padding: 0 6px;
     border-radius: 28px;
     background: color-mix(in srgb, var(--surface-2) 80%, transparent);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
       inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
   }
@@ -683,8 +718,6 @@
     padding: 6px 8px;
     border-radius: 28px;
     background: color-mix(in srgb, var(--surface-2) 80%, transparent);
-    backdrop-filter: blur(28px) saturate(160%);
-    -webkit-backdrop-filter: blur(28px) saturate(160%);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
       inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
   }

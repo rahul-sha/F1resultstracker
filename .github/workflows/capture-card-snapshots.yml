@@ -1,0 +1,72 @@
+name: Capture Grid Walk card snapshots
+
+# Runs manually or weekly, shortly after the season-data snapshot job (see
+# snapshot-season.yml) so a completed race weekend's results are already
+# committed by the time these images are captured from them. Regenerates
+# the current season's card images only — see
+# scripts/capture-card-snapshots.mjs and the "grid-walk-blur-gpu-cost"
+# project memory for why these exist.
+on:
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "Season year to capture (e.g. 2026). Leave blank for the current season."
+        required: false
+        type: string
+  schedule:
+    - cron: "30 10 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm run build
+
+      - name: Start server
+        run: npm run start -- -p 3100 &
+
+      - name: Wait for server
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3100 > /dev/null && exit 0
+            sleep 2
+          done
+          echo "Server did not come up in time" >&2
+          exit 1
+
+      - name: Determine season
+        id: season
+        env:
+          SEASON_INPUT: ${{ inputs.season }}
+        run: |
+          SEASON="$SEASON_INPUT"
+          if [ -z "$SEASON" ]; then
+            SEASON=$(date +%Y)
+          fi
+          echo "season=$SEASON" >> "$GITHUB_OUTPUT"
+
+      - name: Capture card snapshots
+        env:
+          SNAPSHOT_PORT: 3100
+        run: node scripts/capture-card-snapshots.mjs "${{ steps.season.outputs.season }}"
+
+      - name: Commit snapshots
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update ${{ steps.season.outputs.season }} Grid Walk card snapshots"
+          file_pattern: "public/card-snapshots/${{ steps.season.outputs.season }}/**"
