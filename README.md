@@ -48,7 +48,9 @@ language.
   reduced-motion settings); its pointer glow and press-ripples are only
   ever redrawn over the small area they actually light up, and the frame
   is skipped entirely once nothing is moving, so dragging and scrolling
-  stay smooth. Grid Walk is now the only home for this data:
+  stay smooth; the cards also only re-measure their own size when it can
+  actually change (a season switch or the Finish/Qualifying toggle),
+  rather than on every drag. Grid Walk is now the only home for this data:
   the old standalone Results and Positions pages were removed, and their
   addresses redirect to the home page.
 - **About** (`/about`) — who built this and how, credits, and a progress

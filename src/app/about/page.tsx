@@ -61,11 +61,33 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            54 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            56 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">56</span>
+                <b>Dragging smooth again on the heavier cards</b>
+                <span>
+                  Rounds 53 and 54 made two of Grid Walk&rsquo;s cards noticeably heavier
+                  (Results now stacks two full tables, and Finish/Qualifying keeps both tables
+                  mounted at once). That exposed a card-measuring step that was re-running on
+                  every single focus change while dragging, forcing the browser to redo a full
+                  page layout each time &mdash; harmless on light cards, but a real stutter on
+                  the heavier ones. It now only re-measures when a card&rsquo;s size can actually
+                  change: a season switch or the Finish/Qualifying toggle.
+                </span>
+              </li>
+              <li>
+                <span className="seq">55</span>
+                <b>No more background flash on the toggle card</b>
+                <span>
+                  Swapping Finish and Qualifying frequency used to briefly show the live grid
+                  behind the card while the new table was measured. Both tables now stay mounted
+                  and share the same spot, so the toggle only ever crossfades between them.
+                </span>
+              </li>
               <li>
                 <span className="seq">54</span>
                 <b>Finish and Qualifying Frequency share a card with a toggle</b>
