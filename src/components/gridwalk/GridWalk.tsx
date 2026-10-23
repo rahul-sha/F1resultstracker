@@ -122,10 +122,11 @@ export default function GridWalk({
   // The capture script that GENERATES these snapshot images loads this
   // same page — without this escape hatch it would capture the snapshot
   // <img> it's meant to be replacing, baking any past mistake in forever.
-  const [forceLive, setForceLive] = useState(false);
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("noSnapshot") === "1") setForceLive(true);
-  }, []);
+  // Safe to read on the client's first render: `variant` is still null
+  // then, so server and client both render live content either way.
+  const [forceLive] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("noSnapshot") === "1"
+  );
   const snapshotSeason = 2026;
   function snapshotSrc(sectionId: string) {
     if (forceLive || season !== snapshotSeason || !variant) return null;
@@ -282,6 +283,26 @@ export default function GridWalk({
   // Measures each card's natural size and writes every slot's position and
   // fitted scale straight to the DOM (no state: it's re-run on resize and
   // after every render, and React never sets these styles itself).
+  // Every card is the same fixed size (see .gw-card); its content keeps its
+  // own proportions and is scaled to fit the frame below the header,
+  // centred, with space left around it rather than cropped.
+  function fitContent(card: HTMLElement) {
+    const fit = card.querySelector<HTMLElement>(".gw-fit");
+    const frame = fit?.parentElement;
+    if (!fit || !frame) return;
+    if (forceLive) {
+      fit.style.transform = "";
+      return;
+    }
+    const fw = frame.clientWidth;
+    const fh = frame.clientHeight;
+    const cw = fit.offsetWidth;
+    const ch = fit.offsetHeight;
+    if (!cw || !ch || !fw || !fh) return;
+    const fs = Math.min(fw / cw, fh / ch);
+    fit.style.transform = `translate(${(fw - cw * fs) / 2}px, ${(fh - ch * fs) / 2}px) scale(${fs})`;
+  }
+
   function layout() {
     const W = window.innerWidth;
     const H = window.innerHeight;
@@ -296,6 +317,7 @@ export default function GridWalk({
       const card = cardRefs.current[i];
       const slot = slotRefs.current[i];
       if (!card || !slot) return { s: 1, c: x };
+      fitContent(card);
       const nw = card.offsetWidth;
       const nh = card.offsetHeight;
       const s = Math.min(1, availH / nh, availW / nw);
@@ -381,6 +403,9 @@ export default function GridWalk({
   // them stack two full tables) on each one. At fit zoom, keep the
   // focused card centred.
   useLayoutEffect(() => {
+    // Capture mode (noSnapshot=1) renders cards at their natural size, so
+    // the snapshot script records the content itself, not the framed card.
+    wrapRef.current?.classList.toggle("gw-capture", forceLive);
     layout();
     if (Math.abs(view.current.k - 1) < 0.02 && !target.current) {
       view.current = { k: 1, tx: txFor(focusRef.current, 1), ty: 0 };
@@ -388,7 +413,7 @@ export default function GridWalk({
     apply();
     stripRef.current?.classList.remove("pending");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [season, freqView]);
+  }, [season, freqView, forceLive, variant, failedSnapshots]);
 
   // Both tab strips (the desktop top bar and the phone bottom bar) rest the
   // open card's tab at their left edge. Only the visible one moves.
@@ -774,24 +799,26 @@ export default function GridWalk({
                   </div>
                   {section.headerActions?.()}
                 </div>
-                <div className="gw-snap-target" data-section={section.id}>
-                  {(() => {
-                    const src = snapshotSrc(section.id);
-                    const name = section.id === "freq" ? `freq-${freqView}` : section.id;
-                    const size = SNAPSHOT_SIZE[name];
-                    if (!src || !size || failedSnapshots.has(src)) return section.render();
-                    return (
-                      <img
-                        key={src}
-                        src={src}
-                        alt=""
-                        width={size.w}
-                        height={size.h}
-                        draggable={false}
-                        onError={() => setFailedSnapshots((prev) => new Set(prev).add(src))}
-                      />
-                    );
-                  })()}
+                <div className="gw-frame">
+                  <div className="gw-fit gw-snap-target" data-section={section.id}>
+                    {(() => {
+                      const src = snapshotSrc(section.id);
+                      const name = section.id === "freq" ? `freq-${freqView}` : section.id;
+                      const size = SNAPSHOT_SIZE[name];
+                      if (!src || !size || failedSnapshots.has(src)) return section.render();
+                      return (
+                        <img
+                          key={src}
+                          src={src}
+                          alt=""
+                          width={size.w}
+                          height={size.h}
+                          draggable={false}
+                          onError={() => setFailedSnapshots((prev) => new Set(prev).add(src))}
+                        />
+                      );
+                    })()}
+                  </div>
                 </div>
               </div>
             </div>

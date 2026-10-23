@@ -104,7 +104,11 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: max-content;
+  /* One size for every card; content is fitted inside .gw-frame. */
+  width: 920px;
+  height: 900px;
+  display: flex;
+  flex-direction: column;
   transform-origin: 0 0;
   border-radius: 14px;
   background: var(--surface-2);
@@ -130,6 +134,42 @@
 .gw-card-inner {
   padding: 1.5rem 1.6rem 1.8rem;
   pointer-events: none;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gw-frame {
+  flex: 1 1 0;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.gw-fit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: max-content;
+  transform-origin: 0 0;
+}
+
+/* Capture mode (noSnapshot=1): natural-size cards for the snapshot script. */
+.gw-capture .gw-card {
+  width: max-content;
+  height: auto;
+  display: block;
+}
+.gw-capture .gw-card-inner {
+  display: block;
+}
+.gw-capture .gw-frame {
+  position: static;
+  overflow: visible;
+}
+.gw-capture .gw-fit {
+  position: static;
 }
 
 /* A card whose header carries a control (the finish/qualifying toggle) —
