@@ -954,6 +954,15 @@ body::after {
   color: var(--text-muted);
 }
 
+/* A second section-header stacked under an earlier graphic in the same
+   card (e.g. Grid Walk's merged Drivers/Team Results card) needs a gap
+   above it and a hairline to separate it from what came before. */
+.gw-subsection-header {
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--border-hairline);
+}
+
 /* A brief legend line for a graphic — how to read it, not what it is
    (that's the header's job) — sat underneath instead of bulking out the
    header's own subtitle. */

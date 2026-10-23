@@ -14,6 +14,7 @@ import type { QualifyingPositionSummary } from "@/lib/qualifying-positions";
 import PointsHeatmap from "@/components/PointsHeatmap";
 import ConstructorPointsHeatmap from "@/components/ConstructorPointsHeatmap";
 import DriverPointsEvolutionChart from "@/components/DriverPointsEvolutionChart";
+import ConstructorPointsEvolutionChart from "@/components/ConstructorPointsEvolutionChart";
 import FinishPositionsGrid from "@/components/FinishPositionsGrid";
 import QualifyingPositionsGrid from "@/components/QualifyingPositionsGrid";
 import PodiumBars from "@/components/PodiumBars";
@@ -30,6 +31,9 @@ type SectionDef = {
   id: string;
   title: string;
   subtitle: string;
+  // The jump tabs/pills need a label that covers a card stacking two
+  // halves (e.g. a driver and a team graphic) — falls back to title.
+  navLabel?: string;
   render: () => React.ReactNode;
 };
 
@@ -90,21 +94,38 @@ export default function GridWalk({
   const sections: SectionDef[] = [
     {
       id: "results",
-      title: "Results",
+      title: "Drivers Results",
       subtitle: "Points scored by each driver per Grand Prix.",
-      render: () => <PointsHeatmap grid={pointsGrid} />,
-    },
-    {
-      id: "constructors",
-      title: "Constructors",
-      subtitle: "Points scored by each team per Grand Prix.",
-      render: () => <ConstructorPointsHeatmap grid={constructorGrid} />,
+      navLabel: "Points Finishes",
+      render: () => (
+        <>
+          <PointsHeatmap grid={pointsGrid} />
+          <div className="section-header gw-subsection-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Team Results
+            </h2>
+            <p className="text-sm">Points scored by each team per Grand Prix.</p>
+          </div>
+          <ConstructorPointsHeatmap grid={constructorGrid} />
+        </>
+      ),
     },
     {
       id: "evolution",
       title: "Driver Points Evolution",
       subtitle: "Cumulative points scored by each driver across the season.",
-      render: () => <DriverPointsEvolutionChart grid={pointsGrid} />,
+      render: () => (
+        <>
+          <DriverPointsEvolutionChart grid={pointsGrid} />
+          <div className="section-header gw-subsection-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Constructor Points Evolution
+            </h2>
+            <p className="text-sm">Cumulative points scored by each team across the season.</p>
+          </div>
+          <ConstructorPointsEvolutionChart grid={constructorGrid} />
+        </>
+      ),
     },
     {
       id: "positions",
@@ -129,30 +150,31 @@ export default function GridWalk({
       title: "Driver Podiums",
       subtitle: "1st/2nd/3rd place finishes per driver.",
       render: () => (
-        <PodiumBars
-          drivers={finishSummary.driverPodiums.map((d) => ({
-            label: d.code,
-            team: d.constructorName,
-            color: d.color,
-            podiums: d.podiums,
-          }))}
-          teams={[]}
-        />
-      ),
-    },
-    {
-      id: "podiumsT",
-      title: "Constructor Podiums",
-      subtitle: "1st/2nd/3rd place finishes per team.",
-      render: () => (
-        <PodiumBars
-          drivers={[]}
-          teams={finishSummary.teamPodiums.map((t) => ({
-            label: t.constructorName,
-            color: t.color,
-            podiums: t.podiums,
-          }))}
-        />
+        <>
+          <PodiumBars
+            drivers={finishSummary.driverPodiums.map((d) => ({
+              label: d.code,
+              team: d.constructorName,
+              color: d.color,
+              podiums: d.podiums,
+            }))}
+            teams={[]}
+          />
+          <div className="section-header gw-subsection-header">
+            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+              Constructor Podiums
+            </h2>
+            <p className="text-sm">1st/2nd/3rd place finishes per team.</p>
+          </div>
+          <PodiumBars
+            drivers={[]}
+            teams={finishSummary.teamPodiums.map((t) => ({
+              label: t.constructorName,
+              color: t.color,
+              podiums: t.podiums,
+            }))}
+          />
+        </>
       ),
     },
   ];
@@ -708,7 +730,7 @@ export default function GridWalk({
                     dismissHint();
                   }}
                 >
-                  {section.title}
+                  {section.navLabel ?? section.title}
                 </button>
               ))}
             </div>
@@ -806,7 +828,7 @@ export default function GridWalk({
                 dismissHint();
               }}
             >
-              {section.title}
+              {section.navLabel ?? section.title}
             </button>
           ))}
         </div>

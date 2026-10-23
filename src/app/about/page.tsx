@@ -61,11 +61,22 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            52 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            53 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">53</span>
+                <b>Driver and team graphics now share a card</b>
+                <span>
+                  Three Grid Walk pairs are each one stacked card now, with a hairline divider
+                  between the driver half and the team half: Drivers Results with Team Results
+                  (renamed while merging), Driver Points Evolution with Constructor Points
+                  Evolution (the constructor chart is back after being dropped in round 47), and
+                  Driver Podiums with Constructor Podiums. The carousel is down to six cards.
+                </span>
+              </li>
               <li>
                 <span className="seq">52</span>
                 <b>Smoother dragging on Grid Walk</b>
