@@ -137,9 +137,37 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
   // Skipping them here just saves the per-point disp() work and path
   // building for segments nobody would see.
   const MARGIN = BULGE * 2.2 + 10;
+  const FINE_STEP = 14;
+  // Outside the pointer bulge and any wave front, disp() always returns the
+  // point unchanged, so a line there is dead straight — a few coarse points
+  // draw exactly the same pixels as many fine ones, for a fraction of the
+  // per-point disp() and path-building cost. Only the base (unboxed) pass
+  // walks a whole screen's worth of line, so only it bothers with this.
+  // Kept well under the smallest hot box a fresh wave can have (a ring
+  // spawns at ~140px wide) so a coarse jump can never leap clean over one.
+  const COARSE_STEP = 50;
+  const hotBoxes: { x0: number; y0: number; x1: number; y1: number }[] = [];
+  function collectHotBoxes() {
+    hotBoxes.length = 0;
+    if (reduce.matches) return;
+    if (ptr.on > 0.01) {
+      hotBoxes.push({ x0: ptr.sx - R * 1.6, y0: ptr.sy - R * 1.6, x1: ptr.sx + R * 1.6, y1: ptr.sy + R * 1.6 });
+    }
+    for (const w of waves) {
+      const rad = w.t * WAVE_SPEED;
+      hotBoxes.push({ x0: w.x - rad - 70, y0: w.y - rad - 70, x1: w.x + rad + 70, y1: w.y + rad + 70 });
+    }
+  }
+  function isHot(x: number, y: number): boolean {
+    for (const b of hotBoxes) {
+      if (x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1) return true;
+    }
+    return false;
+  }
   function gridPath(major: boolean, box?: { x0: number; y0: number; x1: number; y1: number }) {
     const { sp, ox, oy } = frame();
-    const step = 14;
+    const step = FINE_STEP;
+    if (!box) collectHotBoxes();
     // Majors are every fourth line, anchored to the camera so they move too.
     const bi = Math.floor((cam.tx * 0.3) / sp);
     const bj = Math.floor((cam.ty * 0.3) / sp);
@@ -151,19 +179,31 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     for (let i = -1, x = ox - sp; x < GW + sp; x += sp, i++) {
       if ((((i - bi) % 4) + 4) % 4 === 0 !== major) continue;
       if (box && (x < x0 || x > x1)) continue;
-      for (let n = 0, y = y0; y <= y1; y += step, n++) {
+      let first = true;
+      for (let y = y0; y <= y1; ) {
         disp(x, y);
-        if (n) ctx.lineTo(P[0], P[1]);
-        else ctx.moveTo(P[0], P[1]);
+        if (first) {
+          ctx.moveTo(P[0], P[1]);
+          first = false;
+        } else {
+          ctx.lineTo(P[0], P[1]);
+        }
+        y += !box && !isHot(x, y) ? COARSE_STEP : step;
       }
     }
     for (let j = -1, y = oy - sp; y < GH + sp; y += sp, j++) {
       if ((((j - bj) % 4) + 4) % 4 === 0 !== major) continue;
       if (box && (y < y0 || y > y1)) continue;
-      for (let n = 0, x = x0; x <= x1; x += step, n++) {
+      let first = true;
+      for (let x = x0; x <= x1; ) {
         disp(x, y);
-        if (n) ctx.lineTo(P[0], P[1]);
-        else ctx.moveTo(P[0], P[1]);
+        if (first) {
+          ctx.moveTo(P[0], P[1]);
+          first = false;
+        } else {
+          ctx.lineTo(P[0], P[1]);
+        }
+        x += !box && !isHot(x, y) ? COARSE_STEP : step;
       }
     }
   }
