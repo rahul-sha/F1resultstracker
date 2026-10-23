@@ -133,6 +133,63 @@
   pointer-events: none;
 }
 
+/* A card whose header carries a control (the finish/qualifying toggle) —
+   title/subtitle stay left, the control sits at the right. The control
+   re-enables pointer-events since .gw-card-inner turns them off so the
+   whole card can act as one click target for diving. */
+.gw-card-head {
+  display: flex !important;
+  width: 100%;
+  flex-direction: row !important;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.gw-freq-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-hairline);
+  background: var(--accent-container);
+  color: var(--on-accent-container);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.15s ease;
+}
+.gw-freq-toggle:hover {
+  transform: translateY(-1px);
+}
+.gw-freq-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@keyframes gw-freq-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(1.01);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.gw-freq-stage {
+  animation: gw-freq-fade-in 0.22s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gw-freq-stage {
+    animation: none;
+  }
+}
+
 .gw-hint {
   position: fixed;
   left: 50%;
@@ -623,7 +680,21 @@
     background: color-mix(in srgb, var(--surface-2) 80%, transparent);
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
+      inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
+  }
+  /* The zoom/Fit buttons read as their own little bordered pills by
+     default (the .gw-zoom-btn base rule) — inside this glass pill they
+     should read as flat tabs instead, same as .gw-toptab in the nav bar. */
+  .gw-zoomctl .gw-zoom-btn {
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+  }
+  .gw-zoomctl .gw-zoom-btn:hover {
+    border-color: transparent;
+    background: var(--surface-3);
+    color: var(--text-primary);
   }
   .gw-dots {
     bottom: calc(30px + env(safe-area-inset-bottom, 0px));
