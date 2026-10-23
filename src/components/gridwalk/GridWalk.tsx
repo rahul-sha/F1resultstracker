@@ -96,6 +96,51 @@ export default function GridWalk({
   const [hintGone, setHintGone] = useState(false);
   const [freqView, setFreqView] = useState<"finish" | "quali">("finish");
 
+  // Pre-rendered card snapshots: a card's own content (tables/charts/bars)
+  // is the single biggest cost to the GPU on every drag frame, far more
+  // than the live grid ever was (see "grid-walk-blur-gpu-cost" memory —
+  // confirmed from a real device trace). For the current season only, a
+  // weekly-regenerated image stands in for that content; every other
+  // season still renders live, so nothing here can go stale or missing
+  // mid-season. `null` means "not yet known" (SSR has no access to
+  // localStorage), so the first paint always renders live and swaps in
+  // the image a tick later — never the other way round.
+  const [variant, setVariant] = useState<{ accent: string; theme: string } | null>(null);
+  useEffect(() => {
+    function read() {
+      const root = document.documentElement;
+      setVariant({
+        accent: root.getAttribute("data-accent") || "monokai",
+        theme: root.getAttribute("data-theme") || "light",
+      });
+    }
+    read();
+    const observer = new MutationObserver(read);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-accent"] });
+    return () => observer.disconnect();
+  }, []);
+  const snapshotSeason = 2026;
+  function snapshotSrc(sectionId: string) {
+    if (season !== snapshotSeason || !variant) return null;
+    const name = sectionId === "freq" ? `freq-${freqView}` : sectionId;
+    return `/card-snapshots/${snapshotSeason}/${variant.accent}-${variant.theme}/${name}.png`;
+  }
+  // Natural (unscaled) CSS-pixel size of each card's rendered content —
+  // theme/accent-invariant (only colour changes), measured once from the
+  // live content. Keeps layout() measuring the same size whichever way a
+  // card is currently rendered, live or snapshot.
+  const SNAPSHOT_SIZE: Record<string, { w: number; h: number }> = {
+    results: { w: 710, h: 961 },
+    evolution: { w: 603, h: 938 },
+    positions: { w: 1118, h: 921 },
+    "freq-finish": { w: 1264, h: 916 },
+    "freq-quali": { w: 1264, h: 916 },
+    podiumsD: { w: 658, h: 665 },
+  };
+  // A snapshot that 404s (not yet generated for this combination) falls
+  // back to live rendering rather than showing a broken image.
+  const [failedSnapshots, setFailedSnapshots] = useState<Set<string>>(new Set());
+
   const sections: SectionDef[] = [
     {
       id: "results",
@@ -722,7 +767,25 @@ export default function GridWalk({
                   </div>
                   {section.headerActions?.()}
                 </div>
-                {section.render()}
+                <div className="gw-snap-target" data-section={section.id}>
+                  {(() => {
+                    const src = snapshotSrc(section.id);
+                    const name = section.id === "freq" ? `freq-${freqView}` : section.id;
+                    const size = SNAPSHOT_SIZE[name];
+                    if (!src || !size || failedSnapshots.has(src)) return section.render();
+                    return (
+                      <img
+                        key={src}
+                        src={src}
+                        alt=""
+                        width={size.w}
+                        height={size.h}
+                        draggable={false}
+                        onError={() => setFailedSnapshots((prev) => new Set(prev).add(src))}
+                      />
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           </div>
