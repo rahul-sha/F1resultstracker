@@ -18,6 +18,7 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
   const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
   let dpr = 1;
+  let fullDpr = 1;
   let GW = 0;
   let GH = 0;
   let SP = 40;
@@ -53,14 +54,29 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
   observer.observe(root, { attributes: true, attributeFilter: ["data-theme", "data-accent"] });
   darkQuery.addEventListener("change", readTheme);
 
+  function applyDpr(target: number) {
+    dpr = target;
+    cv.width = Math.round(GW * dpr);
+    cv.height = Math.round(GH * dpr);
+  }
+
   function size() {
-    dpr = Math.min(2, window.devicePixelRatio || 1);
+    fullDpr = Math.min(2, window.devicePixelRatio || 1);
     GW = window.innerWidth;
     GH = window.innerHeight;
     SP = GW <= 640 ? 32 : 40;
-    cv.width = GW * dpr;
-    cv.height = GH * dpr;
+    applyDpr(fullDpr);
   }
+
+  // While the camera is actively moving (a drag or a pinch), the canvas
+  // redraws its whole base layer every frame — on a retina screen that's
+  // up to 4x the pixels of a standard one, re-rasterised to the GPU every
+  // time. Panning is fast motion, where the eye can't resolve that detail
+  // anyway, so we drop to 1x only for the moving stretch and snap back to
+  // full sharpness a beat after it settles, rather than living with the
+  // softer grid permanently.
+  const LOWRES_SETTLE_MS = 180;
+  let lastMoveAt = -Infinity;
 
   // Mouse hover and touch both count; touch fades out on lift.
   function onMove(e: PointerEvent) {
@@ -247,6 +263,11 @@ export function createLiveGrid(cv: HTMLCanvasElement) {
     if (idle && wasIdle) return;
     wasIdle = idle;
     themeDirty = false;
+
+    if (!camStill) lastMoveAt = now;
+    const wantLow = fullDpr > 1 && now - lastMoveAt < LOWRES_SETTLE_MS;
+    if (wantLow && dpr !== 1) applyDpr(1);
+    else if (!wantLow && dpr !== fullDpr) applyDpr(fullDpr);
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, GW, GH);
