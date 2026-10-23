@@ -680,7 +680,21 @@
     background: color-mix(in srgb, var(--surface-2) 80%, transparent);
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
+      inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
+  }
+  /* The zoom/Fit buttons read as their own little bordered pills by
+     default (the .gw-zoom-btn base rule) — inside this glass pill they
+     should read as flat tabs instead, same as .gw-toptab in the nav bar. */
+  .gw-zoomctl .gw-zoom-btn {
+    border: 0;
+    background: transparent;
+    color: var(--text-secondary);
+  }
+  .gw-zoomctl .gw-zoom-btn:hover {
+    border-color: transparent;
+    background: var(--surface-3);
+    color: var(--text-primary);
   }
   .gw-dots {
     bottom: calc(30px + env(safe-area-inset-bottom, 0px));
