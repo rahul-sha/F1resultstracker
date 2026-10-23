@@ -156,6 +156,13 @@
   transform-origin: 0 0;
 }
 
+/* The snapshot image is always its manifest size (set inline), never
+   squeezed by the frame: the Tailwind reset's img max-width: 100% would
+   otherwise tie it to whatever width the frame last had. */
+.gw-fit img {
+  max-width: none;
+}
+
 /* A card whose image has not been captured yet, at the size it will be. */
 .gw-snap-missing {
   display: flex;

@@ -193,12 +193,17 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
         </div>
       );
     }
+    // Explicit CSS size as well as the attributes: with only the
+    // attributes (and the reset's img { height: auto }) the browser keeps
+    // the PREVIOUS image's aspect ratio until the new one has loaded, so a
+    // season switch measured the card at the wrong height and cropped it.
     const img = (
       <img
         src={chosen}
         alt=""
         width={size.w}
         height={size.h}
+        style={{ width: size.w, height: size.h }}
         draggable={false}
         onError={() => setFailedSnapshots((prev) => new Set(prev).add(chosen))}
       />
@@ -396,11 +401,13 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
     const fit = card.querySelector<HTMLElement>(".gw-fit");
     const frame = fit?.parentElement;
     if (!fit || !frame) return;
-    if (forceLive) {
-      fit.style.transform = "";
-      frame.style.width = "";
-      return;
-    }
+    // Always measure from a clean slate: switching season re-renders this
+    // same card with a different-sized image, and a frame width or scale
+    // left over from the previous season would otherwise constrain the
+    // new measurement and crop the larger image.
+    fit.style.transform = "";
+    frame.style.width = "";
+    if (forceLive) return;
     const fh = frame.clientHeight;
     const cw = fit.offsetWidth;
     const ch = fit.offsetHeight;

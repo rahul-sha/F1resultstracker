@@ -79,7 +79,10 @@ export default function AboutPage() {
                   combinations for the season you are looking at download quietly in the
                   background, so toggling is instant. Images moved from PNG to lossless WebP at a
                   third of the size. Also fixed: the season menu would not scroll, because the
-                  card zoom was swallowing the mouse wheel over it.
+                  card zoom was swallowing the mouse wheel over it; and switching season without
+                  a fresh load cropped the cards, because the browser kept the previous
+                  season&rsquo;s image proportions until the new image had loaded, so each card
+                  was measured at the wrong height.
                 </span>
               </li>
               <li>
