@@ -1,9 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import RegisterServiceWorker from "@/components/RegisterServiceWorker";
 
 export const metadata: Metadata = {
   title: "Grid Walk",
   description: "Formula 1 race results, points and standings tracker",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Grid Walk",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    icon: [{ url: "/favicon.ico" }],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1b1c17",
 };
 
 export default function RootLayout({
@@ -26,6 +41,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full">
+        <RegisterServiceWorker />
         <div className="page-shell flex min-h-screen flex-col gap-6 p-4">
           <main className="min-w-0 flex-1 navbar-spacer">{children}</main>
         </div>
