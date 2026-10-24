@@ -131,6 +131,16 @@ so nothing is hardcoded to a single palette. The icon-only theme and
 palette buttons spin their icon and send out an accent ring on each
 click, so every change has visible feedback.
 
+## Design system
+
+The UI is built from three shapes: an **island** (a 48px floating,
+rounded container such as the nav bar, jump bar or logo island), a
+**pill** (a 36px control inside an island, such as a tab) and a **card**
+(one graphic). Their heights, radii, shadows and the translucent island
+fill are design tokens at the top of `src/app/globals.css`
+(`--island-h`, `--pill-h`, `--card-h`, `--radius-*`, `--shadow-*`,
+`--island-fill`), so every copy of a shape reads the same value.
+
 ## Install as an app
 
 Grid Walk is a Progressive Web App (PWA): a web app manifest

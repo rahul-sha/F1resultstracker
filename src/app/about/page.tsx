@@ -63,11 +63,20 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            63 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            64 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">64</span>
+                <b>Design tokens</b>
+                <span>
+                  Island, pill and card heights, radii and shadows are now named tokens at the top of
+                  the stylesheet instead of the same numbers copied into every rule. Nothing changed
+                  on screen.
+                </span>
+              </li>
               <li>
                 <span className="seq">63</span>
                 <b>Installable as an app</b>
