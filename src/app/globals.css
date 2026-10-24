@@ -54,7 +54,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])):where(:not([data-accent="coffee"])):where(:not([data-accent="red"])) {
+  :root:where(:not([data-theme="light"])):where(:not([data-accent="coffee"])):where(:not([data-accent="ember"])) {
     color-scheme: dark;
     --page-plane: #1b1c17;
     --surface-1: #272822;
@@ -85,7 +85,7 @@
   }
 }
 
-:root[data-theme="dark"]:where(:not([data-accent="coffee"])):where(:not([data-accent="red"])) {
+:root[data-theme="dark"]:where(:not([data-accent="coffee"])):where(:not([data-accent="ember"])) {
   color-scheme: dark;
   --page-plane: #1b1c17;
   --surface-1: #272822;
@@ -196,8 +196,8 @@
   --dnf-bg: var(--surface-1);
 }
 
-/* Ember — red-tinted theme. */
-:root[data-accent="red"] {
+/* Ember — red-tinted palette. */
+:root[data-accent="ember"] {
   color-scheme: light;
   --page-plane: #fdf3f1;
   --surface-1: #fbe8e4;
@@ -225,7 +225,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-accent="red"]:where(:not([data-theme="light"])) {
+  :root[data-accent="ember"]:where(:not([data-theme="light"])) {
     color-scheme: dark;
     --page-plane: #180f0e;
     --surface-1: #231514;
@@ -253,7 +253,7 @@
   }
 }
 
-:root[data-accent="red"][data-theme="dark"] {
+:root[data-accent="ember"][data-theme="dark"] {
   color-scheme: dark;
   --page-plane: #180f0e;
   --surface-1: #231514;
@@ -371,84 +371,11 @@
   --color-foreground: var(--text-primary);
 }
 
-/* Two soft accent-tinted glows drifting slowly behind the page, instead of
-   a flat colour — built from the active theme's own --accent token, so
-   they re-colour themselves with the theme rather than being a separate
-   hardcoded background. Blurred, fixed-position blobs (not a background-
-   position animation) since a radial-gradient()'s own "at" offset can't be
-   animated directly; translating a blurred circle can. */
 body {
-  position: relative;
   background: var(--page-plane);
   color: var(--text-primary);
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-body::before,
-body::after {
-  content: "";
-  position: fixed;
-  z-index: -1;
-  border-radius: 50%;
-  pointer-events: none;
-}
-body::before {
-  top: -15%;
-  left: -10%;
-  width: 60vw;
-  height: 60vw;
-  max-width: 900px;
-  max-height: 900px;
-  background: color-mix(in srgb, var(--accent) 26%, transparent);
-  animation: blob-drift-a 20.8s ease-in-out infinite alternate;
-}
-body::after {
-  top: 5%;
-  right: -15%;
-  width: 50vw;
-  height: 50vw;
-  max-width: 750px;
-  max-height: 750px;
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  animation: blob-drift-b 25.6s ease-in-out infinite alternate;
-}
-@keyframes blob-drift-a {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(6vw, 8vh) scale(1.08);
-  }
-  100% {
-    transform: translate(-4vw, 4vh) scale(0.96);
-  }
-}
-@keyframes blob-drift-b {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-7vw, -5vh) scale(1.05);
-  }
-  100% {
-    transform: translate(3vw, 6vh) scale(0.95);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  body::before,
-  body::after {
-    animation: none;
-  }
-}
-
-/* About now carries its own cursor-reactive live grid (LiveGridBackground.tsx).
-   These blobs lost the blur() that used to soften their edges (round 58, GPU
-   cost) and read as flat shapes once something else is visible behind them,
-   so this page hides them rather than layering both effects. */
-body:has(.about-page-wrap)::before,
-body:has(.about-page-wrap)::after {
-  display: none;
-}
-
 /* Scrollbars themed to match the active surface, everywhere — the page
    itself and any inner scroll area (the results table, the timeline inset,
    the season switcher menu) — instead of the browser's unstyled default. */
@@ -485,13 +412,13 @@ body:has(.about-page-wrap)::after {
 }
 
 /* The About page has no nav bar, just the Grid Walk logo as a glass
-   island linking home: top-left on desktop, bottom-centre on phones. The
-   spacer keeps the page's content clear of it. */
+   island linking home: top-left on desktop, bottom-centre on phones.
+   .logo-clearance keeps the page's content clear of it. */
 .home-logo {
   position: fixed;
   z-index: 40;
 }
-.navbar-spacer {
+.logo-clearance {
   padding-bottom: calc(92px + env(safe-area-inset-bottom));
 }
 @media (min-width: 641px) {
@@ -499,7 +426,7 @@ body:has(.about-page-wrap)::after {
     top: calc(20px + env(safe-area-inset-top, 0px));
     left: max(20px, env(safe-area-inset-left, 0px));
   }
-  .navbar-spacer {
+  .logo-clearance {
     padding-bottom: 0;
     padding-top: 44px;
   }
@@ -579,9 +506,9 @@ body:has(.about-page-wrap)::after {
   gap: 6px;
 }
 
-/* Finish Positions page: one count per finishing position, sitting
-   border-to-border as the same heatmap mosaic as Results/Positions
-   (.heat-cell) rather than a boxed, gapped chip — plus a pinned DNF count
+/* Finish and Qualifying Frequency cards: one count per position, sitting
+   border-to-border as the same heatmap mosaic as the Points Finishes and
+   Positions cards (.heat-cell) rather than a boxed, gapped chip — plus a pinned DNF count
    column and the podium bars underneath. */
 .count-cell {
   font-weight: 600;
@@ -738,7 +665,7 @@ body:has(.about-page-wrap)::after {
   box-shadow: -2px 0 6px rgba(0, 0, 0, 0.08);
 }
 
-/* Meter bar (Results and Standing pages): a colored pill fill over a
+/* Meter bar (the points heatmaps' totals column): a colored pill fill over a
    lighter pill track, so state reads across the whole bar rather than just
    wherever the fill ends. */
 .meter-track {
@@ -856,20 +783,9 @@ body:has(.about-page-wrap)::after {
   transform: rotate(180deg);
 }
 
-/* Heatmap pages (Results, Positions): on a wide screen the table-card's
-   own content is narrower than the viewport, which otherwise leaves it
-   pinned to the left with a large empty gap on the right. Capping and
-   centring the page content keeps the card's width tied to what it
-   actually holds, rather than stretching with the browser window. */
-.content-wrap {
-  max-width: 1420px;
-  margin: 0 auto;
-}
-
-/* Page title + subtitle — plain text sitting directly on the page
-   background, not a boxed card: the background/border glass treatment
-   didn't read well, so this keeps only the layout win (consistent start
-   position across pages, width capped so long subtitles don't run on). */
+/* About page title + subtitle: plain text sitting directly on the page
+   background, not a boxed card, width capped so a long subtitle doesn't
+   run on. (Card titles are .ui-card-header in ui.css.) */
 .page-header {
   width: 60%;
   min-width: 260px;
@@ -901,8 +817,7 @@ body:has(.about-page-wrap)::after {
 
 /* About page: centred column, with "About me" and the tools credits sat
    beside the main write-up on wide screens instead of stacked under it.
-   Same max-width as .content-wrap (Results/Positions) so every page reads
-   the same overall width rather than About looking narrower. */
+   Capped at 1420px so the page doesn't stretch with a wide window. */
 .about-page-wrap {
   max-width: 1420px;
   margin: 0 auto;
@@ -1105,9 +1020,6 @@ html {
 html::-webkit-scrollbar {
   display: none;
 }
-
-/* Points Evolution charts (Results page) render statically — no
-   scroll-triggered reveal animation. (PointsEvolutionChart.tsx) */
 
 /* Feedback for the icon-only theme and palette toggles: each click spins
    the icon in with a little overshoot and sends an accent ring outwards.

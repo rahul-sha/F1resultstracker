@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ThemeIcon } from "./nav-icons";
+import { ThemeIcon } from "./ui/icons";
 import { IconPill } from "./ui";
 import { THEME_COOKIE, persistCookie, type Theme } from "@/lib/variant-constants";
 

@@ -122,7 +122,9 @@ overrides are mapped locally in `src/lib/circuits.ts`,
 
 Four colour palettes — Monokai (default), Coffee, Ember and Dracula — each
 togglable from Grid Walk's top bar and persisted in `localStorage` (and a
-cookie, for the server-picked card images).
+cookie, for the server-picked card images) under the keys `monokai`,
+`coffee`, `ember` and `dracula`; a choice saved under Ember's old key, `red`,
+is still honoured.
 All four have both a light and a dark variant; the theme button flips
 between Light and Dark (there's no Auto option), starting from whatever the
 device shows until it's first clicked. All colour in the UI, including the heatmap
@@ -150,8 +152,9 @@ The same shapes exist as React components in `src/components/ui/`:
 `Island`, `Pill` (with `accent`, `active` and `icon` variants, plus
 `IconPill`), `Divider`, `TabStrip` (a scrolling row of tab pills with the
 swipe, mouse-drag and wheel browsing built in), `Logo`, `CardHeader`,
-`CardToggle` and `Menu`. New UI should be built from these rather than
-from raw elements and one-off classes.
+`CardToggle`, `Menu`, and the `ThemeIcon` and `PaletteIcon` icons. New UI
+should be built from these rather than from raw elements and one-off
+classes.
 
 ## Install as an app
 

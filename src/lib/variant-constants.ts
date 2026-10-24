@@ -7,7 +7,7 @@
 export const THEME_COOKIE = "f1-theme";
 export const ACCENT_COOKIE = "f1-accent";
 
-export const ACCENTS = ["monokai", "coffee", "red", "dracula"] as const;
+export const ACCENTS = ["monokai", "coffee", "ember", "dracula"] as const;
 export const THEMES = ["light", "dark"] as const;
 
 export type Accent = (typeof ACCENTS)[number];
@@ -15,6 +15,13 @@ export type Theme = (typeof THEMES)[number];
 
 export function isAccent(value: unknown): value is Accent {
   return typeof value === "string" && (ACCENTS as readonly string[]).includes(value);
+}
+
+// The Ember palette was stored as "red" until October 2026; a choice saved
+// under the old name still counts.
+export function normaliseAccent(value: unknown): Accent | null {
+  if (value === "red") return "ember";
+  return isAccent(value) ? value : null;
 }
 
 export function isTheme(value: unknown): value is Theme {

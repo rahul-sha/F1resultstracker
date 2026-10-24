@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PaletteIcon } from "./nav-icons";
+import { PaletteIcon } from "./ui/icons";
 import { IconPill } from "./ui";
-import { ACCENT_COOKIE, persistCookie, type Accent } from "@/lib/variant-constants";
+import { ACCENT_COOKIE, normaliseAccent, persistCookie, type Accent } from "@/lib/variant-constants";
 
 const STORAGE_KEY = ACCENT_COOKIE;
-const ORDER: Accent[] = ["monokai", "coffee", "red", "dracula"];
+const ORDER: Accent[] = ["monokai", "coffee", "ember", "dracula"];
 const LABEL: Record<Accent, string> = {
   monokai: "Monokai",
   coffee: "Coffee",
-  red: "Ember",
+  ember: "Ember",
   dracula: "Dracula",
 };
 
@@ -27,8 +27,7 @@ function applyAccent(accent: Accent) {
 
 function readStoredAccent(): Accent {
   if (typeof window === "undefined") return "monokai";
-  const stored = window.localStorage.getItem(STORAGE_KEY) as Accent | null;
-  return stored && ORDER.includes(stored) ? stored : "monokai";
+  return normaliseAccent(window.localStorage.getItem(STORAGE_KEY)) ?? "monokai";
 }
 
 export default function AccentToggle() {

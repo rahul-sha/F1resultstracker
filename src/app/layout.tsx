@@ -34,16 +34,17 @@ export default function RootLayout({
           // light-mode flash on first load. It also mirrors each stored
           // choice into its cookie (f1-theme / f1-accent) when that cookie
           // is missing, so a visitor from before the cookies existed gets
-          // server-picked card images from their next visit on.
+          // server-picked card images from their next visit on. A palette
+          // saved as "red" (Ember's name until October 2026) is renamed.
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var c=document.cookie;function k(n,v){if(c.indexOf(n+"=")<0){document.cookie=n+"="+v+"; path=/; max-age=31536000; samesite=lax";}}var t=localStorage.getItem("f1-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);k("f1-theme",t);}var a=localStorage.getItem("f1-accent");if(a==="coffee"||a==="red"||a==="dracula"){document.documentElement.setAttribute("data-accent",a);k("f1-accent",a);}}catch(e){}})();`,
+            __html: `(function(){try{var c=document.cookie;function k(n,v){if(c.indexOf(n+"=")<0){document.cookie=n+"="+v+"; path=/; max-age=31536000; samesite=lax";}}var t=localStorage.getItem("f1-theme");if(t==="light"||t==="dark"){document.documentElement.setAttribute("data-theme",t);k("f1-theme",t);}var a=localStorage.getItem("f1-accent");if(a==="red"){a="ember";localStorage.setItem("f1-accent",a);}if(a==="coffee"||a==="ember"||a==="dracula"){document.documentElement.setAttribute("data-accent",a);k("f1-accent",a);}}catch(e){}})();`,
           }}
         />
       </head>
       <body className="min-h-full">
         <RegisterServiceWorker />
         <div className="page-shell flex min-h-screen flex-col gap-6 p-4">
-          <main className="min-w-0 flex-1 navbar-spacer">{children}</main>
+          <main className="min-w-0 flex-1 logo-clearance">{children}</main>
         </div>
       </body>
     </html>

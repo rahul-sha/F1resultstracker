@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { cookies } from "next/headers";
-import { ACCENT_COOKIE, THEME_COOKIE, isAccent, isTheme, type Accent, type Theme } from "./variant-constants";
+import { ACCENT_COOKIE, THEME_COOKIE, isTheme, normaliseAccent, type Accent, type Theme } from "./variant-constants";
 
 // Server-only helpers for Grid Walk's pre-rendered card images. Visitors
 // never see a card rendered live: every card is an image captured by
@@ -34,7 +34,7 @@ export async function resolvePersistedVariant(): Promise<{ accent: Accent; theme
   const accent = store.get(ACCENT_COOKIE)?.value;
   const theme = store.get(THEME_COOKIE)?.value;
   return {
-    accent: isAccent(accent) ? accent : "monokai",
+    accent: normaliseAccent(accent) ?? "monokai",
     theme: isTheme(theme) ? theme : null,
   };
 }

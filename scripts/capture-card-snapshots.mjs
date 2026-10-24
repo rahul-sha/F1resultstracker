@@ -35,7 +35,7 @@ const SEASONS =
     ? Array.from({ length: CURRENT_SEASON - FIRST_SEASON + 1 }, (_, i) => FIRST_SEASON + i)
     : [Number(ARG) || CURRENT_SEASON];
 
-const ACCENTS = ["monokai", "coffee", "red", "dracula"];
+const ACCENTS = ["monokai", "coffee", "ember", "dracula"];
 const THEMES = ["light", "dark"];
 // Index within GridWalk's `sections` array (and so its top tab strip's
 // tabs) — each must be focused via its tab before its card is screenshot,
