@@ -63,11 +63,20 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            69 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            70 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">70</span>
+                <b>Repository renamed to Grid Walk</b>
+                <span>
+                  The GitHub repository itself (previously F1resultstracker) and the Vercel project
+                  are now named grid-walk, matching the app&rsquo;s name everywhere else. The source
+                  code link on this page points to the new address.
+                </span>
+              </li>
               <li>
                 <span className="seq">69</span>
                 <b>Icons that follow light/dark</b>
@@ -549,7 +558,7 @@ export default function AboutPage() {
                 </CreditIcon>
                 <span>
                   <b>Source code</b>
-                  <a href="https://github.com/rahul-sha/F1resultstracker" target="_blank" rel="noopener">
+                  <a href="https://github.com/rahul-sha/grid-walk" target="_blank" rel="noopener">
                     View on GitHub
                   </a>
                 </span>
