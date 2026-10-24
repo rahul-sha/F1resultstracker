@@ -324,63 +324,19 @@
   pointer-events: auto;
 }
 
+/* The logo is pill-sized on phones, where the top bar has no islands,
+   and island-sized on desktop (the .ui-logo default). */
 .gw-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   height: var(--pill-h);
   padding: 0 12px;
-  border: 0;
   border-radius: var(--radius-pill);
-  font: inherit;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  font-size: 0.95rem;
-  white-space: nowrap;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background 0.2s ease;
 }
 
-.gw-brand:hover {
-  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
-}
-
-.gw-brand:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.gw-brand-mark {
-  color: var(--accent);
-  display: inline-flex;
-}
-
-/* The About pill, theme/palette toggles and season switcher each come from
-   a different component with its own padding, so every direct child of
-   this row is pinned to the same 36px height. */
 .gw-topbar-right {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.6rem;
-}
-
-.gw-topbar-right > * {
-  height: var(--pill-h);
-  box-sizing: border-box;
-}
-
-.gw-topbar-right .icon-toggle-btn {
-  width: var(--pill-h);
-  padding: 0;
-}
-
-.gw-topbar-right .switcher-trigger {
-  height: var(--pill-h);
-  padding-top: 0;
-  padding-bottom: 0;
 }
 
 /* The bottom bar: a fixed wrapper round one island. On phones the island
@@ -426,6 +382,11 @@
   .gw-topbar-right {
     gap: 0.4rem;
   }
+  /* With no island behind them on phones, the controls are solid pills. */
+  .gw-topbar-right .ui-pill:not(.ui-pill--accent) {
+    background: var(--surface-3);
+    color: var(--text-primary);
+  }
   .gw-jumpbar {
     left: max(0.9rem, env(safe-area-inset-left, 0px));
     right: max(0.9rem, env(safe-area-inset-right, 0px));
@@ -460,7 +421,7 @@
 /* Just the mark on phones, so the brand and the four topbar controls share
    one row instead of wrapping. */
 @media (max-width: 480px) {
-  .gw-brand-text {
+  .gw-brand .ui-logo-text {
     display: none;
   }
 }
@@ -515,21 +476,9 @@
   .gw-navpill-divider {
     display: block;
   }
-  /* Controls inside the bar drop their own outlines and read as tabs. */
   .gw-navpill .gw-topbar-right {
     flex: none;
     gap: 4px;
-  }
-  .gw-navpill .icon-toggle-btn,
-  .gw-navpill .switcher-trigger {
-    border-color: transparent;
-    background: transparent;
-    color: var(--text-secondary);
-  }
-  .gw-navpill .icon-toggle-btn:hover,
-  .gw-navpill .switcher-trigger:hover {
-    background: var(--surface-3);
-    color: var(--text-primary);
   }
   .gw-jumpbar-pills {
     display: none;
@@ -544,7 +493,7 @@
 }
 
 @media (min-width: 641px) and (max-width: 1100px) {
-  .gw-brand-text {
+  .gw-brand .ui-logo-text {
     display: none;
   }
 }

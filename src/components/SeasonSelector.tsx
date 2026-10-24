@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { availableSeasons, SEASON_COOKIE } from "@/lib/season-constants";
+import { Menu, MenuAnchor, MenuOption, Pill } from "./ui";
 
 // Persisted for a year so it survives across page navigations and future
 // visits; path=/ so it applies to every route, not just the one it was
@@ -61,54 +62,28 @@ export default function SeasonSelector({ initialSeason }: { initialSeason: numbe
   }
 
   return (
-    <div className={"switcher" + (open ? " open" : "")} ref={rootRef}>
-      <button
-        type="button"
-        className="switcher-trigger"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          aria-hidden="true"
-          className="switcher-calendar-icon"
-        >
+    <MenuAnchor open={open} className="switcher" ref={rootRef}>
+      <Pill className="switcher-trigger" aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="switcher-calendar-icon">
           <rect x="1.5" y="2.5" width="11" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
           <path d="M1.5 5.5H12.5" stroke="currentColor" strokeWidth="1.2" />
           <path d="M4 1.5V3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
           <path d="M10 1.5V3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
         </svg>
         <span>{season}</span>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-          <path
-            d="M2.5 4.5L6 8L9.5 4.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" className="switcher-chevron">
+          <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-      </button>
+      </Pill>
       {open ? (
-        <div className="switcher-menu" role="listbox">
+        <Menu role="listbox" aria-label="Season">
           {seasons.map((year) => (
-            <button
-              key={year}
-              type="button"
-              role="option"
-              aria-selected={year === season}
-              className={"switcher-option" + (year === season ? " active" : "")}
-              onClick={() => handleSelect(year)}
-            >
+            <MenuOption key={year} active={year === season} onClick={() => handleSelect(year)}>
               {year}
-            </button>
+            </MenuOption>
           ))}
-        </div>
+        </Menu>
       ) : null}
-    </div>
+    </MenuAnchor>
   );
 }

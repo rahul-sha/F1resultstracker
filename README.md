@@ -142,8 +142,16 @@ fill are design tokens at the top of `src/app/globals.css`
 `--island-fill`), and each shape is styled once in `src/styles/ui.css`
 (`.ui-island`, `.ui-pill`, `.ui-pill--accent`, `.ui-icon-pill`,
 `.ui-divider`, `.ui-tab-strip`, `.ui-card`, `.ui-card-toggle`,
-`.ui-card-views`, `.ui-subsection`). Component stylesheets only add
-position and layout on top of these.
+`.ui-card-views`, `.ui-subsection`, `.ui-logo`, `.ui-card-header`,
+`.ui-menu`). Component stylesheets only add position and layout on top of
+these.
+
+The same shapes exist as React components in `src/components/ui/`:
+`Island`, `Pill` (with `accent`, `active` and `icon` variants, plus
+`IconPill`), `Divider`, `TabStrip` (a scrolling row of tab pills with the
+swipe, mouse-drag and wheel browsing built in), `Logo`, `CardHeader`,
+`CardToggle` and `Menu`. New UI should be built from these rather than
+from raw elements and one-off classes.
 
 ## Install as an app
 

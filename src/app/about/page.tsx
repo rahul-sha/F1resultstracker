@@ -63,11 +63,22 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            65 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            66 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">66</span>
+                <b>Shared building blocks in code</b>
+                <span>
+                  The island, pill, tab strip, logo, card header, card toggle and menu are now
+                  components, so the nav bar, the phone jump bar and the zoom island are built from
+                  the same parts and run the same swipe, drag and wheel code. The theme and palette
+                  buttons in the desktop nav bar now sit flat like the tabs beside them, as they were
+                  always meant to.
+                </span>
+              </li>
               <li>
                 <span className="seq">65</span>
                 <b>One stylesheet for islands, pills and cards</b>

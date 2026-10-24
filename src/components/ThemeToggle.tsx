@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ThemeIcon } from "./nav-icons";
+import { IconPill } from "./ui";
 import { THEME_COOKIE, persistCookie, type Theme } from "@/lib/variant-constants";
 
 const STORAGE_KEY = THEME_COOKIE;
@@ -22,7 +23,7 @@ function readStoredTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-export default function ThemeToggle({ iconOnly = false }: { iconOnly?: boolean }) {
+export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(readStoredTheme);
   const [mounted, setMounted] = useState(false);
   // Counts clicks, so each one re-mounts the icon and ring below and
@@ -47,37 +48,17 @@ export default function ThemeToggle({ iconOnly = false }: { iconOnly?: boolean }
     setPulse((p) => p + 1);
   }
 
-  if (iconOnly) {
-    return (
-      <button
-        type="button"
-        onClick={cycle}
-        className="icon-toggle-btn flex items-center justify-center rounded-full"
-        style={{ background: "var(--surface-3)", color: "var(--text-primary)" }}
-        aria-label={`Toggle color theme (currently ${mounted ? LABEL[theme] : ""})`}
-        title={mounted ? LABEL[theme] : undefined}
-      >
-        <span key={pulse} className={"toggle-icon" + (pulse ? " pop" : "")}>
-          <ThemeIcon />
-        </span>
-        {pulse > 0 && <span key={`ring-${pulse}`} className="toggle-ring" aria-hidden="true" />}
-      </button>
-    );
-  }
-
   return (
-    <button
-      type="button"
+    <IconPill
       onClick={cycle}
-      className="flex items-center justify-between gap-2 rounded-full px-3 py-1.5 text-xs font-medium"
-      style={{ background: "var(--surface-3)", color: "var(--text-secondary)" }}
-      aria-label="Toggle color theme"
+      className="icon-toggle-btn"
+      aria-label={`Toggle color theme (currently ${mounted ? LABEL[theme] : ""})`}
+      title={mounted ? LABEL[theme] : undefined}
     >
-      <span className="flex items-center gap-1.5">
+      <span key={pulse} className={"toggle-icon" + (pulse ? " pop" : "")}>
         <ThemeIcon />
-        <span>Theme</span>
       </span>
-      <span style={{ color: "var(--text-primary)" }}>{mounted ? LABEL[theme] : ""}</span>
-    </button>
+      {pulse > 0 && <span key={`ring-${pulse}`} className="toggle-ring" aria-hidden="true" />}
+    </IconPill>
   );
 }
