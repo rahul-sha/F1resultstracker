@@ -1,6 +1,29 @@
 @import "tailwindcss";
 @import "flag-icons/css/flag-icons.min.css";
 
+/* ---- Design-system scale (see docs/design-system.md) ----------------
+   The site is built from three shapes: an island (a 48px floating
+   container), a pill (a 36px control inside an island) and a card (one
+   graphic). These tokens are the same in every theme and palette; the
+   colour tokens below change per theme. */
+:root {
+  --island-h: 48px;
+  --pill-h: 36px;
+  --card-h: 900px;
+  --radius-island: 28px;
+  --radius-pill: 999px;
+  --radius-card: 14px;
+  --radius-table-card: 20px;
+  --radius-menu: 16px;
+  --radius-menu-option: 10px;
+  /* Translucent island fill (desktop); phones use plain --surface-2. */
+  --island-fill: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  --shadow-island: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
+    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --shadow-card: 0 14px 40px rgba(0, 0, 0, 0.22);
+  --shadow-menu: 0 8px 24px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--border-hairline);
+}
+
 /* Monokai is the default accent theme (data-accent unset or "monokai"). */
 :root {
   color-scheme: light;
@@ -469,19 +492,18 @@ body:has(.about-page-wrap)::after {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  height: 48px;
+  height: var(--island-h);
   box-sizing: border-box;
   padding: 0 18px;
-  border-radius: 28px;
+  border-radius: var(--radius-island);
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.95rem;
   white-space: nowrap;
   color: var(--text-primary);
-  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-hairline),
-    inset 0 1px 0 color-mix(in srgb, var(--text-primary) 10%, transparent);
+  background: var(--island-fill);
+  box-shadow: var(--shadow-island);
   transition: background 0.2s ease;
 }
 .home-logo:hover {
@@ -532,7 +554,7 @@ body:has(.about-page-wrap)::after {
 .table-card {
   position: relative;
   background: var(--surface-2);
-  border-radius: 20px;
+  border-radius: var(--radius-table-card);
   padding: 10px;
   overflow: hidden;
 }
@@ -867,7 +889,7 @@ body:has(.about-page-wrap)::after {
   font-size: 13px;
   font-weight: 600;
   padding: 9px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   white-space: nowrap;
   min-width: 0;
 }
@@ -891,9 +913,9 @@ body:has(.about-page-wrap)::after {
   max-height: 260px;
   overflow-y: auto;
   background: var(--surface-2);
-  border-radius: 16px;
+  border-radius: var(--radius-menu);
   padding: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--border-hairline);
+  box-shadow: var(--shadow-menu);
   z-index: 40;
 }
 .switcher-option {
@@ -907,7 +929,7 @@ body:has(.about-page-wrap)::after {
   font-size: 13px;
   font-weight: 500;
   padding: 9px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-menu-option);
 }
 .switcher-option:hover {
   background: var(--surface-3);
@@ -1009,7 +1031,7 @@ body:has(.about-page-wrap)::after {
 }
 .about.table-card {
   padding: 22px 24px;
-  background: color-mix(in srgb, var(--surface-2) 80%, transparent);
+  background: var(--island-fill);
 }
 .about h2 {
   margin-bottom: 14px;
@@ -1175,7 +1197,7 @@ body:has(.about-page-wrap)::after {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   border: 1px solid var(--border-hairline);
   margin: 0 0 14px;
 }
@@ -1211,7 +1233,7 @@ html::-webkit-scrollbar {
 .toggle-ring {
   position: absolute;
   inset: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 2px solid var(--accent);
   pointer-events: none;
   animation: toggle-ring 0.6s ease-out forwards;
