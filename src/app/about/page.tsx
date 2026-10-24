@@ -63,17 +63,68 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            64 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            69 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
               <li>
-                <span className="seq">64</span>
+                <span className="seq">69</span>
                 <b>Icons that follow light/dark</b>
                 <span>
                   The browser tab icon now switches with the device&rsquo;s light/dark setting, and
                   Android 13+ can tint the home-screen icon to match its system theme.
+                </span>
+              </li>
+              <li>
+                <span className="seq">68</span>
+                <b>Design system written down</b>
+                <span>
+                  The names for every part of the site (island, pill, card, nav bar, jump bar, card
+                  toggle, and the rest), the colour and size tokens, the rules they follow, and where
+                  each one lives in the code, kept in the repository as docs/design-system.md so it
+                  stays current with the code.
+                </span>
+              </li>
+              <li>
+                <span className="seq">67</span>
+                <b>Tidy-up</b>
+                <span>
+                  Leftovers from the old multi-page site cleared out: the Ember palette is stored
+                  under its own name instead of &ldquo;red&rdquo; (an old saved choice still works),
+                  the page-wide glow blobs that nothing could see any more are gone, the nav icons
+                  live with the other shared parts, and stale comments and class names now describe
+                  the site as it is. Nothing changed on screen.
+                </span>
+              </li>
+              <li>
+                <span className="seq">66</span>
+                <b>Shared building blocks in code</b>
+                <span>
+                  The island, pill, tab strip, logo, card header, card toggle and menu are now
+                  components, so the nav bar, the phone jump bar and the zoom island are built from
+                  the same parts and run the same swipe, drag and wheel code. The theme and palette
+                  buttons in the desktop nav bar now sit flat like the tabs beside them, as they were
+                  always meant to.
+                </span>
+              </li>
+              <li>
+                <span className="seq">65</span>
+                <b>One stylesheet for islands, pills and cards</b>
+                <span>
+                  Every island, pill, tab and card now shares one definition instead of its own
+                  copy, which also evened out the last few odd ones: the zoom island is the same
+                  height as the others, Fit is an accent pill everywhere, and every pill lights up
+                  the same way on hover.
+                </span>
+              </li>
+              <li>
+                <span className="seq">64</span>
+                <b>Design tokens</b>
+                <span>
+                  Island, pill and card heights, radii and shadows are now named tokens at the top of
+                  the stylesheet instead of the same numbers copied into every rule. Nothing changed
+                  on screen.
                 </span>
               </li>
               <li>

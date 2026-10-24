@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PaletteIcon } from "./nav-icons";
-import { ACCENT_COOKIE, persistCookie, type Accent } from "@/lib/variant-constants";
+import { PaletteIcon } from "./ui/icons";
+import { IconPill } from "./ui";
+import { ACCENT_COOKIE, normaliseAccent, persistCookie, type Accent } from "@/lib/variant-constants";
 
 const STORAGE_KEY = ACCENT_COOKIE;
-const ORDER: Accent[] = ["monokai", "coffee", "red", "dracula"];
+const ORDER: Accent[] = ["monokai", "coffee", "ember", "dracula"];
 const LABEL: Record<Accent, string> = {
   monokai: "Monokai",
   coffee: "Coffee",
-  red: "Ember",
+  ember: "Ember",
   dracula: "Dracula",
 };
 
@@ -26,11 +27,10 @@ function applyAccent(accent: Accent) {
 
 function readStoredAccent(): Accent {
   if (typeof window === "undefined") return "monokai";
-  const stored = window.localStorage.getItem(STORAGE_KEY) as Accent | null;
-  return stored && ORDER.includes(stored) ? stored : "monokai";
+  return normaliseAccent(window.localStorage.getItem(STORAGE_KEY)) ?? "monokai";
 }
 
-export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean }) {
+export default function AccentToggle() {
   const [accent, setAccent] = useState<Accent>(readStoredAccent);
   const [mounted, setMounted] = useState(false);
   // Counts clicks, so each one re-mounts the icon and ring below and
@@ -54,37 +54,17 @@ export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean 
     setPulse((p) => p + 1);
   }
 
-  if (iconOnly) {
-    return (
-      <button
-        type="button"
-        onClick={cycle}
-        className="icon-toggle-btn flex items-center justify-center rounded-full"
-        style={{ background: "var(--surface-3)", color: "var(--text-primary)" }}
-        aria-label={`Cycle color palette (currently ${mounted ? LABEL[accent] : ""})`}
-        title={mounted ? LABEL[accent] : undefined}
-      >
-        <span key={pulse} className={"toggle-icon" + (pulse ? " pop" : "")}>
-          <PaletteIcon />
-        </span>
-        {pulse > 0 && <span key={`ring-${pulse}`} className="toggle-ring" aria-hidden="true" />}
-      </button>
-    );
-  }
-
   return (
-    <button
-      type="button"
+    <IconPill
       onClick={cycle}
-      className="flex items-center justify-between gap-2 rounded-full px-3 py-1.5 text-xs font-medium"
-      style={{ background: "var(--surface-3)", color: "var(--text-secondary)" }}
-      aria-label="Cycle color palette"
+      className="icon-toggle-btn"
+      aria-label={`Cycle color palette (currently ${mounted ? LABEL[accent] : ""})`}
+      title={mounted ? LABEL[accent] : undefined}
     >
-      <span className="flex items-center gap-1.5">
+      <span key={pulse} className={"toggle-icon" + (pulse ? " pop" : "")}>
         <PaletteIcon />
-        <span>Palette</span>
       </span>
-      <span style={{ color: "var(--text-primary)" }}>{mounted ? LABEL[accent] : ""}</span>
-    </button>
+      {pulse > 0 && <span key={`ring-${pulse}`} className="toggle-ring" aria-hidden="true" />}
+    </IconPill>
   );
 }

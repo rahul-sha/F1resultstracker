@@ -35,9 +35,9 @@ const SEASONS =
     ? Array.from({ length: CURRENT_SEASON - FIRST_SEASON + 1 }, (_, i) => FIRST_SEASON + i)
     : [Number(ARG) || CURRENT_SEASON];
 
-const ACCENTS = ["monokai", "coffee", "red", "dracula"];
+const ACCENTS = ["monokai", "coffee", "ember", "dracula"];
 const THEMES = ["light", "dark"];
-// Index within GridWalk's `sections` array (and so its `.gw-toptab` nav
+// Index within GridWalk's `sections` array (and so its top tab strip's
 // tabs) — each must be focused via its tab before its card is screenshot,
 // since an unfocused card sits dimmed and off-centre in the carousel.
 const PLAIN_SECTIONS = [
@@ -55,7 +55,7 @@ const TOGGLED_SECTIONS = [
 const FOCUS_SETTLE_MS = 900;
 
 async function focusTab(page, tabIndex) {
-  const tabs = await page.$$(".gw-toptab");
+  const tabs = await page.$$(".gw-toptabs-track .ui-pill");
   await tabs[tabIndex].click();
   await page.waitForTimeout(FOCUS_SETTLE_MS);
 }

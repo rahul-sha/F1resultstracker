@@ -1,0 +1,264 @@
+/* ---- Shared UI shapes (see docs/design-system.md) ---------------------
+   The site is built from three shapes, each defined once here and reused
+   by class name: an island (a floating container), a pill (a control
+   inside an island or a card) and a card (one graphic). Component
+   stylesheets only add position and layout on top of these. The sizes,
+   radii and shadows come from the tokens at the top of globals.css. */
+
+/* Island: translucent on desktop, solid on phones (no blur anywhere). */
+.ui-island {
+  box-sizing: border-box;
+  height: var(--island-h);
+  border-radius: var(--radius-island);
+  background: var(--island-fill);
+  box-shadow: var(--shadow-island);
+}
+@media (max-width: 640px) {
+  .ui-island {
+    background: var(--surface-2);
+  }
+}
+
+/* Pill: borderless, 13px/600; hover lifts to --surface-3, the active one
+   (an open tab) fills with the accent container. */
+.ui-pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: var(--pill-h);
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.ui-pill:hover:not(.active) {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+.ui-pill.active {
+  background: var(--accent-container);
+  color: var(--on-accent-container);
+}
+/* Accent pill: the one action in an island that leaves or resets the
+   view (About, Fit). */
+.ui-pill--accent {
+  color: var(--on-accent-container);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+/* Icon pill: a round pill holding only an icon. */
+.ui-icon-pill {
+  width: var(--pill-h);
+  padding: 0;
+}
+
+/* Logo: the mark and wordmark as one island (a button on Grid Walk, a
+   link elsewhere). The mark takes the accent. */
+.ui-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 18px;
+  border: 0;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.ui-logo:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+}
+.ui-logo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.ui-logo-mark {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+/* Divider between groups inside an island. */
+.ui-divider {
+  flex: none;
+  width: 1px;
+  height: 22px;
+  background: var(--border-hairline);
+}
+
+/* Tab strip: a scrolling row of pills that snap so the open card's tab
+   rests at the left. The strip's own padding/fade is set where it's used. */
+.ui-tab-strip {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+}
+.ui-tab-strip::-webkit-scrollbar {
+  display: none;
+}
+.ui-tab-strip.dragging {
+  scroll-snap-type: none;
+  cursor: grabbing;
+}
+.ui-tab-strip > .ui-pill {
+  scroll-snap-align: start;
+}
+
+/* Card: one graphic on a tonal surface. */
+.ui-card {
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+  border: 1px solid var(--border-hairline);
+  box-shadow: var(--shadow-card);
+}
+
+/* Card header: a card's title and one-line subtitle, plain text. */
+.ui-card-header {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 10px;
+}
+.ui-card-header h2 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.25rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.ui-card-header p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.25rem;
+  color: var(--text-muted);
+}
+
+/* Card header that carries a control (a card toggle): title and subtitle
+   stay left, the control sits at the right. */
+.ui-card-header.ui-card-head {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Card toggle: the small accent pill at the top right of a card that has
+   two views (Drivers/Teams, Finish/Qualifying). pointer-events is
+   re-enabled because the card's inner turns them off so the whole card
+   acts as one click target. */
+.ui-card-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 6px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-hairline);
+  background: var(--accent-container);
+  color: var(--on-accent-container);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.15s ease;
+}
+.ui-card-toggle:hover {
+  transform: translateY(-1px);
+}
+.ui-card-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Card views: both views of a toggled card stay mounted in one grid cell,
+   so the card is always as tall as the taller view and the toggle only
+   crossfades between them. */
+.ui-card-views {
+  display: grid;
+}
+.ui-card-view {
+  grid-area: 1 / 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+.ui-card-view.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-card-view {
+    transition: none;
+  }
+}
+
+/* Subsection: a second graphic lower in the same card, under its own
+   header and a hairline. */
+.ui-subsection {
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--border-hairline);
+}
+
+/* Menu: a floating tonal list that drops from a pill (the season menu).
+   The anchor is the pill's wrapper, so the menu hangs off it. */
+.ui-menu-anchor {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.ui-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border-radius: var(--radius-menu);
+  padding: 6px;
+  box-shadow: var(--shadow-menu);
+  z-index: 40;
+}
+.ui-menu-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 14px;
+  border-radius: var(--radius-menu-option);
+}
+.ui-menu-option:hover {
+  background: var(--surface-3);
+}
+.ui-menu-option.active {
+  background: var(--accent-container);
+  color: var(--on-accent-container);
+  font-weight: 700;
+}

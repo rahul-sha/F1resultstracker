@@ -122,7 +122,9 @@ overrides are mapped locally in `src/lib/circuits.ts`,
 
 Four colour palettes — Monokai (default), Coffee, Ember and Dracula — each
 togglable from Grid Walk's top bar and persisted in `localStorage` (and a
-cookie, for the server-picked card images).
+cookie, for the server-picked card images) under the keys `monokai`,
+`coffee`, `ember` and `dracula`; a choice saved under Ember's old key, `red`,
+is still honoured.
 All four have both a light and a dark variant; the theme button flips
 between Light and Dark (there's no Auto option), starting from whatever the
 device shows until it's first clicked. All colour in the UI, including the heatmap
@@ -130,6 +132,32 @@ shading, comes from theme CSS custom properties (see `src/app/globals.css`),
 so nothing is hardcoded to a single palette. The icon-only theme and
 palette buttons spin their icon and send out an accent ring on each
 click, so every change has visible feedback.
+
+## Design system
+
+The full reference, with the name of every part, the tokens, the rules,
+and where each one lives in the code, is [docs/design-system.md](docs/design-system.md).
+
+The UI is built from three shapes: an **island** (a 48px floating,
+rounded container such as the nav bar, jump bar or logo island), a
+**pill** (a 36px control inside an island, such as a tab) and a **card**
+(one graphic). Their heights, radii, shadows and the translucent island
+fill are design tokens at the top of `src/app/globals.css`
+(`--island-h`, `--pill-h`, `--card-h`, `--radius-*`, `--shadow-*`,
+`--island-fill`), and each shape is styled once in `src/styles/ui.css`
+(`.ui-island`, `.ui-pill`, `.ui-pill--accent`, `.ui-icon-pill`,
+`.ui-divider`, `.ui-tab-strip`, `.ui-card`, `.ui-card-toggle`,
+`.ui-card-views`, `.ui-subsection`, `.ui-logo`, `.ui-card-header`,
+`.ui-menu`). Component stylesheets only add position and layout on top of
+these.
+
+The same shapes exist as React components in `src/components/ui/`:
+`Island`, `Pill` (with `accent`, `active` and `icon` variants, plus
+`IconPill`), `Divider`, `TabStrip` (a scrolling row of tab pills with the
+swipe, mouse-drag and wheel browsing built in), `Logo`, `CardHeader`,
+`CardToggle`, `Menu`, and the `ThemeIcon` and `PaletteIcon` icons. New UI
+should be built from these rather than from raw elements and one-off
+classes.
 
 ## Install as an app
 
