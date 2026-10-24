@@ -62,6 +62,37 @@
   padding: 0;
 }
 
+/* Logo: the mark and wordmark as one island (a button on Grid Walk, a
+   link elsewhere). The mark takes the accent. */
+.ui-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 18px;
+  border: 0;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.ui-logo:hover {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-2));
+}
+.ui-logo:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.ui-logo-mark {
+  display: inline-flex;
+  color: var(--accent);
+}
+
 /* Divider between groups inside an island. */
 .ui-divider {
   flex: none;
@@ -98,13 +129,33 @@
   box-shadow: var(--shadow-card);
 }
 
+/* Card header: a card's title and one-line subtitle, plain text. */
+.ui-card-header {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 10px;
+}
+.ui-card-header h2 {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.25rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.ui-card-header p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.25rem;
+  color: var(--text-muted);
+}
+
 /* Card header that carries a control (a card toggle): title and subtitle
-   stay left, the control sits at the right. The !important beats
-   .section-header's inline-flex column (globals.css). */
-.ui-card-head {
-  display: flex !important;
+   stay left, the control sits at the right. */
+.ui-card-header.ui-card-head {
+  display: flex;
   width: 100%;
-  flex-direction: row !important;
+  flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
@@ -167,4 +218,47 @@
   margin-top: 1.6rem;
   padding-top: 1.4rem;
   border-top: 1px solid var(--border-hairline);
+}
+
+/* Menu: a floating tonal list that drops from a pill (the season menu).
+   The anchor is the pill's wrapper, so the menu hangs off it. */
+.ui-menu-anchor {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.ui-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--surface-2);
+  border-radius: var(--radius-menu);
+  padding: 6px;
+  box-shadow: var(--shadow-menu);
+  z-index: 40;
+}
+.ui-menu-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 14px;
+  border-radius: var(--radius-menu-option);
+}
+.ui-menu-option:hover {
+  background: var(--surface-3);
+}
+.ui-menu-option.active {
+  background: var(--accent-container);
+  color: var(--on-accent-container);
+  font-weight: 700;
 }

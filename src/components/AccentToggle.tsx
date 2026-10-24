@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PaletteIcon } from "./nav-icons";
+import { IconPill } from "./ui";
 import { ACCENT_COOKIE, persistCookie, type Accent } from "@/lib/variant-constants";
 
 const STORAGE_KEY = ACCENT_COOKIE;
@@ -30,7 +31,7 @@ function readStoredAccent(): Accent {
   return stored && ORDER.includes(stored) ? stored : "monokai";
 }
 
-export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean }) {
+export default function AccentToggle() {
   const [accent, setAccent] = useState<Accent>(readStoredAccent);
   const [mounted, setMounted] = useState(false);
   // Counts clicks, so each one re-mounts the icon and ring below and
@@ -54,37 +55,17 @@ export default function AccentToggle({ iconOnly = false }: { iconOnly?: boolean 
     setPulse((p) => p + 1);
   }
 
-  if (iconOnly) {
-    return (
-      <button
-        type="button"
-        onClick={cycle}
-        className="icon-toggle-btn flex items-center justify-center rounded-full"
-        style={{ background: "var(--surface-3)", color: "var(--text-primary)" }}
-        aria-label={`Cycle color palette (currently ${mounted ? LABEL[accent] : ""})`}
-        title={mounted ? LABEL[accent] : undefined}
-      >
-        <span key={pulse} className={"toggle-icon" + (pulse ? " pop" : "")}>
-          <PaletteIcon />
-        </span>
-        {pulse > 0 && <span key={`ring-${pulse}`} className="toggle-ring" aria-hidden="true" />}
-      </button>
-    );
-  }
-
   return (
-    <button
-      type="button"
+    <IconPill
       onClick={cycle}
-      className="flex items-center justify-between gap-2 rounded-full px-3 py-1.5 text-xs font-medium"
-      style={{ background: "var(--surface-3)", color: "var(--text-secondary)" }}
-      aria-label="Cycle color palette"
+      className="icon-toggle-btn"
+      aria-label={`Cycle color palette (currently ${mounted ? LABEL[accent] : ""})`}
+      title={mounted ? LABEL[accent] : undefined}
     >
-      <span className="flex items-center gap-1.5">
+      <span key={pulse} className={"toggle-icon" + (pulse ? " pop" : "")}>
         <PaletteIcon />
-        <span>Palette</span>
       </span>
-      <span style={{ color: "var(--text-primary)" }}>{mounted ? LABEL[accent] : ""}</span>
-    </button>
+      {pulse > 0 && <span key={`ring-${pulse}`} className="toggle-ring" aria-hidden="true" />}
+    </IconPill>
   );
 }

@@ -7,6 +7,7 @@ import { createLiveGrid } from "./liveGrid";
 import SeasonSelector from "@/components/SeasonSelector";
 import ThemeToggle from "@/components/ThemeToggle";
 import AccentToggle from "@/components/AccentToggle";
+import { Island, Pill, IconPill, Divider, TabStrip, Logo, CardHeader, CardToggle } from "@/components/ui";
 import type { PointsGrid } from "@/lib/points-grid";
 import type { ConstructorPointsGrid } from "@/lib/constructor-points-grid";
 import type { FinishPositionSummary } from "@/lib/finish-positions";
@@ -89,20 +90,6 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
   const wrapRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLCanvasElement>(null);
-  const pillsRef = useRef<HTMLDivElement>(null);
-  const tabsRef = useRef<HTMLDivElement>(null);
-  // Whether each tab strip's current scroll (desktop top bar, phone bottom
-  // bar) was started by code rather than by hand, and the timer that waits
-  // for a scroll to come to rest.
-  const tabsProgrammatic = useRef(false);
-  const pillsProgrammatic = useRef(false);
-  // The phone strip is moving by hand: "finger" while touched, "coasting"
-  // after release until it comes to rest. Code leaves it alone meanwhile.
-  const pillsHeld = useRef<"finger" | "coasting" | null>(null);
-  const tabsSettle = useRef(0);
-  // Set after a mouse drag of the tab strip, so the release doesn't also
-  // count as a click on whichever tab was under the pointer.
-  const tabsDragged = useRef(false);
   const zoomLevelRef = useRef<HTMLSpanElement>(null);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -241,20 +228,11 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
           : "Points scored by each team per Grand Prix.",
       navLabel: "Points Finishes",
       headerActions: () => (
-        <button
-          type="button"
-          className="ui-card-toggle"
-          data-toggle="results"
-          onClick={(e) => {
-            e.stopPropagation();
-            setResultsView((v) => (v === "drivers" ? "teams" : "drivers"));
-          }}
-        >
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 5.5h8.5L8 3M14 10.5H5.5L8 13" />
-          </svg>
-          {resultsView === "drivers" ? "Teams" : "Drivers"}
-        </button>
+        <CardToggle
+          name="results"
+          label={resultsView === "drivers" ? "Teams" : "Drivers"}
+          onToggle={() => setResultsView((v) => (v === "drivers" ? "teams" : "drivers"))}
+        />
       ),
       snapshots: [
         { name: "results-drivers", active: resultsView === "drivers" },
@@ -279,12 +257,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       render: ({ pointsGrid, constructorGrid }) => (
         <>
           <DriverPointsEvolutionChart grid={pointsGrid} />
-          <div className="section-header ui-subsection">
-            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-              Constructor Points Evolution
-            </h2>
-            <p className="text-sm">Cumulative points scored by each team across the season.</p>
-          </div>
+          <CardHeader subsection title="Constructor Points Evolution" subtitle="Cumulative points scored by each team across the season." />
           <ConstructorPointsEvolutionChart grid={constructorGrid} />
         </>
       ),
@@ -304,20 +277,11 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
           ? "How often each driver has finished in each position."
           : "How often each driver has qualified in each grid position.",
       headerActions: () => (
-        <button
-          type="button"
-          className="ui-card-toggle"
-          data-toggle="freq"
-          onClick={(e) => {
-            e.stopPropagation();
-            setFreqView((v) => (v === "finish" ? "quali" : "finish"));
-          }}
-        >
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 5.5h8.5L8 3M14 10.5H5.5L8 13" />
-          </svg>
-          {freqView === "finish" ? "Qualifying" : "Race"}
-        </button>
+        <CardToggle
+          name="freq"
+          label={freqView === "finish" ? "Qualifying" : "Race"}
+          onToggle={() => setFreqView((v) => (v === "finish" ? "quali" : "finish"))}
+        />
       ),
       snapshots: [
         { name: "freq-finish", active: freqView === "finish" },
@@ -354,12 +318,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
             }))}
             teams={[]}
           />
-          <div className="section-header ui-subsection">
-            <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-              Constructor Podiums
-            </h2>
-            <p className="text-sm">1st/2nd/3rd place finishes per team.</p>
-          </div>
+          <CardHeader subsection title="Constructor Podiums" subtitle="1st/2nd/3rd place finishes per team." />
           <PodiumBars
             drivers={[]}
             teams={finishSummary.teamPodiums.map((t) => ({
@@ -488,6 +447,14 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
     zoomAt(W / 2, TOP + availH / 2, factor);
   }
 
+  // Both tab strips (desktop top bar, phone bottom bar) show the same tabs
+  // and open the same card.
+  const navLabels = sections.map((section) => section.navLabel ?? section.title);
+  function jump(i: number) {
+    goTo(i);
+    dismissHint();
+  }
+
   function dismissHint() {
     setHintGone(true);
   }
@@ -529,53 +496,6 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
     stripRef.current?.classList.add("entered");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [season, freqView, resultsView, forceLive, sizes, failedSnapshots]);
-
-  // Both tab strips (the desktop top bar and the phone bottom bar) rest the
-  // open card's tab at their left edge. Only the visible one moves.
-  useEffect(() => {
-    for (const [ref, flag] of [
-      [tabsRef, tabsProgrammatic],
-      [pillsRef, pillsProgrammatic],
-    ] as const) {
-      const track = ref.current;
-      const tab = track?.children[focus] as HTMLElement | undefined;
-      if (!track || !tab || !track.offsetParent) continue;
-      if (ref === pillsRef && pillsHeld.current) continue;
-      const left = tab.offsetLeft - track.offsetLeft;
-      if (Math.abs(track.scrollLeft - left) < 1) continue;
-      flag.current = true;
-      track.scrollTo({ left, behavior: "smooth" });
-    }
-  }, [focus]);
-
-  // Scrolling or swiping a tab strip by hand also browses: once it comes to
-  // rest, the tab sitting at the left opens.
-  function settleStrip(track: HTMLElement | null, flag: { current: boolean }) {
-    window.clearTimeout(tabsSettle.current);
-    tabsSettle.current = window.setTimeout(() => {
-      if (!track) return;
-      if (track === pillsRef.current && pillsHeld.current) {
-        if (pillsHeld.current === "finger") return;
-        pillsHeld.current = null;
-      } else if (flag.current) {
-        flag.current = false;
-        return;
-      }
-      let best = 0;
-      let bd = Infinity;
-      Array.from(track.children).forEach((el, i) => {
-        const d = Math.abs((el as HTMLElement).offsetLeft - track.offsetLeft - track.scrollLeft);
-        if (d < bd) {
-          bd = d;
-          best = i;
-        }
-      });
-      // Always aim the camera, even if the open card already matches: it
-      // may only be passing that card on its way somewhere else.
-      goTo(best);
-      dismissHint();
-    }, 160);
-  }
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -687,24 +607,6 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       }
     }
 
-    // Wheel or trackpad scrolling over the top tab strip steps one tab at a
-    // time (either direction), so you can always get back from the last card.
-    let tabWheel = 0;
-    let tabWheelAt = 0;
-    function onTabsWheel(e: WheelEvent) {
-      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
-      const d = (Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * unit;
-      const now = Date.now();
-      if (now - tabWheelAt > 300) tabWheel = 0;
-      tabWheel += d;
-      if (Math.abs(tabWheel) < 40 || now - tabWheelAt < 260) return;
-      tabWheelAt = now;
-      const step = tabWheel > 0 ? 1 : -1;
-      tabWheel = 0;
-      goTo(Math.max(0, Math.min(sections.length - 1, focusRef.current + step)));
-      setHintGone(true);
-    }
-
     // Vertical wheel zooms (the ask was "zoom via scroll"); a sideways
     // trackpad swipe or shift+wheel browses the strip instead. Trackpad
     // pinch arrives as ctrl+wheel with small deltas, hence its higher rate.
@@ -712,9 +614,8 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       if (onChrome(e)) {
         // The season menu is the one thing on the bars that scrolls
         // itself; the browser must keep that wheel.
-        if (e.target instanceof Element && e.target.closest(".switcher-menu")) return;
+        if (e.target instanceof Element && e.target.closest(".ui-menu")) return;
         e.preventDefault();
-        if (e.target instanceof Element && e.target.closest(".gw-toptabs-track")) onTabsWheel(e);
         return;
       }
       e.preventDefault();
@@ -788,40 +689,6 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
 
     const grid = gridRef.current ? createLiveGrid(gridRef.current) : null;
 
-    // A mouse can't scroll an overflowing strip by itself, so holding and
-    // dragging the top tab strip scrolls it; on release it snaps, and the
-    // tab that comes to rest at the left opens (see settleStrip).
-    const track = tabsRef.current;
-    let tabDrag: { id: number; x: number; left: number; moved: boolean } | null = null;
-    function onTrackDown(e: PointerEvent) {
-      if (e.pointerType !== "mouse" || e.button !== 0 || !track) return;
-      tabDrag = { id: e.pointerId, x: e.clientX, left: track.scrollLeft, moved: false };
-      tabsProgrammatic.current = false;
-    }
-    function onTrackMove(e: PointerEvent) {
-      if (!tabDrag || e.pointerId !== tabDrag.id || !track) return;
-      const dx = e.clientX - tabDrag.x;
-      if (!tabDrag.moved && Math.abs(dx) > 4) {
-        tabDrag.moved = true;
-        tabsDragged.current = true;
-        track.classList.add("dragging");
-      }
-      if (tabDrag.moved) track.scrollLeft = tabDrag.left - dx;
-    }
-    function onTrackUp(e: PointerEvent) {
-      if (!tabDrag || e.pointerId !== tabDrag.id || !track) return;
-      const wasMoved = tabDrag.moved;
-      tabDrag = null;
-      if (!wasMoved) return;
-      track.classList.remove("dragging");
-      window.setTimeout(() => {
-        tabsDragged.current = false;
-      }, 0);
-    }
-    track?.addEventListener("pointerdown", onTrackDown);
-    window.addEventListener("pointermove", onTrackMove);
-    window.addEventListener("pointerup", onTrackUp);
-
     let raf = 0;
     function tick(now: number) {
       grid?.draw(now, view.current);
@@ -862,9 +729,6 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       wrap.removeEventListener("gesturechange", onGestureChange);
       wrap.removeEventListener("gestureend", onGestureEnd);
       window.removeEventListener("keydown", onKeyDown);
-      track?.removeEventListener("pointerdown", onTrackDown);
-      window.removeEventListener("pointermove", onTrackMove);
-      window.removeEventListener("pointerup", onTrackUp);
       window.removeEventListener("resize", onResize);
       window.clearTimeout(settleTimer);
       cancelAnimationFrame(raf);
@@ -909,15 +773,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
               }}
             >
               <div className="gw-card-inner">
-                <div className={"section-header" + (section.headerActions ? " ui-card-head" : "")}>
-                  <div>
-                    <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
-                      {section.title}
-                    </h2>
-                    <p className="text-sm">{section.subtitle}</p>
-                  </div>
-                  {section.headerActions?.()}
-                </div>
+                <CardHeader title={section.title} subtitle={section.subtitle} actions={section.headerActions?.()} />
                 <div className="gw-frame">
                   <div className="gw-fit gw-snap-target" data-section={section.id}>
                     {renderCardBody(section)}
@@ -931,59 +787,31 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
 
       <div className="gw-topbar">
         {/* The logo is its own island, and takes you back to the first card. */}
-        <button
-          type="button"
-          className="gw-brand ui-island"
-          aria-label="Grid Walk: back to the first card"
+        <Logo
+          className="gw-brand"
+          label="Grid Walk: back to the first card"
           onClick={() => {
             goTo(0);
             dismissHint();
           }}
-        >
-          <span className="gw-brand-mark" aria-hidden="true">
-            <svg width="22" height="14" viewBox="0 0 22 14" fill="currentColor">
-              <path d="M0 14L6 0h4L4 14H0z" />
-              <path d="M7 14L13 0h4L11 14H7z" />
-              <path d="M14 14L20 0h2L16 14h-2z" />
-            </svg>
-          </span>
-          <span className="gw-brand-text">Grid Walk</span>
-        </button>
+        />
         {/* On desktop this is one nav bar island: the jump tabs, then About
             and the toggles. On phones it dissolves (display: contents), the
             tabs are hidden, and the controls sit on their own as before. */}
-        <div className="gw-navpill ui-island">
+        <Island className="gw-navpill">
           <nav className="gw-toptabs" aria-label="Jump to">
-            <div className="gw-toptabs-track ui-tab-strip" ref={tabsRef} onScroll={() => settleStrip(tabsRef.current, tabsProgrammatic)}>
-              {sections.map((section, i) => (
-                <button
-                  key={section.id}
-                  type="button"
-                  className={"gw-toptab ui-pill" + (i === focus ? " active" : "")}
-                  aria-current={i === focus ? "true" : undefined}
-                  onClick={() => {
-                    if (tabsDragged.current) return;
-                    window.clearTimeout(tabsSettle.current);
-                    tabsProgrammatic.current = true;
-                    goTo(i);
-                    dismissHint();
-                  }}
-                >
-                  {section.navLabel ?? section.title}
-                </button>
-              ))}
-            </div>
+            <TabStrip className="gw-toptabs-track" items={navLabels} active={focus} onSelect={jump} />
           </nav>
-          <span className="gw-navpill-divider ui-divider" aria-hidden="true" />
+          <Divider className="gw-navpill-divider" />
           <div className="gw-topbar-right">
-            <button type="button" className="gw-about-link ui-pill ui-pill--accent" onClick={() => router.push("/about")}>
+            <Pill accent className="gw-about-link" onClick={() => router.push("/about")}>
               About
-            </button>
-            <ThemeToggle iconOnly />
-            <AccentToggle iconOnly />
+            </Pill>
+            <ThemeToggle />
+            <AccentToggle />
             <SeasonSelector initialSeason={season} />
           </div>
-        </div>
+        </Island>
       </div>
 
       <div className={"gw-hint" + (hintGone ? " gone" : "")} aria-hidden="true">
@@ -1029,64 +857,24 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       </div>
 
       <div className="gw-jumpbar">
-        <div className="gw-jumpbar-island ui-island">
-        <div
-          className="gw-jumpbar-pills ui-tab-strip"
-          ref={pillsRef}
-          onScroll={() => settleStrip(pillsRef.current, pillsProgrammatic)}
-          // A finger on the strip takes over from any glide still running,
-          // and the strip settles only once it's lifted. Touch events, as
-          // pointer events are cancelled as soon as the strip starts to pan.
-          onTouchStart={() => {
-            pillsProgrammatic.current = false;
-            pillsHeld.current = "finger";
-          }}
-          onTouchEnd={(e) => {
-            if (e.touches.length) return;
-            pillsHeld.current = "coasting";
-            settleStrip(pillsRef.current, pillsProgrammatic);
-          }}
-          onTouchCancel={() => {
-            pillsHeld.current = "coasting";
-            settleStrip(pillsRef.current, pillsProgrammatic);
-          }}
-        >
-          {sections.map((section, i) => (
-            <button
-              key={section.id}
-              type="button"
-              className={"gw-jump-pill ui-pill" + (i === focus ? " active" : "")}
-              aria-current={i === focus ? "true" : undefined}
-              onClick={() => {
-                // A tap wins over a settle still pending from a swipe, and
-                // the browser nudging the tapped tab into view isn't a swipe.
-                window.clearTimeout(tabsSettle.current);
-                pillsProgrammatic.current = true;
-                pillsHeld.current = null;
-                goTo(i);
-                dismissHint();
-              }}
-            >
-              {section.navLabel ?? section.title}
-            </button>
-          ))}
-        </div>
-        <span className="gw-jumpbar-divider ui-divider" aria-hidden="true" />
-        <div className="gw-zoomctl">
-          <button type="button" className="gw-zoom-icon ui-pill ui-icon-pill" aria-label="Zoom out" onClick={() => zoomCentre(0.8)}>
-            −
-          </button>
-          <span className="gw-zoom-level" ref={zoomLevelRef}>
-            Fit
-          </span>
-          <button type="button" className="gw-zoom-icon ui-pill ui-icon-pill" aria-label="Zoom in" onClick={() => zoomCentre(1.25)}>
-            +
-          </button>
-          <button type="button" className="ui-pill ui-pill--accent" onClick={() => goTo(focusRef.current)}>
-            Fit
-          </button>
-        </div>
-        </div>
+        <Island className="gw-jumpbar-island">
+          <TabStrip className="gw-jumpbar-pills" items={navLabels} active={focus} onSelect={jump} />
+          <Divider className="gw-jumpbar-divider" />
+          <div className="gw-zoomctl">
+            <IconPill className="gw-zoom-icon" aria-label="Zoom out" onClick={() => zoomCentre(0.8)}>
+              −
+            </IconPill>
+            <span className="gw-zoom-level" ref={zoomLevelRef}>
+              Fit
+            </span>
+            <IconPill className="gw-zoom-icon" aria-label="Zoom in" onClick={() => zoomCentre(1.25)}>
+              +
+            </IconPill>
+            <Pill accent onClick={() => goTo(focusRef.current)}>
+              Fit
+            </Pill>
+          </div>
+        </Island>
       </div>
     </div>
   );
