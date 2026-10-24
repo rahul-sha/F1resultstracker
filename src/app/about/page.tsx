@@ -63,11 +63,22 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            66 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            67 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">67</span>
+                <b>Tidy-up</b>
+                <span>
+                  Leftovers from the old multi-page site cleared out: the Ember palette is stored
+                  under its own name instead of &ldquo;red&rdquo; (an old saved choice still works),
+                  the page-wide glow blobs that nothing could see any more are gone, the nav icons
+                  live with the other shared parts, and stale comments and class names now describe
+                  the site as it is. Nothing changed on screen.
+                </span>
+              </li>
               <li>
                 <span className="seq">66</span>
                 <b>Shared building blocks in code</b>

@@ -6,3 +6,4 @@ export { default as Logo } from "./Logo";
 export { default as CardHeader } from "./CardHeader";
 export { default as CardToggle } from "./CardToggle";
 export { Menu, MenuAnchor, MenuOption } from "./Menu";
+export { ThemeIcon, PaletteIcon } from "./icons";
