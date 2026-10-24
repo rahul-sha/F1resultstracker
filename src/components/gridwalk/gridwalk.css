@@ -151,10 +151,6 @@
   display: flex;
   flex-direction: column;
   transform-origin: 0 0;
-  border-radius: var(--radius-card);
-  background: var(--surface-2);
-  border: 1px solid var(--border-hairline);
-  box-shadow: var(--shadow-card);
   overflow: hidden;
   cursor: pointer;
 }
@@ -229,68 +225,6 @@
 }
 .gw-capture .gw-fit {
   position: static;
-}
-
-/* A card whose header carries a control (the finish/qualifying toggle) —
-   title/subtitle stay left, the control sits at the right. The control
-   re-enables pointer-events since .gw-card-inner turns them off so the
-   whole card can act as one click target for diving. */
-.gw-card-head {
-  display: flex !important;
-  width: 100%;
-  flex-direction: row !important;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.gw-freq-toggle {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px 6px 10px;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border-hairline);
-  background: var(--accent-container);
-  color: var(--on-accent-container);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: transform 0.15s ease;
-}
-.gw-freq-toggle:hover {
-  transform: translateY(-1px);
-}
-.gw-freq-toggle:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Both the finish and qualifying tables stay mounted and share this one
-   grid cell, so the stage is always as tall as the taller table and the
-   toggle only ever crossfades the two — swapping which one is visible
-   never has to wait on a remeasure, which could briefly show the card
-   at the wrong height (and the live grid behind it) mid-swap. */
-.gw-freq-stage {
-  display: grid;
-}
-.gw-freq-pane {
-  grid-area: 1 / 1;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.22s ease;
-}
-.gw-freq-pane.active {
-  opacity: 1;
-  pointer-events: auto;
-}
-@media (prefers-reduced-motion: reduce) {
-  .gw-freq-pane {
-    transition: none;
-  }
 }
 
 .gw-hint {
@@ -406,8 +340,6 @@
   white-space: nowrap;
   color: var(--text-primary);
   cursor: pointer;
-  background: var(--island-fill);
-  box-shadow: var(--shadow-island);
   transition: background 0.2s ease;
 }
 
@@ -451,97 +383,28 @@
   padding-bottom: 0;
 }
 
-.gw-about-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 0.8rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
-  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2) 90%);
-  color: var(--on-accent-container);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-}
-
-.gw-about-link:hover {
-  color: var(--text-primary);
-}
-
+/* The bottom bar: a fixed wrapper round one island. On phones the island
+   is the jump bar (tab strip, divider, Fit); on desktop the tab strip is
+   hidden and the same island is the zoom island in the corner. */
 .gw-jumpbar {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  right: max(1.25rem, env(safe-area-inset-right, 0px));
+  bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
   z-index: 5;
+}
+
+.gw-jumpbar-island {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem max(1.25rem, env(safe-area-inset-right, 0px)) calc(0.75rem + env(safe-area-inset-bottom, 0px))
-    max(1.25rem, env(safe-area-inset-left, 0px));
-  background: linear-gradient(to top, color-mix(in srgb, var(--page-plane) 88%, transparent), transparent);
-}
-
-.gw-jumpbar-label {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.gw-jumpbar-pills {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  gap: 0.5rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.gw-jumpbar-pills::-webkit-scrollbar {
-  display: none;
-}
-
-.gw-jump-pill,
-.gw-zoom-btn {
-  flex: none;
-  padding: 0.45rem 0.9rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border-hairline);
-  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
-  color: var(--text-secondary);
-  font-size: 0.78rem;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-}
-
-.gw-jump-pill:hover,
-.gw-zoom-btn:hover {
-  border-color: color-mix(in srgb, var(--accent) 60%, var(--border-hairline));
-  color: var(--text-primary);
-}
-
-.gw-jump-pill.active {
-  color: var(--on-accent-container);
-  background: var(--accent-container);
-  border-color: transparent;
+  gap: 6px;
+  padding: 0 6px;
 }
 
 .gw-zoomctl {
   display: flex;
   flex: none;
   align-items: center;
-  gap: 0.35rem;
-}
-
-.gw-zoom-btn.icon {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: grid;
-  place-items: center;
-  font-size: 1rem;
-  line-height: 1;
+  gap: 4px;
 }
 
 .gw-zoom-level {
@@ -552,15 +415,9 @@
   color: var(--text-muted);
 }
 
-.gw-jumpbar-divider {
-  display: none;
-}
-
 /* ---- Phone bottom bar -------------------------------------------------
-   The same nav-bar look as the desktop top bar: one 48px pill (solid, as
-   blur is unreliable on phones), borderless 13px/600 tabs that snap so the
-   open card's tab rests at the left, and Fit after a divider. Swiping the
-   strip browses (see settleStrip). */
+   The island spans the width: the tab strip, a divider, then Fit. Swiping
+   the strip browses (see settleStrip). The zoom buttons and level hide. */
 @media (max-width: 640px) {
   .gw-topbar {
     padding-left: max(0.9rem, env(safe-area-inset-left, 0px));
@@ -573,57 +430,22 @@
     left: max(0.9rem, env(safe-area-inset-left, 0px));
     right: max(0.9rem, env(safe-area-inset-right, 0px));
     bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    height: var(--island-h);
-    box-sizing: border-box;
-    gap: 6px;
-    padding: 0 6px;
-    border-radius: var(--radius-island);
-    background: var(--surface-2);
-    box-shadow: var(--shadow-island);
   }
+  /* Room after the last tab so every tab can rest at the left; the right
+     edge fades out. */
   .gw-jumpbar-pills {
-    gap: 4px;
-    scroll-snap-type: x mandatory;
+    flex: 1;
+    min-width: 0;
     padding-right: calc(100% - 120px);
     -webkit-mask-image: linear-gradient(to right, #000 80%, transparent);
     mask-image: linear-gradient(to right, #000 80%, transparent);
   }
-  .gw-jump-pill,
-  .gw-zoom-btn {
-    height: var(--pill-h);
-    padding: 0 14px;
-    border: 0;
-    background: transparent;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    transition: background 0.25s ease, color 0.25s ease;
-  }
-  .gw-jump-pill {
-    scroll-snap-align: start;
-  }
-  .gw-jump-pill.active {
-    background: var(--accent-container);
-    color: var(--on-accent-container);
-  }
-  .gw-zoom-btn {
-    color: var(--on-accent-container);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-  }
-  .gw-jumpbar-divider {
-    display: block;
-    flex: none;
-    width: 1px;
-    height: 22px;
-    background: var(--border-hairline);
-  }
   .gw-dots {
     bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
-  .gw-jumpbar-label,
   .gw-arrow,
   .gw-zoom-level,
-  .gw-zoom-btn.icon,
+  .gw-zoom-icon,
   .gw-hint-wide {
     display: none;
   }
@@ -644,17 +466,17 @@
 }
 
 /* ---- Desktop top bar -------------------------------------------------
-   Above 640px the jump bar moves to the top and joins About, theme,
-   palette and season in one nav bar, styled as the site's original nav bar
-   (glass pill, 13px/600 tabs, accent-container active tab). The logo is
-   its own island beside it, at exactly the same 48px height. The bottom
-   bar keeps only the zoom controls, as a small pill in the corner. */
+   Above 640px the jump tabs move to the top and join About, theme,
+   palette and season in one nav bar island. The logo is its own island
+   beside it, at the same height. The bottom island keeps only the zoom
+   controls, in the corner. */
 .gw-navpill {
   display: contents;
 }
 
 .gw-toptabs,
-.gw-navpill-divider {
+.gw-navpill-divider,
+.gw-jumpbar-divider {
   display: none;
 }
 
@@ -665,13 +487,9 @@
     padding-top: calc(20px + env(safe-area-inset-top, 0px));
     padding-bottom: 20px;
   }
-  .gw-brand,
-  .gw-navpill {
-    height: var(--island-h);
-    box-sizing: border-box;
-  }
   .gw-brand {
     justify-self: start;
+    height: var(--island-h);
     padding: 0 18px;
     border-radius: var(--radius-island);
   }
@@ -681,9 +499,6 @@
     gap: 8px;
     width: clamp(560px, 66vw, 940px);
     padding: 0 6px;
-    border-radius: var(--radius-island);
-    background: var(--island-fill);
-    box-shadow: var(--shadow-island);
   }
   .gw-toptabs {
     display: block;
@@ -693,101 +508,31 @@
   /* Room after the last tab, so every tab (the last included) can rest at
      the left; the right edge fades out. */
   .gw-toptabs-track {
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    scroll-snap-type: x mandatory;
     padding-right: calc(100% - 160px);
     -webkit-mask-image: linear-gradient(to right, #000 82%, transparent);
     mask-image: linear-gradient(to right, #000 82%, transparent);
   }
-  .gw-toptabs-track::-webkit-scrollbar {
-    display: none;
-  }
-  .gw-toptabs-track.dragging {
-    scroll-snap-type: none;
-    cursor: grabbing;
-  }
-  .gw-toptab {
-    flex: none;
-    scroll-snap-align: start;
-    height: var(--pill-h);
-    padding: 0 16px;
-    border: 0;
-    border-radius: var(--radius-pill);
-    background: transparent;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    white-space: nowrap;
-    cursor: pointer;
-    transition: background 0.25s ease, color 0.25s ease;
-  }
-  .gw-toptab:hover:not(.active) {
-    background: var(--surface-3);
-  }
-  .gw-toptab.active {
-    background: var(--accent-container);
-    color: var(--on-accent-container);
-  }
   .gw-navpill-divider {
     display: block;
-    flex: none;
-    width: 1px;
-    height: 22px;
-    background: var(--border-hairline);
   }
   /* Controls inside the bar drop their own outlines and read as tabs. */
   .gw-navpill .gw-topbar-right {
     flex: none;
     gap: 4px;
   }
-  .gw-navpill .gw-about-link,
   .gw-navpill .icon-toggle-btn,
   .gw-navpill .switcher-trigger {
     border-color: transparent;
     background: transparent;
     color: var(--text-secondary);
   }
-  .gw-navpill .gw-about-link {
-    padding: 0 14px;
-    font-size: 13px;
-    color: var(--on-accent-container);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-  }
-  .gw-navpill .gw-about-link:hover,
   .gw-navpill .icon-toggle-btn:hover,
   .gw-navpill .switcher-trigger:hover {
     background: var(--surface-3);
     color: var(--text-primary);
   }
-  .gw-jumpbar {
-    left: auto;
-    background: none;
-  }
-  .gw-jumpbar-label,
   .gw-jumpbar-pills {
     display: none;
-  }
-  .gw-zoomctl {
-    padding: 6px 8px;
-    border-radius: var(--radius-island);
-    background: var(--island-fill);
-    box-shadow: var(--shadow-island);
-  }
-  /* The zoom/Fit buttons read as their own little bordered pills by
-     default (the .gw-zoom-btn base rule) — inside this glass pill they
-     should read as flat tabs instead, same as .gw-toptab in the nav bar. */
-  .gw-zoomctl .gw-zoom-btn {
-    border: 0;
-    background: transparent;
-    color: var(--text-secondary);
-  }
-  .gw-zoomctl .gw-zoom-btn:hover {
-    border-color: transparent;
-    background: var(--surface-3);
-    color: var(--text-primary);
   }
   .gw-dots {
     bottom: calc(30px + env(safe-area-inset-bottom, 0px));

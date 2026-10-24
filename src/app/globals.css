@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "flag-icons/css/flag-icons.min.css";
+@import "../styles/ui.css";
 
 /* ---- Design-system scale (see docs/design-system.md) ----------------
    The site is built from three shapes: an island (a 48px floating
@@ -492,18 +493,13 @@ body:has(.about-page-wrap)::after {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  height: var(--island-h);
-  box-sizing: border-box;
   padding: 0 18px;
-  border-radius: var(--radius-island);
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   font-size: 0.95rem;
   white-space: nowrap;
   color: var(--text-primary);
-  background: var(--island-fill);
-  box-shadow: var(--shadow-island);
   transition: background 0.2s ease;
 }
 .home-logo:hover {
@@ -534,7 +530,6 @@ body:has(.about-page-wrap)::after {
     left: 50%;
     transform: translateX(-50%);
     bottom: max(14px, env(safe-area-inset-bottom));
-    background: var(--surface-2);
   }
 }
 /* The fixed 16px (p-4) side margin reads as too wide a gutter on a
@@ -978,15 +973,6 @@ body:has(.about-page-wrap)::after {
 }
 .section-header p {
   color: var(--text-muted);
-}
-
-/* A second section-header stacked under an earlier graphic in the same
-   card (e.g. Grid Walk's merged Drivers/Team Results card) needs a gap
-   above it and a hairline to separate it from what came before. */
-.gw-subsection-header {
-  margin-top: 1.6rem;
-  padding-top: 1.4rem;
-  border-top: 1px solid var(--border-hairline);
 }
 
 /* A brief legend line for a graphic — how to read it, not what it is

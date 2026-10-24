@@ -221,9 +221,9 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
     if (live) return section.render(live);
     if (section.snapshots.length === 1) return renderSnapshot(section.snapshots[0].name);
     return (
-      <div className="gw-freq-stage">
+      <div className="ui-card-views">
         {section.snapshots.map((s) => (
-          <div key={s.name} className={"gw-freq-pane" + (s.active ? " active" : "")} aria-hidden={!s.active}>
+          <div key={s.name} className={"ui-card-view" + (s.active ? " active" : "")} aria-hidden={!s.active}>
             {renderSnapshot(s.name)}
           </div>
         ))}
@@ -243,7 +243,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       headerActions: () => (
         <button
           type="button"
-          className="gw-freq-toggle"
+          className="ui-card-toggle"
           data-toggle="results"
           onClick={(e) => {
             e.stopPropagation();
@@ -261,11 +261,11 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
         { name: "results-teams", active: resultsView === "teams" },
       ],
       render: ({ pointsGrid, constructorGrid }) => (
-        <div className="gw-freq-stage">
-          <div className={"gw-freq-pane" + (resultsView === "drivers" ? " active" : "")} aria-hidden={resultsView !== "drivers"}>
+        <div className="ui-card-views">
+          <div className={"ui-card-view" + (resultsView === "drivers" ? " active" : "")} aria-hidden={resultsView !== "drivers"}>
             <PointsHeatmap grid={pointsGrid} />
           </div>
-          <div className={"gw-freq-pane" + (resultsView === "teams" ? " active" : "")} aria-hidden={resultsView !== "teams"}>
+          <div className={"ui-card-view" + (resultsView === "teams" ? " active" : "")} aria-hidden={resultsView !== "teams"}>
             <ConstructorPointsHeatmap grid={constructorGrid} />
           </div>
         </div>
@@ -279,7 +279,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       render: ({ pointsGrid, constructorGrid }) => (
         <>
           <DriverPointsEvolutionChart grid={pointsGrid} />
-          <div className="section-header gw-subsection-header">
+          <div className="section-header ui-subsection">
             <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
               Constructor Points Evolution
             </h2>
@@ -306,7 +306,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       headerActions: () => (
         <button
           type="button"
-          className="gw-freq-toggle"
+          className="ui-card-toggle"
           data-toggle="freq"
           onClick={(e) => {
             e.stopPropagation();
@@ -328,11 +328,11 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
         // the container is always as tall as the taller one and swapping
         // only ever crossfades — it never collapses to find its new
         // height the way a single remounted view briefly did.
-        <div className="gw-freq-stage">
-          <div className={"gw-freq-pane" + (freqView === "finish" ? " active" : "")} aria-hidden={freqView !== "finish"}>
+        <div className="ui-card-views">
+          <div className={"ui-card-view" + (freqView === "finish" ? " active" : "")} aria-hidden={freqView !== "finish"}>
             <FinishPositionsGrid summary={finishSummary} />
           </div>
-          <div className={"gw-freq-pane" + (freqView === "quali" ? " active" : "")} aria-hidden={freqView !== "quali"}>
+          <div className={"ui-card-view" + (freqView === "quali" ? " active" : "")} aria-hidden={freqView !== "quali"}>
             <QualifyingPositionsGrid summary={qualifyingSummary} />
           </div>
         </div>
@@ -354,7 +354,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
             }))}
             teams={[]}
           />
-          <div className="section-header gw-subsection-header">
+          <div className="section-header ui-subsection">
             <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
               Constructor Podiums
             </h2>
@@ -895,7 +895,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
               ref={(el) => {
                 cardRefs.current[i] = el;
               }}
-              className="gw-card"
+              className="gw-card ui-card"
               style={{ "--enter-i": i } as React.CSSProperties}
               role="button"
               tabIndex={0}
@@ -909,7 +909,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
               }}
             >
               <div className="gw-card-inner">
-                <div className={"section-header" + (section.headerActions ? " gw-card-head" : "")}>
+                <div className={"section-header" + (section.headerActions ? " ui-card-head" : "")}>
                   <div>
                     <h2 className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
                       {section.title}
@@ -933,7 +933,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
         {/* The logo is its own island, and takes you back to the first card. */}
         <button
           type="button"
-          className="gw-brand"
+          className="gw-brand ui-island"
           aria-label="Grid Walk: back to the first card"
           onClick={() => {
             goTo(0);
@@ -949,17 +949,17 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
           </span>
           <span className="gw-brand-text">Grid Walk</span>
         </button>
-        {/* On desktop this is one nav bar: the jump tabs, then About and the
-            toggles. On phones it dissolves (display: contents), the tabs are
-            hidden, and the controls sit on their own as before. */}
-        <div className="gw-navpill">
+        {/* On desktop this is one nav bar island: the jump tabs, then About
+            and the toggles. On phones it dissolves (display: contents), the
+            tabs are hidden, and the controls sit on their own as before. */}
+        <div className="gw-navpill ui-island">
           <nav className="gw-toptabs" aria-label="Jump to">
-            <div className="gw-toptabs-track" ref={tabsRef} onScroll={() => settleStrip(tabsRef.current, tabsProgrammatic)}>
+            <div className="gw-toptabs-track ui-tab-strip" ref={tabsRef} onScroll={() => settleStrip(tabsRef.current, tabsProgrammatic)}>
               {sections.map((section, i) => (
                 <button
                   key={section.id}
                   type="button"
-                  className={"gw-toptab" + (i === focus ? " active" : "")}
+                  className={"gw-toptab ui-pill" + (i === focus ? " active" : "")}
                   aria-current={i === focus ? "true" : undefined}
                   onClick={() => {
                     if (tabsDragged.current) return;
@@ -974,9 +974,9 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
               ))}
             </div>
           </nav>
-          <span className="gw-navpill-divider" aria-hidden="true" />
+          <span className="gw-navpill-divider ui-divider" aria-hidden="true" />
           <div className="gw-topbar-right">
-            <button type="button" className="gw-about-link" onClick={() => router.push("/about")}>
+            <button type="button" className="gw-about-link ui-pill ui-pill--accent" onClick={() => router.push("/about")}>
               About
             </button>
             <ThemeToggle iconOnly />
@@ -1029,9 +1029,9 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
       </div>
 
       <div className="gw-jumpbar">
-        <span className="gw-jumpbar-label">Jump to</span>
+        <div className="gw-jumpbar-island ui-island">
         <div
-          className="gw-jumpbar-pills"
+          className="gw-jumpbar-pills ui-tab-strip"
           ref={pillsRef}
           onScroll={() => settleStrip(pillsRef.current, pillsProgrammatic)}
           // A finger on the strip takes over from any glide still running,
@@ -1055,7 +1055,7 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
             <button
               key={section.id}
               type="button"
-              className={"gw-jump-pill" + (i === focus ? " active" : "")}
+              className={"gw-jump-pill ui-pill" + (i === focus ? " active" : "")}
               aria-current={i === focus ? "true" : undefined}
               onClick={() => {
                 // A tap wins over a settle still pending from a swipe, and
@@ -1071,20 +1071,21 @@ export default function GridWalk({ season, live, sizes, initialVariant }: GridWa
             </button>
           ))}
         </div>
-        <span className="gw-jumpbar-divider" aria-hidden="true" />
+        <span className="gw-jumpbar-divider ui-divider" aria-hidden="true" />
         <div className="gw-zoomctl">
-          <button type="button" className="gw-zoom-btn icon" aria-label="Zoom out" onClick={() => zoomCentre(0.8)}>
+          <button type="button" className="gw-zoom-icon ui-pill ui-icon-pill" aria-label="Zoom out" onClick={() => zoomCentre(0.8)}>
             −
           </button>
           <span className="gw-zoom-level" ref={zoomLevelRef}>
             Fit
           </span>
-          <button type="button" className="gw-zoom-btn icon" aria-label="Zoom in" onClick={() => zoomCentre(1.25)}>
+          <button type="button" className="gw-zoom-icon ui-pill ui-icon-pill" aria-label="Zoom in" onClick={() => zoomCentre(1.25)}>
             +
           </button>
-          <button type="button" className="gw-zoom-btn" onClick={() => goTo(focusRef.current)}>
+          <button type="button" className="ui-pill ui-pill--accent" onClick={() => goTo(focusRef.current)}>
             Fit
           </button>
+        </div>
         </div>
       </div>
     </div>

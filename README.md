@@ -139,7 +139,11 @@ rounded container such as the nav bar, jump bar or logo island), a
 (one graphic). Their heights, radii, shadows and the translucent island
 fill are design tokens at the top of `src/app/globals.css`
 (`--island-h`, `--pill-h`, `--card-h`, `--radius-*`, `--shadow-*`,
-`--island-fill`), so every copy of a shape reads the same value.
+`--island-fill`), and each shape is styled once in `src/styles/ui.css`
+(`.ui-island`, `.ui-pill`, `.ui-pill--accent`, `.ui-icon-pill`,
+`.ui-divider`, `.ui-tab-strip`, `.ui-card`, `.ui-card-toggle`,
+`.ui-card-views`, `.ui-subsection`). Component stylesheets only add
+position and layout on top of these.
 
 ## Install as an app
 
