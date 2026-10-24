@@ -176,6 +176,15 @@ tab.
 - **Desktop (Chrome/Edge):** open the site, click the install icon at the
   right of the address bar (or the **⋮** menu → **Install Grid Walk…**).
 
+The browser tab icon switches between a light and dark version to match the
+device's own light/dark setting (two `media`-targeted icons in
+`layout.tsx`, plus `favicon.ico` as the plain fallback). The home-screen
+icon itself can't retheme live once installed — that's a platform
+limitation, not something a web app can control — but on Android 13+ a
+"monochrome" variant (`public/icons/icon-monochrome.png`, `purpose:
+"monochrome"` in the manifest) lets the OS tint it to match the phone's
+system theme automatically, the same as a native app's themed icon.
+
 ## Tech stack
 
 - Next.js (App Router) + TypeScript

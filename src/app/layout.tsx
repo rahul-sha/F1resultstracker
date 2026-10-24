@@ -12,13 +12,24 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
   },
   icons: {
-    icon: [{ url: "/favicon.ico" }],
+    // Two tab icons, switched by the browser itself to match the device's
+    // light/dark setting (not the in-app theme toggle, which JS can't
+    // reach a tab icon from). favicon.ico is the plain fallback for
+    // browsers that don't support `media` on icons.
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icons/favicon-light.png", media: "(prefers-color-scheme: light)", type: "image/png" },
+      { url: "/icons/favicon-dark.png", media: "(prefers-color-scheme: dark)", type: "image/png" },
+    ],
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1b1c17",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf9f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#1b1c17" },
+  ],
 };
 
 export default function RootLayout({

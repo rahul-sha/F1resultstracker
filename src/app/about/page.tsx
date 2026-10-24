@@ -63,11 +63,19 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            68 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            69 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">69</span>
+                <b>Icons that follow light/dark</b>
+                <span>
+                  The browser tab icon now switches with the device&rsquo;s light/dark setting, and
+                  Android 13+ can tint the home-screen icon to match its system theme.
+                </span>
+              </li>
               <li>
                 <span className="seq">68</span>
                 <b>Design system written down</b>
