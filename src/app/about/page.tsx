@@ -63,11 +63,21 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            67 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            68 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">68</span>
+                <b>Design system written down</b>
+                <span>
+                  The names for every part of the site (island, pill, card, nav bar, jump bar, card
+                  toggle, and the rest), the colour and size tokens, the rules they follow, and where
+                  each one lives in the code, kept in the repository as docs/design-system.md so it
+                  stays current with the code.
+                </span>
+              </li>
               <li>
                 <span className="seq">67</span>
                 <b>Tidy-up</b>

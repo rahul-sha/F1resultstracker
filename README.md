@@ -135,6 +135,9 @@ click, so every change has visible feedback.
 
 ## Design system
 
+The full reference, with the name of every part, the tokens, the rules,
+and where each one lives in the code, is [docs/design-system.md](docs/design-system.md).
+
 The UI is built from three shapes: an **island** (a 48px floating,
 rounded container such as the nav bar, jump bar or logo island), a
 **pill** (a 36px control inside an island, such as a tab) and a **card**
