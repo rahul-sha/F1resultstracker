@@ -4,7 +4,7 @@ import Link from "next/link";
 // page. Used on About in place of a nav bar (Grid Walk has its own).
 export default function HomeLogo() {
   return (
-    <Link href="/" className="home-logo" aria-label="Grid Walk: back to the home page">
+    <Link href="/" className="home-logo ui-island" aria-label="Grid Walk: back to the home page">
       <svg width="22" height="14" viewBox="0 0 22 14" fill="currentColor" aria-hidden="true">
         <path d="M0 14L6 0h4L4 14H0z" />
         <path d="M7 14L13 0h4L11 14H7z" />

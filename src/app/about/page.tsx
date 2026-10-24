@@ -63,11 +63,21 @@ export default function AboutPage() {
             loading="lazy"
           />
           <p className="timeline-count">
-            64 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
+            65 rounds shipped since launch &mdash; most recent first. Minor polish-only rounds are
             folded into the ones around them rather than listed separately.
           </p>
           <div className="timeline-inset">
             <ul className="timeline">
+              <li>
+                <span className="seq">65</span>
+                <b>One stylesheet for islands, pills and cards</b>
+                <span>
+                  Every island, pill, tab and card now shares one definition instead of its own
+                  copy, which also evened out the last few odd ones: the zoom island is the same
+                  height as the others, Fit is an accent pill everywhere, and every pill lights up
+                  the same way on hover.
+                </span>
+              </li>
               <li>
                 <span className="seq">64</span>
                 <b>Design tokens</b>
